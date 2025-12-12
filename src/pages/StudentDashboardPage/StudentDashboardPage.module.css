@@ -1,0 +1,144 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+}
+
+.title {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    color: var(--color-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+/* ========== CODE SECTION ========== */
+
+.codeSection {
+    margin-bottom: var(--spacing-lg);
+}
+
+.codeCard {
+    background-color: var(--color-background-white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    border-left: 4px solid var(--color-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.codeHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.codeIcon {
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.codeTitle {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.codeSubtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.codeInput {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+}
+
+.input {
+    flex: 1;
+}
+
+.validateButton {
+    min-width: 120px;
+}
+
+/* ========== SECTIONS ========== */
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sectionHeaderContent {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.sectionIcon {
+    color: var(--color-primary);
+}
+
+.sectionTitle {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.tableContainer {
+    background-color: var(--color-background-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .title {
+        font-size: var(--text-2xl);
+    }
+
+    .codeCard {
+        padding: var(--spacing-lg);
+    }
+
+    .codeHeader {
+        flex-direction: column;
+    }
+
+    .codeInput {
+        flex-direction: column;
+    }
+
+    .validateButton {
+        width: 100%;
+    }
+}

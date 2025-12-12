@@ -1,0 +1,39 @@
+.card {
+    background-color: var(--color-background-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+.default {
+    padding: var(--spacing-lg);
+}
+
+.small {
+    padding: var(--spacing-md);
+}
+
+.large {
+    padding: var(--spacing-xl);
+}
+
+.none {
+    padding: 0;
+}
+
+.hover:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+    .default {
+        padding: var(--spacing-md);
+    }
+
+    .large {
+        padding: var(--spacing-lg);
+    }
+}

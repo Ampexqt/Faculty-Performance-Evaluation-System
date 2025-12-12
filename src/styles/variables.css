@@ -1,0 +1,128 @@
+/**
+ * Design System Variables
+ * Faculty Performance Evaluation System
+ */
+
+:root {
+  /* ========== PRIMARY COLORS ========== */
+  --color-primary: #800000;
+  --color-primary-hover: #6B0000;
+  --color-primary-light: #A52A2A;
+  --color-primary-foreground: #FFFFFF;
+
+  /* ========== ACCENT COLORS ========== */
+  --color-accent: #D4AF37;
+  --color-accent-light: #F5E6C8;
+  --color-accent-hover: #C19B2B;
+
+  /* ========== BACKGROUND COLORS ========== */
+  --color-background: #F5F5F5;
+  --color-background-white: #FFFFFF;
+  --color-background-card: #FFFFFF;
+  --color-background-sidebar: #FFFFFF;
+  --color-background-hover: #F9FAFB;
+
+  /* ========== TEXT COLORS ========== */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
+  --color-text-white: #FFFFFF;
+  --color-text-link: #800000;
+
+  /* ========== STATUS COLORS ========== */
+  --color-success: #10B981;
+  --color-success-bg: #D1FAE5;
+  --color-warning: #F59E0B;
+  --color-warning-bg: #FEF3C7;
+  --color-error: #EF4444;
+  --color-error-bg: #FEE2E2;
+  --color-info: #3B82F6;
+  --color-info-bg: #DBEAFE;
+  --color-completed: #7C2D12;
+  --color-completed-bg: #FED7AA;
+  --color-in-progress: #EA580C;
+  --color-in-progress-bg: #FFEDD5;
+
+  /* ========== BORDER COLORS ========== */
+  --color-border: #E5E7EB;
+  --color-border-dark: #D1D5DB;
+  --color-border-focus: #800000;
+
+  /* ========== TYPOGRAPHY ========== */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Font Sizes */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 1.875rem;    /* 30px */
+  --text-4xl: 2.25rem;     /* 36px */
+
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Letter Spacing */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+
+  /* ========== SPACING ========== */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+  --spacing-3xl: 4rem;     /* 64px */
+
+  /* ========== BORDER RADIUS ========== */
+  --radius-sm: 0.25rem;    /* 4px */
+  --radius-md: 0.375rem;   /* 6px */
+  --radius-lg: 0.5rem;     /* 8px */
+  --radius-xl: 0.75rem;    /* 12px */
+  --radius-2xl: 1rem;      /* 16px */
+  --radius-full: 9999px;
+
+  /* ========== SHADOWS ========== */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* ========== TRANSITIONS ========== */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 200ms ease-in-out;
+  --transition-slow: 300ms ease-in-out;
+
+  /* ========== Z-INDEX ========== */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* ========== LAYOUT ========== */
+  --sidebar-width: 240px;
+  --header-height: 64px;
+  --max-width-container: 1280px;
+
+  /* ========== BREAKPOINTS ========== */
+  --breakpoint-mobile: 320px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1280px;
+}

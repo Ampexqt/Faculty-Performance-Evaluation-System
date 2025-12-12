@@ -1,0 +1,208 @@
+.page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #F5F5F5 0%, #E8E8E8 100%);
+    padding: var(--spacing-lg);
+}
+
+.container {
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    animation: fadeIn var(--transition-slow);
+}
+
+.logoSection {
+    text-align: center;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.logoImage {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: var(--radius-lg);
+}
+
+.title {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--color-primary);
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+.subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.card {
+    background-color: var(--color-background-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-2xl);
+    border-top: 4px solid var(--color-primary);
+    animation: slideInUp var(--transition-slow);
+}
+
+.cardHeader {
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+}
+
+.cardTitle {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.forgotPassword {
+    text-align: right;
+    margin-top: calc(var(--spacing-sm) * -1);
+}
+
+.link {
+    color: var(--color-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.submitButton {
+    width: 100%;
+    margin-top: var(--spacing-md);
+}
+
+.footer {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+}
+
+.footerText {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.copyright {
+    text-align: center;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    line-height: var(--leading-relaxed);
+}
+
+/* ========== DEMO HINT ========== */
+
+.demoHint {
+    background-color: var(--color-background-white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-md);
+}
+
+.demoTitle {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--color-primary);
+    margin: 0 0 var(--spacing-md) 0;
+    text-align: center;
+}
+
+.demoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.demoItem {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    padding: var(--spacing-xs);
+    background-color: var(--color-background);
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.demoItem strong {
+    color: var(--color-text-primary);
+    font-weight: var(--font-semibold);
+}
+
+/* ========== ANIMATIONS ========== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+    .page {
+        padding: var(--spacing-md);
+    }
+
+    .card {
+        padding: var(--spacing-xl);
+    }
+
+    .title {
+        font-size: var(--text-xl);
+    }
+
+    .logoImage {
+        width: 80px;
+        height: 80px;
+    }
+
+    .demoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .demoHint {
+        padding: var(--spacing-md);
+    }
+}

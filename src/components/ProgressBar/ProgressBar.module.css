@@ -1,0 +1,57 @@
+.container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+}
+
+.progressBar {
+    flex: 1;
+    background-color: var(--color-background);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.small {
+    height: 6px;
+}
+
+.default {
+    height: 8px;
+}
+
+.large {
+    height: 12px;
+}
+
+.fill {
+    height: 100%;
+    background-color: var(--color-primary);
+    transition: width var(--transition-base);
+    border-radius: var(--radius-full);
+}
+
+.default {
+    background-color: var(--color-primary);
+}
+
+.success {
+    background-color: var(--color-success);
+}
+
+.warning {
+    background-color: var(--color-warning);
+}
+
+.error {
+    background-color: var(--color-error);
+}
+
+.label {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-medium);
+    white-space: nowrap;
+    min-width: 45px;
+    text-align: right;
+}

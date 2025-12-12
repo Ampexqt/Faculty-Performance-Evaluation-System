@@ -30,6 +30,21 @@
     overflow: hidden;
 }
 
+/* ========== MODAL ========== */
+
+.modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 768px) {

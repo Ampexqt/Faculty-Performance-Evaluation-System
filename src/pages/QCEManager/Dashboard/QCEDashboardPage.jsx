@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, BookOpen, ClipboardList, Clock, ChevronRight } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
@@ -6,6 +6,7 @@ import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Badge } from '@/components/Badge/Badge';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
+import { Modal } from '@/components/Modal/Modal';
 import styles from './QCEDashboardPage.module.css';
 
 // Mock data
@@ -42,8 +43,94 @@ const mockEvaluations = [
     },
 ];
 
+// Mock faculty data with roles
+const mockFaculty = [
+    { id: 1, name: 'Prof. Alan Turing', role: 'Professor' },
+    { id: 2, name: 'Prof. Ada Lovelace', role: 'Professor' },
+    { id: 3, name: 'Dr. Grace Hopper', role: 'Dean' },
+    { id: 4, name: 'Inst. Linus Torvalds', role: 'Visiting Lecturer' },
+];
+
+const mockSubjects = [
+    { id: 1, code: 'CS101', name: 'Introduction to Programming' },
+    { id: 2, code: 'CS102', name: 'Data Structures' },
+    { id: 3, code: 'IT201', name: 'Database Management' },
+];
+
+const mockSections = [
+    { id: 1, name: 'BSCS 1-A' },
+    { id: 2, name: 'BSCS 1-B' },
+    { id: 3, name: 'BSIT 2-A' },
+];
+
+// Function to generate random code
+const generateCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 3; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    code += '-';
+    for (let i = 0; i < 3; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+};
+
 export function QCEDashboardPage() {
     const [evaluations] = useState(mockEvaluations);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        facultyRole: '',
+        faculty: '',
+        subject: '',
+        section: '',
+    });
+    const [generatedCode, setGeneratedCode] = useState('');
+    const [filteredFaculty, setFilteredFaculty] = useState([]);
+
+    // Filter faculty by role
+    useEffect(() => {
+        if (formData.facultyRole) {
+            const filtered = mockFaculty.filter(f => f.role === formData.facultyRole);
+            setFilteredFaculty(filtered);
+        } else {
+            setFilteredFaculty([]);
+        }
+    }, [formData.facultyRole]);
+
+    // Generate code when all fields are filled
+    useEffect(() => {
+        if (formData.faculty && formData.subject && formData.section) {
+            setGeneratedCode(generateCode());
+        } else {
+            setGeneratedCode('');
+        }
+    }, [formData.faculty, formData.subject, formData.section]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value,
+            // Reset faculty when role changes
+            ...(name === 'facultyRole' ? { faculty: '' } : {})
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log('Generating evaluation code:', { ...formData, code: generatedCode });
+        setIsModalOpen(false);
+        setFormData({ facultyRole: '', faculty: '', subject: '', section: '' });
+        setGeneratedCode('');
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+        setFormData({ facultyRole: '', faculty: '', subject: '', section: '' });
+        setGeneratedCode('');
+    };
 
     const columns = [
         {
@@ -120,7 +207,7 @@ export function QCEDashboardPage() {
                         <h1 className={styles.title}>Evaluation Management</h1>
                         <p className={styles.subtitle}>Manage faculty evaluations and monitor progress.</p>
                     </div>
-                    <Button variant="primary">
+                    <Button variant="primary" onClick={() => setIsModalOpen(true)}>
                         + Generate Evaluation Code
                     </Button>
                 </div>
@@ -175,6 +262,113 @@ export function QCEDashboardPage() {
                         <Table columns={columns} data={evaluations} />
                     </div>
                 </div>
+
+                {/* Generate Evaluation Code Modal */}
+                <Modal
+                    isOpen={isModalOpen}
+                    onClose={handleCancel}
+                    title="Generate Evaluation Code"
+                >
+                    <form onSubmit={handleSubmit} className={styles.modalForm}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Faculty Role<span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="facultyRole"
+                                value={formData.facultyRole}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="">Select faculty role</option>
+                                <option value="Dean">Dean</option>
+                                <option value="Professor">Professor</option>
+                                <option value="Visiting Lecturer">Visiting Lecturer</option>
+                                <option value="Program Chair">Program Chair</option>
+                                <option value="Department Chair">Department Chair</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Select Faculty<span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="faculty"
+                                value={formData.faculty}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                                required
+                                disabled={!formData.facultyRole}
+                            >
+                                <option value="">Select an option</option>
+                                {filteredFaculty.map(f => (
+                                    <option key={f.id} value={f.id}>{f.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Select Subject<span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="subject"
+                                value={formData.subject}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="">Select an option</option>
+                                {mockSubjects.map(s => (
+                                    <option key={s.id} value={s.id}>{s.code} - {s.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Select Section<span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="section"
+                                value={formData.section}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="">Select an option</option>
+                                {mockSections.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {generatedCode && (
+                            <div className={styles.codeDisplay}>
+                                <div className={styles.codeLabel}>Generated Code</div>
+                                <div className={styles.codeValue}>{generatedCode}</div>
+                            </div>
+                        )}
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Save & Activate
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
             </div>
         </DashboardLayout>
     );

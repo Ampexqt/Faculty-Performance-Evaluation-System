@@ -6,6 +6,9 @@ import { CollegesPage } from './pages/ZonalAdmin/Colleges/CollegesPage';
 import { QCEManagementPage } from './pages/ZonalAdmin/QCEManagement/QCEManagementPage';
 import { AcademicYearsPage } from './pages/ZonalAdmin/AcademicYears/AcademicYearsPage';
 import { QCEDashboardPage } from './pages/QCEManager/Dashboard/QCEDashboardPage';
+import { FacultyPage } from './pages/QCEManager/Faculty/FacultyPage';
+import { ProgramsPage } from './pages/QCEManager/Programs/ProgramsPage';
+import { EvaluationsPage } from './pages/QCEManager/Evaluations/EvaluationsPage';
 import { DeptChairDashboardPage } from './pages/DeptChair/Dashboard/DeptChairDashboardPage';
 import { FacultyDashboardPage } from './pages/Faculty/Dashboard/FacultyDashboardPage';
 import { StudentDashboardPage } from './pages/Student/Dashboard/StudentDashboardPage';
@@ -27,6 +30,9 @@ export function App() {
 
         {/* QCE Manager Routes */}
         <Route path="/qce/dashboard" element={<QCEDashboardPage />} />
+        <Route path="/qce/faculty" element={<FacultyPage />} />
+        <Route path="/qce/programs" element={<ProgramsPage />} />
+        <Route path="/qce/evaluations" element={<EvaluationsPage />} />
 
         {/* Department Chair Routes */}
         <Route path="/dept-chair/faculty" element={<DeptChairDashboardPage />} />

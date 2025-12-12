@@ -50,6 +50,9 @@ export function LoginPage() {
             // QCE Manager
             'qce': { password: 'qce123', role: 'QCE Manager', redirect: '/qce/dashboard' },
 
+            // College Dean
+            'dean': { password: 'dean123', role: 'College Dean', redirect: '/dean/overview' },
+
             // Department Chair
             'chair': { password: 'chair123', role: 'Dept. Chair', redirect: '/dept-chair/faculty' },
 
@@ -158,6 +161,9 @@ export function LoginPage() {
                         </div>
                         <div className={styles.demoItem}>
                             <strong>QCE:</strong> qce / qce123
+                        </div>
+                        <div className={styles.demoItem}>
+                            <strong>Dean:</strong> dean / dean123
                         </div>
                         <div className={styles.demoItem}>
                             <strong>Chair:</strong> chair / chair123

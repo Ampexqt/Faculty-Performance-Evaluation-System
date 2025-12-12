@@ -6,7 +6,9 @@ import {
     Users,
     Calendar,
     BookOpen,
-    Settings
+    Settings,
+    ClipboardList,
+    Briefcase
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import styles from './Sidebar.module.css';
@@ -24,6 +26,12 @@ const qceMenuItems = [
     { icon: Users, label: 'Faculty', path: '/qce/faculty' },
     { icon: BookOpen, label: 'Programs', path: '/qce/programs' },
     { icon: Calendar, label: 'Evaluations', path: '/qce/evaluations' },
+];
+
+const deanMenuItems = [
+    { icon: LayoutDashboard, label: 'Overview', path: '/dean/overview' },
+    { icon: ClipboardList, label: 'Faculty Results', path: '/dean/faculty-results' },
+    { icon: Briefcase, label: 'Dept. Chairs', path: '/dean/dept-chairs' },
 ];
 
 const deptChairMenuItems = [
@@ -50,6 +58,8 @@ export function Sidebar({
 
     if (role === 'QCE Manager') {
         menuItems = qceMenuItems;
+    } else if (role === 'College Dean') {
+        menuItems = deanMenuItems;
     } else if (role === 'Dept. Chair') {
         menuItems = deptChairMenuItems;
     } else if (role === 'Faculty') {

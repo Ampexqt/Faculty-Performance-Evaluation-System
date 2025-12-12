@@ -9,6 +9,9 @@ import { QCEDashboardPage } from './pages/QCEManager/Dashboard/QCEDashboardPage'
 import { FacultyPage } from './pages/QCEManager/Faculty/FacultyPage';
 import { ProgramsPage } from './pages/QCEManager/Programs/ProgramsPage';
 import { EvaluationsPage } from './pages/QCEManager/Evaluations/EvaluationsPage';
+import { DeanOverviewPage } from './pages/Dean/Overview/DeanOverviewPage';
+import { FacultyResultsPage } from './pages/Dean/FacultyResults/FacultyResultsPage';
+import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
 import { DeptChairDashboardPage } from './pages/DeptChair/Dashboard/DeptChairDashboardPage';
 import { FacultyDashboardPage } from './pages/Faculty/Dashboard/FacultyDashboardPage';
 import { StudentDashboardPage } from './pages/Student/Dashboard/StudentDashboardPage';
@@ -33,6 +36,11 @@ export function App() {
         <Route path="/qce/faculty" element={<FacultyPage />} />
         <Route path="/qce/programs" element={<ProgramsPage />} />
         <Route path="/qce/evaluations" element={<EvaluationsPage />} />
+
+        {/* Dean Routes */}
+        <Route path="/dean/overview" element={<DeanOverviewPage />} />
+        <Route path="/dean/faculty-results" element={<FacultyResultsPage />} />
+        <Route path="/dean/dept-chairs" element={<DeptChairsPage />} />
 
         {/* Department Chair Routes */}
         <Route path="/dept-chair/faculty" element={<DeptChairDashboardPage />} />

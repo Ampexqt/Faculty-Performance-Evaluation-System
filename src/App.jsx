@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { LoginPage } from './pages/LoginPage/LoginPage';
-import { ZonalDashboardPage } from './pages/ZonalDashboardPage/ZonalDashboardPage';
-import { CollegesPage } from './pages/CollegesPage/CollegesPage';
-import { QCEManagementPage } from './pages/QCEManagementPage/QCEManagementPage';
-import { AcademicYearsPage } from './pages/AcademicYearsPage/AcademicYearsPage';
-import { QCEDashboardPage } from './pages/QCEDashboardPage/QCEDashboardPage';
-import { DeptChairDashboardPage } from './pages/DeptChairDashboardPage/DeptChairDashboardPage';
-import { FacultyDashboardPage } from './pages/FacultyDashboardPage/FacultyDashboardPage';
-import { StudentDashboardPage } from './pages/StudentDashboardPage/StudentDashboardPage';
+import { LoginPage } from './pages/Auth/LoginPage/LoginPage';
+import { ZonalDashboardPage } from './pages/ZonalAdmin/Dashboard/ZonalDashboardPage';
+import { CollegesPage } from './pages/ZonalAdmin/Colleges/CollegesPage';
+import { QCEManagementPage } from './pages/ZonalAdmin/QCEManagement/QCEManagementPage';
+import { AcademicYearsPage } from './pages/ZonalAdmin/AcademicYears/AcademicYearsPage';
+import { QCEDashboardPage } from './pages/QCEManager/Dashboard/QCEDashboardPage';
+import { DeptChairDashboardPage } from './pages/DeptChair/Dashboard/DeptChairDashboardPage';
+import { FacultyDashboardPage } from './pages/Faculty/Dashboard/FacultyDashboardPage';
+import { StudentDashboardPage } from './pages/Student/Dashboard/StudentDashboardPage';
 import './styles/globals.css';
 
 export function App() {

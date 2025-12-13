@@ -19,8 +19,11 @@ import { ProgramsPage as DeptChairProgramsPage } from './pages/DeptChair/Program
 import { SubjectsPage as DeptChairSubjectsPage } from './pages/DeptChair/Subjects/SubjectsPage';
 import { SchedulesPage as DeptChairSchedulesPage } from './pages/DeptChair/Schedules/SchedulesPage';
 import { EvaluationsPage as DeptChairEvaluationsPage } from './pages/DeptChair/Evaluations/EvaluationsPage';
-import { FacultyDashboardPage } from './pages/Faculty/Dashboard/FacultyDashboardPage';
-import { StudentDashboardPage } from './pages/Student/Dashboard/StudentDashboardPage';
+import { FacultyOverviewPage } from './pages/Faculty/Overview/FacultyOverviewPage';
+import { MySubjectsPage } from './pages/Faculty/MySubjects/MySubjectsPage';
+import { EvaluationResultsPage } from './pages/Faculty/EvaluationResults/EvaluationResultsPage';
+import { StudentOverviewPage } from './pages/Student/Overview/StudentOverviewPage';
+import { StudentEvaluationsPage } from './pages/Student/Evaluations/StudentEvaluationsPage';
 import './styles/globals.css';
 
 export function App() {
@@ -58,10 +61,13 @@ export function App() {
         <Route path="/dept-chair/evaluations" element={<DeptChairEvaluationsPage />} />
 
         {/* Faculty Routes */}
-        <Route path="/faculty/subjects" element={<FacultyDashboardPage />} />
+        <Route path="/faculty/overview" element={<FacultyOverviewPage />} />
+        <Route path="/faculty/subjects" element={<MySubjectsPage />} />
+        <Route path="/faculty/results" element={<EvaluationResultsPage />} />
 
         {/* Student Routes */}
-        <Route path="/student/evaluations" element={<StudentDashboardPage />} />
+        <Route path="/student/dashboard" element={<StudentOverviewPage />} />
+        <Route path="/student/evaluations" element={<StudentEvaluationsPage />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />

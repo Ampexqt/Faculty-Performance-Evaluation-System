@@ -46,12 +46,14 @@ const deptChairMenuItems = [
 ];
 
 const facultyMenuItems = [
+    { icon: LayoutDashboard, label: 'Overview', path: '/faculty/overview' },
     { icon: BookOpen, label: 'My Subjects', path: '/faculty/subjects' },
     { icon: Calendar, label: 'Evaluation Results', path: '/faculty/results' },
 ];
 
 const studentMenuItems = [
-    { icon: BookOpen, label: 'My Evaluations', path: '/student/evaluations' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/student/dashboard' },
+    { icon: ClipboardList, label: 'My Evaluations', path: '/student/evaluations' },
 ];
 
 export function Sidebar({

@@ -1,0 +1,210 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+}
+
+.title {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    color: var(--color-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+}
+
+/* ========== OVERALL RATING CARD ========== */
+
+.overallCard {
+    background: linear-gradient(135deg, var(--color-primary) 0%, #a00000 100%);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl);
+    color: var(--color-background-white);
+}
+
+.cardTitle {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    margin: 0 0 var(--spacing-xl) 0;
+}
+
+.ratingDisplay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.ratingNumber {
+    font-size: 72px;
+    font-weight: var(--font-bold);
+    line-height: 1;
+}
+
+.maxRating {
+    font-size: 32px;
+    font-weight: var(--font-normal);
+    opacity: 0.8;
+}
+
+.stars {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.starFilled {
+    color: #fbbf24;
+}
+
+.starEmpty {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.ratingLabel {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ========== SCORE BREAKDOWN CARD ========== */
+
+.scoreCard {
+    background-color: var(--color-background-white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl);
+    border: 1px solid var(--color-border);
+}
+
+.scoreList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.scoreItem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.scoreHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.scoreCategory {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-text-primary);
+}
+
+.scoreValue {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--color-primary);
+}
+
+.scoreBar {
+    height: 8px;
+    background-color: var(--color-background-light);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.scoreBarFill {
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-normal);
+}
+
+/* ========== STUDENT COMMENTS SECTION ========== */
+
+.commentsSection {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.sectionTitle {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.commentsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.commentCard {
+    background-color: var(--color-background-white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+}
+
+.commentText {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    font-style: italic;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 1024px) {
+    .content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .title {
+        font-size: var(--text-2xl);
+    }
+
+    .overallCard,
+    .scoreCard {
+        padding: var(--spacing-xl);
+    }
+
+    .ratingNumber {
+        font-size: 56px;
+    }
+
+    .maxRating {
+        font-size: 24px;
+    }
+
+    .stars {
+        transform: scale(0.9);
+    }
+}

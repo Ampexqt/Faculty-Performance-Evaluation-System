@@ -1,0 +1,233 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+}
+
+.title {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    color: var(--color-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: var(--spacing-xl);
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.sectionTitle {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+/* ========== TABLE ========== */
+
+.tableContainer {
+    background-color: var(--color-background-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background-color: var(--color-primary);
+    color: var(--color-background-white);
+}
+
+.table th {
+    padding: var(--spacing-md);
+    text-align: left;
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+}
+
+.table td {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.subjectInfo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.subjectCode {
+    font-weight: var(--font-semibold);
+    color: var(--color-text-primary);
+}
+
+.subjectName {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+}
+
+.evalCode {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-family: monospace;
+    font-weight: var(--font-medium);
+}
+
+.copyButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.copyButton:hover {
+    background-color: var(--color-background-light);
+    color: var(--color-primary);
+}
+
+/* ========== PROGRESS BAR ========== */
+
+.progressContainer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.progressBar {
+    flex: 1;
+    height: 8px;
+    background-color: var(--color-background-light);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    transition: width var(--transition-normal);
+}
+
+.progressHigh {
+    background-color: #10b981;
+}
+
+.progressMedium {
+    background-color: #f59e0b;
+}
+
+.progressLow {
+    background-color: #ef4444;
+}
+
+.progressText {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-text-secondary);
+    min-width: 60px;
+}
+
+/* ========== EVALUATORS LIST ========== */
+
+.evaluatorsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.evaluatorCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background-color: var(--color-background-white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
+.evaluatorInfo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.evaluatorName {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-text-primary);
+}
+
+.evaluatorSection {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 1024px) {
+    .content {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .title {
+        font-size: var(--text-2xl);
+    }
+
+    .table {
+        font-size: var(--text-sm);
+    }
+
+    .table th,
+    .table td {
+        padding: var(--spacing-sm);
+    }
+}

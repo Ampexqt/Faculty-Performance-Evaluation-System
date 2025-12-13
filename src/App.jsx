@@ -14,7 +14,11 @@ import { FacultyResultsPage } from './pages/Dean/FacultyResults/FacultyResultsPa
 import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
 import { EvaluationsPage as DeanEvaluationsPage } from './pages/Dean/Evaluations/EvaluationsPage';
 import { DeptChairDashboardPage } from './pages/DeptChair/Dashboard/DeptChairDashboardPage';
+import { FacultyAccountsPage } from './pages/DeptChair/FacultyAccounts/FacultyAccountsPage';
+import { ProgramsPage as DeptChairProgramsPage } from './pages/DeptChair/Programs/ProgramsPage';
 import { SubjectsPage as DeptChairSubjectsPage } from './pages/DeptChair/Subjects/SubjectsPage';
+import { SchedulesPage as DeptChairSchedulesPage } from './pages/DeptChair/Schedules/SchedulesPage';
+import { EvaluationsPage as DeptChairEvaluationsPage } from './pages/DeptChair/Evaluations/EvaluationsPage';
 import { FacultyDashboardPage } from './pages/Faculty/Dashboard/FacultyDashboardPage';
 import { StudentDashboardPage } from './pages/Student/Dashboard/StudentDashboardPage';
 import './styles/globals.css';
@@ -47,7 +51,11 @@ export function App() {
 
         {/* Department Chair Routes */}
         <Route path="/dept-chair/faculty" element={<DeptChairDashboardPage />} />
+        <Route path="/dept-chair/faculty-accounts" element={<FacultyAccountsPage />} />
+        <Route path="/dept-chair/programs" element={<DeptChairProgramsPage />} />
         <Route path="/dept-chair/subjects" element={<DeptChairSubjectsPage />} />
+        <Route path="/dept-chair/schedules" element={<DeptChairSchedulesPage />} />
+        <Route path="/dept-chair/evaluations" element={<DeptChairEvaluationsPage />} />
 
         {/* Faculty Routes */}
         <Route path="/faculty/subjects" element={<FacultyDashboardPage />} />

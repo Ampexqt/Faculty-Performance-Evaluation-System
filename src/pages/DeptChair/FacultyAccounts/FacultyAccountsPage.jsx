@@ -1,33 +1,46 @@
 import React, { useState } from 'react';
-import { Users, BookOpen, ClipboardList, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
-import { StatCard } from '@/components/StatCard/StatCard';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Badge } from '@/components/Badge/Badge';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
-import styles from './DeptChairDashboardPage.module.css';
+import styles from './FacultyAccountsPage.module.css';
 
-// Mock data - Faculty teaching load
+// Mock data - Faculty accounts
 const mockFaculty = [
     {
         id: 1,
         facultyName: 'Prof. Alan Turing',
-        employmentStatus: 'Regular',
-        totalUnits: '18 units',
-        subjectsCount: 3
+        role: 'Professor',
+        status: 'Regular',
+        assignedSubjects: 3
     },
     {
         id: 2,
+        facultyName: 'Prof. Ada Lovelace',
+        role: 'Associate Professor',
+        status: 'Regular',
+        assignedSubjects: 4
+    },
+    {
+        id: 3,
         facultyName: 'Prof. Grace Hopper',
-        employmentStatus: 'Regular',
-        totalUnits: '21 units',
-        subjectsCount: 4
+        role: 'Professor',
+        status: 'Part-time',
+        assignedSubjects: 2
+    },
+    {
+        id: 4,
+        facultyName: 'Dr. John von Neumann',
+        role: 'Visiting Lecturer',
+        status: 'Part-time',
+        assignedSubjects: 2
     },
 ];
 
-export function DeptChairDashboardPage() {
+export function FacultyAccountsPage() {
     const [faculty] = useState(mockFaculty);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
@@ -36,6 +49,7 @@ export function DeptChairDashboardPage() {
         email: '',
         gender: '',
         facultyRole: '',
+        assignedProgram: '',
         password: '',
     });
 
@@ -49,7 +63,7 @@ export function DeptChairDashboardPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Adding Faculty:', formData);
+        console.log('Creating Faculty Account:', formData);
         setIsModalOpen(false);
         setFormData({
             firstName: '',
@@ -57,6 +71,7 @@ export function DeptChairDashboardPage() {
             email: '',
             gender: '',
             facultyRole: '',
+            assignedProgram: '',
             password: '',
         });
     };
@@ -69,6 +84,7 @@ export function DeptChairDashboardPage() {
             email: '',
             gender: '',
             facultyRole: '',
+            assignedProgram: '',
             password: '',
         });
     };
@@ -76,7 +92,7 @@ export function DeptChairDashboardPage() {
     const getStatusVariant = (status) => {
         if (status === 'Regular') return 'success';
         if (status === 'Part-time') return 'active';
-        return 'warning';
+        return 'default';
     };
 
     const columns = [
@@ -86,9 +102,15 @@ export function DeptChairDashboardPage() {
             width: '30%',
         },
         {
-            header: 'Employment Status',
-            accessor: 'employmentStatus',
+            header: 'Role',
+            accessor: 'role',
             width: '25%',
+        },
+        {
+            header: 'Status',
+            accessor: 'status',
+            width: '15%',
+            align: 'center',
             render: (value) => (
                 <Badge variant={getStatusVariant(value)}>
                     {value}
@@ -96,24 +118,18 @@ export function DeptChairDashboardPage() {
             ),
         },
         {
-            header: 'Total Units',
-            accessor: 'totalUnits',
-            width: '20%',
-            align: 'center',
-        },
-        {
-            header: 'Subjects Count',
-            accessor: 'subjectsCount',
+            header: 'Assigned Subjects',
+            accessor: 'assignedSubjects',
             width: '15%',
             align: 'center',
         },
         {
             header: 'Actions',
             accessor: 'actions',
-            width: '10%',
+            width: '15%',
             align: 'center',
             render: () => (
-                <button className={styles.viewButton}>View Schedule</button>
+                <button className={styles.editButton}>Edit</button>
             ),
         },
     ];
@@ -127,51 +143,24 @@ export function DeptChairDashboardPage() {
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
-                        <h1 className={styles.title}>Department Management</h1>
-                        <p className={styles.subtitle}>Manage faculty assignments and subject offerings.</p>
+                        <h1 className={styles.title}>Faculty Accounts</h1>
+                        <p className={styles.subtitle}>Manage faculty accounts and assignments.</p>
                     </div>
                     <Button variant="primary" onClick={() => setIsModalOpen(true)}>
                         <UserPlus size={18} />
-                        Add Faculty
+                        Create Faculty Account
                     </Button>
                 </div>
 
-                <div className={styles.stats}>
-                    <StatCard
-                        title="Subjects Managed"
-                        value={24}
-                        subtitle="Active this semester"
-                        icon={BookOpen}
-                    />
-                    <StatCard
-                        title="Faculty Under Chair"
-                        value={18}
-                        subtitle="Regular & Part-time"
-                        icon={Users}
-                    />
-                    <StatCard
-                        title="Active Evaluations"
-                        value={12}
-                        subtitle="Pending completion"
-                        icon={ClipboardList}
-                    />
+                <div className={styles.tableContainer}>
+                    <Table columns={columns} data={faculty} />
                 </div>
 
-                <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>Faculty Teaching Load</h2>
-                    </div>
-
-                    <div className={styles.tableContainer}>
-                        <Table columns={columns} data={faculty} />
-                    </div>
-                </div>
-
-                {/* Add Faculty Modal */}
+                {/* Create Faculty Account Modal */}
                 <Modal
                     isOpen={isModalOpen}
                     onClose={handleCancel}
-                    title="Add Faculty"
+                    title="Create Faculty Account"
                 >
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
                         <div className={styles.formRow}>
@@ -239,8 +228,30 @@ export function DeptChairDashboardPage() {
                                 <option value="Assistant Professor">Assistant Professor</option>
                                 <option value="Instructor">Instructor</option>
                                 <option value="Visiting Lecturer">Visiting Lecturer</option>
+                                <option value="Program Chair">Program Chair</option>
                             </select>
                         </div>
+
+                        {/* Conditional Program Assignment Field */}
+                        {formData.facultyRole === 'Program Chair' && (
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                    Assigned Program <span className={styles.required}>*</span>
+                                </label>
+                                <select
+                                    name="assignedProgram"
+                                    className={styles.select}
+                                    value={formData.assignedProgram}
+                                    onChange={handleInputChange}
+                                    required
+                                >
+                                    <option value="">Select Program</option>
+                                    <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
+                                    <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
+                                    <option value="ACT">ACT - Associate in Computer Technology</option>
+                                </select>
+                            </div>
+                        )}
 
                         <Input
                             label="Password"
@@ -264,7 +275,7 @@ export function DeptChairDashboardPage() {
                                 type="submit"
                                 variant="primary"
                             >
-                                Add Faculty
+                                Create Account
                             </Button>
                         </div>
                     </form>

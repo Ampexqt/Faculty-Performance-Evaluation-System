@@ -8,7 +8,8 @@ import {
     BookOpen,
     Settings,
     ClipboardList,
-    Briefcase
+    Briefcase,
+    GraduationCap
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import styles from './Sidebar.module.css';
@@ -36,9 +37,12 @@ const deanMenuItems = [
 ];
 
 const deptChairMenuItems = [
-    { icon: Users, label: 'Faculty', path: '/dept-chair/faculty' },
+    { icon: LayoutDashboard, label: 'Overview', path: '/dept-chair/faculty' },
+    { icon: Users, label: 'Faculty Accounts', path: '/dept-chair/faculty-accounts' },
+    { icon: GraduationCap, label: 'Programs', path: '/dept-chair/programs' },
     { icon: BookOpen, label: 'Subjects', path: '/dept-chair/subjects' },
-    { icon: Calendar, label: 'Schedules', path: '/dept-chair/schedules' },
+    { icon: Calendar, label: 'Assigned Subjects', path: '/dept-chair/schedules' },
+    { icon: ClipboardList, label: 'Evaluations', path: '/dept-chair/evaluations' },
 ];
 
 const facultyMenuItems = [

@@ -5,39 +5,40 @@ import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
-import styles from './DeptChairsPage.module.css';
+import styles from './SubjectsPage.module.css';
 
-// Mock data - Programs/Courses in department
-const mockPrograms = [
+// Mock data - Subjects offered in the department
+const mockSubjects = [
     {
         id: 1,
-        programCode: 'BSCS',
-        programName: 'Bachelor of Science in Computer Science',
-        yearLevel: '1-4',
-        students: 120
+        subjectCode: 'CS101',
+        descriptiveTitle: 'Introduction to Computing',
+        units: 3,
+        activeSections: 4
     },
     {
         id: 2,
-        programCode: 'BSIT',
-        programName: 'Bachelor of Science in Information Technology',
-        yearLevel: '1-4',
-        students: 95
+        subjectCode: 'CS102',
+        descriptiveTitle: 'Computer Programming 1',
+        units: 3,
+        activeSections: 4
     },
     {
         id: 3,
-        programCode: 'ACT',
-        programName: 'Associate in Computer Technology',
-        yearLevel: '1-2',
-        students: 45
+        subjectCode: 'CS103',
+        descriptiveTitle: 'Discrete Structures',
+        units: 3,
+        activeSections: 2
     },
 ];
 
-export function DeptChairsPage() {
-    const [programs] = useState(mockPrograms);
+export function SubjectsPage() {
+    const [subjects] = useState(mockSubjects);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
-        programCode: '',
-        programName: '',
+        subjectCode: '',
+        descriptiveTitle: '',
+        units: '',
     });
 
     const handleInputChange = (e) => {
@@ -50,42 +51,44 @@ export function DeptChairsPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Adding Program:', formData);
+        console.log('Adding Subject:', formData);
         setIsModalOpen(false);
         setFormData({
-            programCode: '',
-            programName: '',
+            subjectCode: '',
+            descriptiveTitle: '',
+            units: '',
         });
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
         setFormData({
-            programCode: '',
-            programName: '',
+            subjectCode: '',
+            descriptiveTitle: '',
+            units: '',
         });
     };
 
     const columns = [
         {
-            header: 'Program Code',
-            accessor: 'programCode',
-            width: '15%',
+            header: 'Subject Code',
+            accessor: 'subjectCode',
+            width: '20%',
         },
         {
-            header: 'Program Name',
-            accessor: 'programName',
-            width: '45%',
+            header: 'Descriptive Title',
+            accessor: 'descriptiveTitle',
+            width: '40%',
         },
         {
-            header: 'Year Level',
-            accessor: 'yearLevel',
+            header: 'Units',
+            accessor: 'units',
             width: '15%',
             align: 'center',
         },
         {
-            header: 'Students',
-            accessor: 'students',
+            header: 'Active Sections',
+            accessor: 'activeSections',
             width: '15%',
             align: 'center',
         },
@@ -102,49 +105,59 @@ export function DeptChairsPage() {
 
     return (
         <DashboardLayout
-            role="College Dean"
-            userName="College Dean"
-            notificationCount={3}
+            role="Dept. Chair"
+            userName="Department Chair"
+            notificationCount={2}
         >
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
-                        <h1 className={styles.title}>Department Programs</h1>
-                        <p className={styles.subtitle}>Manage programs and courses within your department.</p>
+                        <h1 className={styles.title}>Subject Offerings</h1>
+                        <p className={styles.subtitle}>Manage subjects offered this semester.</p>
                     </div>
                     <Button variant="primary" onClick={() => setIsModalOpen(true)}>
                         <Plus size={18} />
-                        Add Program
+                        Add Subject
                     </Button>
                 </div>
 
                 <div className={styles.tableContainer}>
-                    <Table columns={columns} data={programs} />
+                    <Table columns={columns} data={subjects} />
                 </div>
 
-                {/* Add Program Modal */}
+                {/* Add Subject Modal */}
                 <Modal
                     isOpen={isModalOpen}
                     onClose={handleCancel}
-                    title="Add Program"
+                    title="Add Subject"
                 >
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
                         <Input
-                            label="Program Code"
-                            name="programCode"
+                            label="Subject Code"
+                            name="subjectCode"
                             type="text"
-                            placeholder="e.g. BSCS"
-                            value={formData.programCode}
+                            placeholder="e.g. CS101"
+                            value={formData.subjectCode}
                             onChange={handleInputChange}
                             required
                         />
 
                         <Input
-                            label="Program Name"
-                            name="programName"
+                            label="Descriptive Title"
+                            name="descriptiveTitle"
                             type="text"
-                            placeholder="e.g. Bachelor of Science in Computer Science"
-                            value={formData.programName}
+                            placeholder="e.g. Introduction to Computing"
+                            value={formData.descriptiveTitle}
+                            onChange={handleInputChange}
+                            required
+                        />
+
+                        <Input
+                            label="Units"
+                            name="units"
+                            type="number"
+                            placeholder="e.g. 3"
+                            value={formData.units}
                             onChange={handleInputChange}
                             required
                         />
@@ -161,7 +174,7 @@ export function DeptChairsPage() {
                                 type="submit"
                                 variant="primary"
                             >
-                                Add Program
+                                Add Subject
                             </Button>
                         </div>
                     </form>

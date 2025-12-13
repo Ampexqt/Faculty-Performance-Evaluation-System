@@ -12,7 +12,9 @@ import { EvaluationsPage } from './pages/QCEManager/Evaluations/EvaluationsPage'
 import { DeanOverviewPage } from './pages/Dean/Overview/DeanOverviewPage';
 import { FacultyResultsPage } from './pages/Dean/FacultyResults/FacultyResultsPage';
 import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
+import { EvaluationsPage as DeanEvaluationsPage } from './pages/Dean/Evaluations/EvaluationsPage';
 import { DeptChairDashboardPage } from './pages/DeptChair/Dashboard/DeptChairDashboardPage';
+import { SubjectsPage as DeptChairSubjectsPage } from './pages/DeptChair/Subjects/SubjectsPage';
 import { FacultyDashboardPage } from './pages/Faculty/Dashboard/FacultyDashboardPage';
 import { StudentDashboardPage } from './pages/Student/Dashboard/StudentDashboardPage';
 import './styles/globals.css';
@@ -41,9 +43,11 @@ export function App() {
         <Route path="/dean/overview" element={<DeanOverviewPage />} />
         <Route path="/dean/faculty-results" element={<FacultyResultsPage />} />
         <Route path="/dean/dept-chairs" element={<DeptChairsPage />} />
+        <Route path="/dean/evaluations" element={<DeanEvaluationsPage />} />
 
         {/* Department Chair Routes */}
         <Route path="/dept-chair/faculty" element={<DeptChairDashboardPage />} />
+        <Route path="/dept-chair/subjects" element={<DeptChairSubjectsPage />} />
 
         {/* Faculty Routes */}
         <Route path="/faculty/subjects" element={<FacultyDashboardPage />} />

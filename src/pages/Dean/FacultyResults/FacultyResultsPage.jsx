@@ -11,23 +11,30 @@ const mockFacultyResults = [
     {
         id: 1,
         facultyName: 'Prof. Alan Turing',
-        department: 'Computer Science',
+        role: 'Professor',
         averageRating: 4.85,
-        interpretation: 'Outstanding'
+        interpretation: 'Excellent'
     },
     {
         id: 2,
         facultyName: 'Prof. Ada Lovelace',
-        department: 'IT',
+        role: 'Professor',
         averageRating: 4.92,
-        interpretation: 'Outstanding'
+        interpretation: 'Excellent'
     },
     {
         id: 3,
-        facultyName: 'Inst. Linus Torvalds',
-        department: 'Computer Science',
-        averageRating: 4.25,
-        interpretation: 'Very Satisfactory'
+        facultyName: 'Prof. Grace Hopper',
+        role: 'Department Chair',
+        averageRating: 4.75,
+        interpretation: 'Very Good'
+    },
+    {
+        id: 4,
+        facultyName: 'Dr. John von Neumann',
+        role: 'Visiting Lecturer',
+        averageRating: 4.68,
+        interpretation: 'Very Good'
     },
 ];
 
@@ -35,9 +42,9 @@ export function FacultyResultsPage() {
     const [results] = useState(mockFacultyResults);
 
     const getInterpretationVariant = (interpretation) => {
-        if (interpretation === 'Outstanding') return 'success';
-        if (interpretation === 'Very Satisfactory') return 'warning';
-        return 'error';
+        if (interpretation === 'Excellent') return 'success';
+        if (interpretation === 'Very Good') return 'active';
+        return 'warning';
     };
 
     const columns = [
@@ -47,12 +54,12 @@ export function FacultyResultsPage() {
             width: '30%',
         },
         {
-            header: 'Department',
-            accessor: 'department',
+            header: 'Role',
+            accessor: 'role',
             width: '25%',
         },
         {
-            header: 'Average Rating',
+            header: 'Average Score',
             accessor: 'averageRating',
             width: '20%',
             align: 'center',
@@ -61,7 +68,7 @@ export function FacultyResultsPage() {
             ),
         },
         {
-            header: 'Interpretation',
+            header: 'Rating',
             accessor: 'interpretation',
             width: '15%',
             align: 'center',

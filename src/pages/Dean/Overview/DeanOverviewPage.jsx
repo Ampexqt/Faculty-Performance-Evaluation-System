@@ -1,41 +1,13 @@
 import React, { useState } from 'react';
-import { Users, Briefcase, ClipboardList, Download } from 'lucide-react';
+import { Users, ClipboardList, BookOpen } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
-import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
-import { Badge } from '@/components/Badge/Badge';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './DeanOverviewPage.module.css';
 
-// Mock data
-const mockFacultyEvaluations = [
-    {
-        id: 1,
-        facultyName: 'Prof. Alan Turing',
-        department: 'Computer Science',
-        averageScore: 4.85,
-        rating: 'Excellent'
-    },
-    {
-        id: 2,
-        facultyName: 'Prof. Ada Lovelace',
-        department: 'Information Tech',
-        averageScore: 4.92,
-        rating: 'Excellent'
-    },
-    {
-        id: 3,
-        facultyName: 'Prof. Grace Hopper',
-        department: 'Computer Science',
-        averageScore: 4.75,
-        rating: 'Very Good'
-    },
-];
-
 export function DeanOverviewPage() {
-    const [evaluations] = useState(mockFacultyEvaluations);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
@@ -74,54 +46,6 @@ export function DeanOverviewPage() {
         });
     };
 
-    const getRatingVariant = (rating) => {
-        if (rating === 'Excellent') return 'success';
-        if (rating === 'Very Good') return 'active';
-        return 'warning';
-    };
-
-    const columns = [
-        {
-            header: 'Faculty Name',
-            accessor: 'facultyName',
-            width: '30%',
-        },
-        {
-            header: 'Department',
-            accessor: 'department',
-            width: '25%',
-        },
-        {
-            header: 'Average Score',
-            accessor: 'averageScore',
-            width: '20%',
-            align: 'center',
-            render: (value) => (
-                <span className={styles.score}>{value}</span>
-            ),
-        },
-        {
-            header: 'Rating',
-            accessor: 'rating',
-            width: '15%',
-            align: 'center',
-            render: (value) => (
-                <Badge variant={getRatingVariant(value)}>
-                    {value}
-                </Badge>
-            ),
-        },
-        {
-            header: 'Actions',
-            accessor: 'actions',
-            width: '10%',
-            align: 'center',
-            render: () => (
-                <button className={styles.viewButton}>View Details</button>
-            ),
-        },
-    ];
-
     return (
         <DashboardLayout
             role="College Dean"
@@ -131,8 +55,8 @@ export function DeanOverviewPage() {
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
-                        <h1 className={styles.title}>College Performance</h1>
-                        <p className={styles.subtitle}>Overview of faculty performance and department status.</p>
+                        <h1 className={styles.title}>Department Overview</h1>
+                        <p className={styles.subtitle}>Overview of faculty performance within your department.</p>
                     </div>
                     <Button variant="primary" onClick={() => setIsModalOpen(true)}>
                         + Assign Dept. Chair
@@ -142,37 +66,23 @@ export function DeanOverviewPage() {
                 <div className={styles.stats}>
                     <StatCard
                         title="Total Faculty"
-                        value={86}
-                        subtitle="Across 4 departments"
+                        value={24}
+                        subtitle="Within department"
                         icon={Users}
                     />
                     <StatCard
-                        title="Department Chairs"
-                        value={4}
-                        subtitle="All positions filled"
-                        icon={Briefcase}
-                    />
-                    <StatCard
                         title="Evaluations"
-                        value={342}
-                        subtitle="+8% Completed this semester"
-                        trendValue="+8%"
+                        value={156}
+                        subtitle="+12% Completed this semester"
+                        trendValue="+12%"
                         icon={ClipboardList}
                     />
-                </div>
-
-                <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>Faculty Evaluation Summary</h2>
-                        <Button variant="ghost" size="small">
-                            <Download size={16} />
-                            Export Report
-                        </Button>
-                    </div>
-
-                    <div className={styles.tableContainer}>
-                        <Table columns={columns} data={evaluations} />
-                    </div>
+                    <StatCard
+                        title="Programs"
+                        value={3}
+                        subtitle="Active programs"
+                        icon={BookOpen}
+                    />
                 </div>
 
                 {/* Assign Department Chair Modal */}

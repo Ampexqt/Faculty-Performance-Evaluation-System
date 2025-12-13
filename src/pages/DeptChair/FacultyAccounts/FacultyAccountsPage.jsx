@@ -48,8 +48,9 @@ export function FacultyAccountsPage() {
         lastName: '',
         email: '',
         gender: '',
+        employmentStatus: '',
         facultyRole: '',
-        assignedProgram: '',
+        assignedPrograms: [],
         password: '',
     });
 
@@ -61,8 +62,24 @@ export function FacultyAccountsPage() {
         }));
     };
 
+    const handleProgramCheckbox = (programCode) => {
+        setFormData(prev => ({
+            ...prev,
+            assignedPrograms: prev.assignedPrograms.includes(programCode)
+                ? prev.assignedPrograms.filter(p => p !== programCode)
+                : [...prev.assignedPrograms, programCode]
+        }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validate that Program Chair has at least one program selected
+        if (formData.facultyRole === 'Program Chair' && formData.assignedPrograms.length === 0) {
+            alert('Please select at least one program for the Program Chair');
+            return;
+        }
+
         console.log('Creating Faculty Account:', formData);
         setIsModalOpen(false);
         setFormData({
@@ -70,8 +87,9 @@ export function FacultyAccountsPage() {
             lastName: '',
             email: '',
             gender: '',
+            employmentStatus: '',
             facultyRole: '',
-            assignedProgram: '',
+            assignedPrograms: [],
             password: '',
         });
     };
@@ -83,8 +101,9 @@ export function FacultyAccountsPage() {
             lastName: '',
             email: '',
             gender: '',
+            employmentStatus: '',
             facultyRole: '',
-            assignedProgram: '',
+            assignedPrograms: [],
             password: '',
         });
     };
@@ -213,6 +232,24 @@ export function FacultyAccountsPage() {
 
                         <div className={styles.formGroup}>
                             <label className={styles.label}>
+                                Employment Status <span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="employmentStatus"
+                                className={styles.select}
+                                value={formData.employmentStatus}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="">Select Status</option>
+                                <option value="Regular">Regular</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Contract">Contract</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
                                 Faculty Role <span className={styles.required}>*</span>
                             </label>
                             <select
@@ -236,20 +273,40 @@ export function FacultyAccountsPage() {
                         {formData.facultyRole === 'Program Chair' && (
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>
-                                    Assigned Program <span className={styles.required}>*</span>
+                                    Assigned Programs <span className={styles.required}>*</span>
                                 </label>
-                                <select
-                                    name="assignedProgram"
-                                    className={styles.select}
-                                    value={formData.assignedProgram}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <option value="">Select Program</option>
-                                    <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
-                                    <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
-                                    <option value="ACT">ACT - Associate in Computer Technology</option>
-                                </select>
+                                <div className={styles.checkboxGroup}>
+                                    <label className={styles.checkboxLabel}>
+                                        <input
+                                            type="checkbox"
+                                            className={styles.checkbox}
+                                            checked={formData.assignedPrograms.includes('BSCS')}
+                                            onChange={() => handleProgramCheckbox('BSCS')}
+                                        />
+                                        <span>BSCS - Bachelor of Science in Computer Science</span>
+                                    </label>
+                                    <label className={styles.checkboxLabel}>
+                                        <input
+                                            type="checkbox"
+                                            className={styles.checkbox}
+                                            checked={formData.assignedPrograms.includes('BSIT')}
+                                            onChange={() => handleProgramCheckbox('BSIT')}
+                                        />
+                                        <span>BSIT - Bachelor of Science in Information Technology</span>
+                                    </label>
+                                    <label className={styles.checkboxLabel}>
+                                        <input
+                                            type="checkbox"
+                                            className={styles.checkbox}
+                                            checked={formData.assignedPrograms.includes('ACT')}
+                                            onChange={() => handleProgramCheckbox('ACT')}
+                                        />
+                                        <span>ACT - Associate in Computer Technology</span>
+                                    </label>
+                                </div>
+                                {formData.assignedPrograms.length === 0 && (
+                                    <span className={styles.helperText}>Please select at least one program</span>
+                                )}
                             </div>
                         )}
 

@@ -2,39 +2,19 @@ import React, { useState } from 'react';
 import { Users, BookOpen, ClipboardList, UserPlus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
-import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
-import { Badge } from '@/components/Badge/Badge';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './DeptChairDashboardPage.module.css';
 
-// Mock data - Faculty teaching load
-const mockFaculty = [
-    {
-        id: 1,
-        facultyName: 'Prof. Alan Turing',
-        employmentStatus: 'Regular',
-        totalUnits: '18 units',
-        subjectsCount: 3
-    },
-    {
-        id: 2,
-        facultyName: 'Prof. Grace Hopper',
-        employmentStatus: 'Regular',
-        totalUnits: '21 units',
-        subjectsCount: 4
-    },
-];
-
 export function DeptChairDashboardPage() {
-    const [faculty] = useState(mockFaculty);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         email: '',
         gender: '',
+        employmentStatus: '',
         facultyRole: '',
         password: '',
     });
@@ -56,6 +36,7 @@ export function DeptChairDashboardPage() {
             lastName: '',
             email: '',
             gender: '',
+            employmentStatus: '',
             facultyRole: '',
             password: '',
         });
@@ -68,55 +49,11 @@ export function DeptChairDashboardPage() {
             lastName: '',
             email: '',
             gender: '',
+            employmentStatus: '',
             facultyRole: '',
             password: '',
         });
     };
-
-    const getStatusVariant = (status) => {
-        if (status === 'Regular') return 'success';
-        if (status === 'Part-time') return 'active';
-        return 'warning';
-    };
-
-    const columns = [
-        {
-            header: 'Faculty Name',
-            accessor: 'facultyName',
-            width: '30%',
-        },
-        {
-            header: 'Employment Status',
-            accessor: 'employmentStatus',
-            width: '25%',
-            render: (value) => (
-                <Badge variant={getStatusVariant(value)}>
-                    {value}
-                </Badge>
-            ),
-        },
-        {
-            header: 'Total Units',
-            accessor: 'totalUnits',
-            width: '20%',
-            align: 'center',
-        },
-        {
-            header: 'Subjects Count',
-            accessor: 'subjectsCount',
-            width: '15%',
-            align: 'center',
-        },
-        {
-            header: 'Actions',
-            accessor: 'actions',
-            width: '10%',
-            align: 'center',
-            render: () => (
-                <button className={styles.viewButton}>View Schedule</button>
-            ),
-        },
-    ];
 
     return (
         <DashboardLayout
@@ -155,16 +92,6 @@ export function DeptChairDashboardPage() {
                         subtitle="Pending completion"
                         icon={ClipboardList}
                     />
-                </div>
-
-                <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>Faculty Teaching Load</h2>
-                    </div>
-
-                    <div className={styles.tableContainer}>
-                        <Table columns={columns} data={faculty} />
-                    </div>
                 </div>
 
                 {/* Add Faculty Modal */}
@@ -219,6 +146,24 @@ export function DeptChairDashboardPage() {
                                 <option value="">Select Gender</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Employment Status <span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="employmentStatus"
+                                className={styles.select}
+                                value={formData.employmentStatus}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="">Select Status</option>
+                                <option value="Regular">Regular</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Contract">Contract</option>
                             </select>
                         </div>
 

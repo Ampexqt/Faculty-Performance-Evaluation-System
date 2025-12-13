@@ -91,6 +91,45 @@
     box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
 }
 
+.checkboxGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.checkboxLabel:hover {
+    background-color: var(--color-background-light);
+}
+
+.checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+.checkboxLabel span {
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+}
+
+.helperText {
+    font-size: var(--text-xs);
+    color: var(--color-error);
+    margin-top: var(--spacing-xs);
+}
+
 .modalActions {
     display: flex;
     justify-content: flex-end;

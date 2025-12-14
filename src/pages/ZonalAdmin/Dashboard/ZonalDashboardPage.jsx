@@ -271,19 +271,6 @@ export function ZonalDashboardPage() {
                     />
                 </div>
 
-                <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>Managed Colleges</h2>
-                        <Button variant="ghost" size="small">
-                            View All
-                        </Button>
-                    </div>
-
-                    <div className={styles.tableContainer}>
-                        <Table columns={columns} data={colleges} />
-                    </div>
-                </div>
-
                 {/* Create College Modal */}
                 <Modal
                     isOpen={isCollegeModalOpen}

@@ -6,6 +6,7 @@ import { Button } from '@/components/Button/Button';
 import { Badge } from '@/components/Badge/Badge';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
+import { Pagination } from '@/components/Pagination/Pagination';
 import styles from './CollegesPage.module.css';
 
 export function CollegesPage() {
@@ -16,6 +17,10 @@ export function CollegesPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedCollege, setSelectedCollege] = useState(null);
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 4; // Show 4 items per page
 
     // Form data for creating college
     const [formData, setFormData] = useState({
@@ -81,6 +86,7 @@ export function CollegesPage() {
             if (data.success) {
                 // Refresh list
                 await fetchColleges();
+                setCurrentPage(1); // Reset to first page
                 setIsModalOpen(false);
                 setFormData({ collegeName: '', collegeCode: '' });
             } else {
@@ -243,6 +249,16 @@ export function CollegesPage() {
         },
     ];
 
+    // Pagination calculations
+    const totalPages = Math.ceil(colleges.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const paginatedColleges = colleges.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
     if (isLoading) {
         return (
             <DashboardLayout role="Zonal Admin" userName="Zonal Admin">
@@ -272,7 +288,15 @@ export function CollegesPage() {
                 </div>
 
                 <div className={styles.tableContainer}>
-                    <Table columns={columns} data={colleges} />
+                    <Table columns={columns} data={paginatedColleges} />
+
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        itemsPerPage={itemsPerPage}
+                        totalItems={colleges.length}
+                    />
                 </div>
 
                 {/* Create College Modal */}

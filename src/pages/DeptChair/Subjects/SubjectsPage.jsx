@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
@@ -7,39 +7,49 @@ import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './SubjectsPage.module.css';
 
-// Mock data - Subjects offered in the department
-const mockSubjects = [
-    {
-        id: 1,
-        subjectCode: 'CS101',
-        descriptiveTitle: 'Introduction to Computing',
-        units: 3,
-        activeSections: 4
-    },
-    {
-        id: 2,
-        subjectCode: 'CS102',
-        descriptiveTitle: 'Computer Programming 1',
-        units: 3,
-        activeSections: 4
-    },
-    {
-        id: 3,
-        subjectCode: 'CS103',
-        descriptiveTitle: 'Discrete Structures',
-        units: 3,
-        activeSections: 2
-    },
-];
-
 export function SubjectsPage() {
-    const [subjects] = useState(mockSubjects);
+    const [subjects, setSubjects] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userInfo, setUserInfo] = useState({
+        departmentId: null,
+        fullName: ''
+    });
+
     const [formData, setFormData] = useState({
         subjectCode: '',
         descriptiveTitle: '',
         units: '',
     });
+
+    useEffect(() => {
+        const departmentId = localStorage.getItem('departmentId');
+        const fullName = localStorage.getItem('fullName') || 'Department Chair';
+        setUserInfo({ departmentId, fullName });
+    }, []);
+
+    useEffect(() => {
+        if (userInfo.departmentId) {
+            fetchSubjects();
+        }
+    }, [userInfo.departmentId]);
+
+    const fetchSubjects = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/subjects?department_id=${userInfo.departmentId}`);
+            const data = await response.json();
+            if (data.success) {
+                setSubjects(data.data.map(s => ({
+                    id: s.id,
+                    subjectCode: s.code,
+                    descriptiveTitle: s.name,
+                    units: s.units,
+                    activeSections: s.activeSections || 0
+                })));
+            }
+        } catch (error) {
+            console.error('Error fetching subjects:', error);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -49,15 +59,31 @@ export function SubjectsPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Adding Subject:', formData);
-        setIsModalOpen(false);
-        setFormData({
-            subjectCode: '',
-            descriptiveTitle: '',
-            units: '',
-        });
+        try {
+            const response = await fetch('http://localhost:5000/api/qce/subjects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subjectCode: formData.subjectCode,
+                    subjectName: formData.descriptiveTitle,
+                    units: formData.units,
+                    departmentId: userInfo.departmentId
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Subject created successfully');
+                setIsModalOpen(false);
+                setFormData({ subjectCode: '', descriptiveTitle: '', units: '' });
+                fetchSubjects();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error adding subject:', error);
+        }
     };
 
     const handleCancel = () => {
@@ -106,7 +132,7 @@ export function SubjectsPage() {
     return (
         <DashboardLayout
             role="Dept. Chair"
-            userName="Department Chair"
+            userName={userInfo.fullName}
             notificationCount={2}
         >
             <div className={styles.page}>

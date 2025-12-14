@@ -30,18 +30,29 @@
     overflow: hidden;
 }
 
-.editButton {
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.iconButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
-    color: var(--color-primary);
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
+    padding: var(--spacing-xs);
+    color: var(--color-text-secondary);
     cursor: pointer;
+    border-radius: var(--radius-md);
     transition: all var(--transition-fast);
 }
 
-.editButton:hover {
-    text-decoration: underline;
+.iconButton:hover {
+    color: var(--color-primary);
+    background-color: var(--color-background-subtle);
 }
 
 /* ========== MODAL ========== */

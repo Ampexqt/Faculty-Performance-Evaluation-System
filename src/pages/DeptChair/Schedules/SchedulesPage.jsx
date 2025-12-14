@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
@@ -7,40 +7,78 @@ import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './SchedulesPage.module.css';
 
-// Mock data - Assigned subjects to faculty
-const mockSchedules = [
-    {
-        id: 1,
-        subject: 'CS101',
-        descriptiveTitle: 'Introduction to Computing',
-        section: 'BSCS 1-A',
-        faculty: 'Prof. Alan Turing'
-    },
-    {
-        id: 2,
-        subject: 'CS101',
-        descriptiveTitle: 'Introduction to Computing',
-        section: 'BSCS 1-B',
-        faculty: 'Prof. Alan Turing'
-    },
-    {
-        id: 3,
-        subject: 'CS102',
-        descriptiveTitle: 'Computer Programming 1',
-        section: 'BSCS 1-A',
-        faculty: 'Prof. Ada Lovelace'
-    },
-];
-
 export function SchedulesPage() {
-    const [schedules] = useState(mockSchedules);
+    const [schedules, setSchedules] = useState([]);
+    const [subjectsList, setSubjectsList] = useState([]);
+    const [facultyList, setFacultyList] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userInfo, setUserInfo] = useState({
+        departmentId: null,
+        fullName: ''
+    });
+
     const [formData, setFormData] = useState({
-        subject: '',
+        subjectId: '',
         yearLevel: '',
         section: '',
-        faculty: '',
+        facultyId: '',
     });
+
+    useEffect(() => {
+        const departmentId = localStorage.getItem('departmentId');
+        const fullName = localStorage.getItem('fullName') || 'Department Chair';
+        setUserInfo({ departmentId, fullName });
+    }, []);
+
+    useEffect(() => {
+        if (userInfo.departmentId) {
+            fetchAssignments();
+            fetchSubjects();
+            fetchFaculty();
+        }
+    }, [userInfo.departmentId]);
+
+    const fetchAssignments = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/subjects/assignments?department_id=${userInfo.departmentId}`);
+            const data = await response.json();
+            if (data.success) {
+                setSchedules(data.data.map(item => ({
+                    id: item.id,
+                    subject: item.subjectCode,
+                    descriptiveTitle: item.subjectName,
+                    section: item.section,
+                    faculty: item.facultyName
+                })));
+            }
+        } catch (error) {
+            console.error('Error fetching assignments:', error);
+        }
+    };
+
+    const fetchSubjects = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/subjects?department_id=${userInfo.departmentId}`);
+            const data = await response.json();
+            if (data.success) {
+                setSubjectsList(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching subjects:', error);
+        }
+    };
+
+    const fetchFaculty = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty?department_id=${userInfo.departmentId}`);
+            const data = await response.json();
+            if (data.success) {
+                setFacultyList(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching faculty:', error);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -50,25 +88,43 @@ export function SchedulesPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Assigning Subject:', formData);
-        setIsModalOpen(false);
-        setFormData({
-            subject: '',
-            yearLevel: '',
-            section: '',
-            faculty: '',
-        });
+
+        // Construct section name (e.g., "1-A")
+        const sectionName = `${formData.yearLevel}-${formData.section}`;
+
+        try {
+            const response = await fetch('http://localhost:5000/api/qce/subjects/assignments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subjectId: formData.subjectId,
+                    facultyId: formData.facultyId,
+                    section: sectionName
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Subject assigned successfully');
+                setIsModalOpen(false);
+                setFormData({ subjectId: '', yearLevel: '', section: '', facultyId: '' });
+                fetchAssignments();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error assigning subject:', error);
+        }
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
         setFormData({
-            subject: '',
+            subjectId: '',
             yearLevel: '',
             section: '',
-            faculty: '',
+            facultyId: '',
         });
     };
 
@@ -98,7 +154,7 @@ export function SchedulesPage() {
     return (
         <DashboardLayout
             role="Dept. Chair"
-            userName="Department Chair"
+            userName={userInfo.fullName}
             notificationCount={2}
         >
             <div className={styles.page}>
@@ -130,16 +186,18 @@ export function SchedulesPage() {
                                 Subject <span className={styles.required}>*</span>
                             </label>
                             <select
-                                name="subject"
+                                name="subjectId"
                                 className={styles.select}
-                                value={formData.subject}
+                                value={formData.subjectId}
                                 onChange={handleInputChange}
                                 required
                             >
                                 <option value="">Select Subject</option>
-                                <option value="CS101">CS101 - Introduction to Computing</option>
-                                <option value="CS102">CS102 - Computer Programming 1</option>
-                                <option value="CS103">CS103 - Discrete Structures</option>
+                                {subjectsList.map(subject => (
+                                    <option key={subject.id} value={subject.id}>
+                                        {subject.code} - {subject.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -196,17 +254,18 @@ export function SchedulesPage() {
                                 Faculty <span className={styles.required}>*</span>
                             </label>
                             <select
-                                name="faculty"
+                                name="facultyId"
                                 className={styles.select}
-                                value={formData.faculty}
+                                value={formData.facultyId}
                                 onChange={handleInputChange}
                                 required
                             >
                                 <option value="">Select Faculty</option>
-                                <option value="Prof. Alan Turing">Prof. Alan Turing</option>
-                                <option value="Prof. Ada Lovelace">Prof. Ada Lovelace</option>
-                                <option value="Prof. Grace Hopper">Prof. Grace Hopper</option>
-                                <option value="Dr. John von Neumann">Dr. John von Neumann</option>
+                                {facultyList.map(faculty => (
+                                    <option key={faculty.id} value={faculty.id}>
+                                        {faculty.first_name} {faculty.last_name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 

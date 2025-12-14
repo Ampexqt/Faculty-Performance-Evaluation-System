@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Edit, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
@@ -12,12 +12,14 @@ export function FacultyAccountsPage() {
     const [faculty, setFaculty] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({
-        departmentId: null
+        departmentId: null,
+        fullName: ''
     });
 
     useEffect(() => {
         const departmentId = localStorage.getItem('departmentId');
-        setUserInfo({ departmentId });
+        const fullName = localStorage.getItem('fullName') || 'Department Chair';
+        setUserInfo({ departmentId, fullName });
     }, []);
 
     useEffect(() => {
@@ -173,7 +175,14 @@ export function FacultyAccountsPage() {
             width: '15%',
             align: 'center',
             render: () => (
-                <button className={styles.editButton}>Edit</button>
+                <div className={styles.actions}>
+                    <button className={styles.iconButton} title="Edit">
+                        <Edit size={16} />
+                    </button>
+                    <button className={styles.iconButton} title="Delete">
+                        <Trash2 size={16} />
+                    </button>
+                </div>
             ),
         },
     ];
@@ -181,7 +190,7 @@ export function FacultyAccountsPage() {
     return (
         <DashboardLayout
             role="Dept. Chair"
-            userName="Department Chair"
+            userName={userInfo.fullName}
             notificationCount={2}
         >
             <div className={styles.page}>

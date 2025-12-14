@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
@@ -7,34 +7,43 @@ import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './ProgramsPage.module.css';
 
-// Mock data - Programs in department
-const mockPrograms = [
-    {
-        id: 1,
-        programCode: 'BSCS',
-        programName: 'Bachelor of Science in Computer Science',
-        yearLevel: '1-4',
-        students: 120
-    },
-    {
-        id: 2,
-        programCode: 'BSIT',
-        programName: 'Bachelor of Science in Information Technology',
-        yearLevel: '1-4',
-        students: 95
-    },
-    {
-        id: 3,
-        programCode: 'ACT',
-        programName: 'Associate in Computer Technology',
-        yearLevel: '1-2',
-        students: 45
-    },
-];
-
 export function ProgramsPage() {
-    const [programs] = useState(mockPrograms);
+    const [programs, setPrograms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userInfo, setUserInfo] = useState({
+        departmentId: null,
+        fullName: ''
+    });
+
+    useEffect(() => {
+        const departmentId = localStorage.getItem('departmentId');
+        const fullName = localStorage.getItem('fullName') || 'Department Chair';
+        setUserInfo({ departmentId, fullName });
+    }, []);
+
+    useEffect(() => {
+        if (userInfo.departmentId) {
+            fetchPrograms();
+        }
+    }, [userInfo.departmentId]);
+
+    const fetchPrograms = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/programs?department_id=${userInfo.departmentId}`);
+            const data = await response.json();
+            if (data.success) {
+                setPrograms(data.data.map(p => ({
+                    ...p,
+                    programCode: p.code,
+                    programName: p.name,
+                    students: p.enrolledStudents || 0
+                })));
+            }
+        } catch (error) {
+            console.error('Error fetching programs:', error);
+        }
+    };
+
     const [formData, setFormData] = useState({
         programCode: '',
         programName: '',
@@ -48,14 +57,27 @@ export function ProgramsPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Adding Program:', formData);
-        setIsModalOpen(false);
-        setFormData({
-            programCode: '',
-            programName: '',
-        });
+        try {
+            const userId = localStorage.getItem('userId');
+            const response = await fetch('http://localhost:5000/api/qce/programs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...formData, qceId: userId })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Program added successfully');
+                setIsModalOpen(false);
+                setFormData({ programCode: '', programName: '' });
+                fetchPrograms();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error adding program:', error);
+        }
     };
 
     const handleCancel = () => {
@@ -70,18 +92,12 @@ export function ProgramsPage() {
         {
             header: 'Program Code',
             accessor: 'programCode',
-            width: '15%',
+            width: '20%',
         },
         {
             header: 'Program Name',
             accessor: 'programName',
-            width: '45%',
-        },
-        {
-            header: 'Year Level',
-            accessor: 'yearLevel',
-            width: '15%',
-            align: 'center',
+            width: '50%',
         },
         {
             header: 'Students',
@@ -92,10 +108,17 @@ export function ProgramsPage() {
         {
             header: 'Actions',
             accessor: 'actions',
-            width: '10%',
+            width: '15%',
             align: 'center',
             render: () => (
-                <button className={styles.editButton}>Edit</button>
+                <div className={styles.actions}>
+                    <button className={styles.iconButton} title="Edit">
+                        <Edit size={16} />
+                    </button>
+                    <button className={styles.iconButton} title="Delete">
+                        <Trash2 size={16} />
+                    </button>
+                </div>
             ),
         },
     ];
@@ -103,7 +126,7 @@ export function ProgramsPage() {
     return (
         <DashboardLayout
             role="Dept. Chair"
-            userName="Department Chair"
+            userName={userInfo.fullName}
             notificationCount={2}
         >
             <div className={styles.page}>

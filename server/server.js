@@ -82,11 +82,13 @@ const qceFacultyRoutes = require('./routes/qce/faculty');
 const qceDepartmentsRoutes = require('./routes/qce/departments');
 const qceProgramsRoutes = require('./routes/qce/programs'); // Treat programs as departments
 const qceDashboardRoutes = require('./routes/qce/dashboard');
+const qceSubjectsRoutes = require('./routes/qce/subjects');
 
 app.use('/api/qce/faculty', qceFacultyRoutes);
 app.use('/api/qce/departments', qceDepartmentsRoutes);
 app.use('/api/qce/programs', qceProgramsRoutes);
 app.use('/api/qce/stats', qceDashboardRoutes);
+app.use('/api/qce/subjects', qceSubjectsRoutes);
 
 // Start server
 const startServer = async () => {

@@ -8,26 +8,36 @@ const { promisePool } = require('../../config/db');
  */
 router.get('/', async (req, res) => {
     try {
-        const { college_id } = req.query;
+        const { college_id, department_id } = req.query;
 
-        if (!college_id) {
-            return res.status(400).json({
-                success: false,
-                message: 'college_id is required'
-            });
-        }
-
-        const [programs] = await promisePool.query(`
+        let query = `
             SELECT 
                 id,
                 department_code as code,
                 department_name as name,
-                faculty_count as enrolledStudents, -- Placeholder: We might strictly need a student count query here later
+                faculty_count as enrolledStudents, -- Placeholder
                 status
             FROM departments
-            WHERE college_id = ? AND status = 'active'
-            ORDER BY department_name ASC
-        `, [college_id]);
+            WHERE status = 'active'
+        `;
+        const params = [];
+
+        if (department_id) {
+            query += ` AND id = ?`;
+            params.push(department_id);
+        } else if (college_id) {
+            query += ` AND college_id = ?`;
+            params.push(college_id);
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: 'college_id or department_id is required'
+            });
+        }
+
+        query += ` ORDER BY department_name ASC`;
+
+        const [programs] = await promisePool.query(query, params);
 
         // For now, we will just pass the raw counts. 
         // In a real scenario, you'd do a COUNT(*) on the students table linked to this department/program.

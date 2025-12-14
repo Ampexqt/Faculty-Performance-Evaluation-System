@@ -12,24 +12,30 @@ export function ProgramsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({
         departmentId: null,
-        fullName: ''
+        fullName: '',
+        userId: null
     });
 
     useEffect(() => {
         const departmentId = localStorage.getItem('departmentId');
         const fullName = localStorage.getItem('fullName') || 'Department Chair';
-        setUserInfo({ departmentId, fullName });
+        const userId = localStorage.getItem('userId');
+        setUserInfo({ departmentId, fullName, userId });
     }, []);
 
     useEffect(() => {
-        if (userInfo.departmentId) {
+        if (userInfo.departmentId || userInfo.userId) {
             fetchPrograms();
         }
-    }, [userInfo.departmentId]);
+    }, [userInfo.departmentId, userInfo.userId]);
 
     const fetchPrograms = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/qce/programs?department_id=${userInfo.departmentId}`);
+            const queryParams = new URLSearchParams();
+            if (userInfo.departmentId) queryParams.append('department_id', userInfo.departmentId);
+            if (userInfo.userId) queryParams.append('chairperson_id', userInfo.userId);
+
+            const response = await fetch(`http://localhost:5000/api/qce/programs?${queryParams.toString()}`);
             const data = await response.json();
             if (data.success) {
                 setPrograms(data.data.map(p => ({
@@ -64,7 +70,11 @@ export function ProgramsPage() {
             const response = await fetch('http://localhost:5000/api/qce/programs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, qceId: userId })
+                body: JSON.stringify({
+                    ...formData,
+                    qceId: userId,
+                    userType: 'faculty' // Explicitly state user type to avoid ID collisions
+                })
             });
             const result = await response.json();
             if (result.success) {

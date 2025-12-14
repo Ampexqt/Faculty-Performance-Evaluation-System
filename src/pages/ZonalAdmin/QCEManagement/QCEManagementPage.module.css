@@ -110,6 +110,25 @@
     margin-top: var(--spacing-md);
 }
 
+.deleteConfirmation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.deleteMessage {
+    font-size: var(--text-base);
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.deleteWarning {
+    font-size: var(--text-sm);
+    color: var(--color-error);
+    margin: 0;
+    font-weight: var(--font-medium);
+}
+
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 768px) {

@@ -9,10 +9,11 @@ import styles from './LoginPage.module.css';
 export function LoginPage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        username: '',
+        email: '',
         password: '',
     });
     const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -29,12 +30,12 @@ export function LoginPage() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Basic validation
         const newErrors = {};
-        if (!formData.username) newErrors.username = 'Username is required';
+        if (!formData.email) newErrors.email = 'Email/School ID is required';
         if (!formData.password) newErrors.password = 'Password is required';
 
         if (Object.keys(newErrors).length > 0) {
@@ -42,46 +43,53 @@ export function LoginPage() {
             return;
         }
 
-        // Mock credentials for different roles
-        const credentials = {
-            // Zonal Admin
-            'admin': { password: 'admin123', role: 'Zonal Admin', redirect: '/zonal/dashboard' },
+        setIsLoading(true);
+        setErrors({});
 
-            // QCE Manager
-            'qce': { password: 'qce123', role: 'QCE Manager', redirect: '/qce/dashboard' },
+        try {
+            // Call login API
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                }),
+            });
 
-            // College Dean
-            'dean': { password: 'dean123', role: 'College Dean', redirect: '/dean/overview' },
+            const data = await response.json();
 
-            // Department Chair
-            'chair': { password: 'chair123', role: 'Dept. Chair', redirect: '/dept-chair/faculty' },
+            if (!response.ok) {
+                // Login failed
+                setErrors({
+                    password: data.message || 'Invalid username or password'
+                });
+                setIsLoading(false);
+                return;
+            }
 
-            // Faculty
-            'faculty': { password: 'faculty123', role: 'Faculty', redirect: '/faculty/subjects' },
+            // Login successful
+            if (data.success) {
+                // Store user info in localStorage
+                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('userRole', data.user.role);
+                localStorage.setItem('username', data.user.username);
+                localStorage.setItem('userId', data.user.id);
 
-            // Student
-            'student': { password: 'student123', role: 'Student', redirect: '/student/evaluations' },
-        };
+                // Redirect to Zonal Admin dashboard
+                navigate('/zonal/dashboard');
+            }
 
-        // Check credentials
-        const user = credentials[formData.username.toLowerCase()];
-
-        if (!user) {
-            setErrors({ username: 'Invalid username' });
-            return;
+        } catch (error) {
+            console.error('Login error:', error);
+            setErrors({
+                password: 'Unable to connect to server. Please try again.'
+            });
+        } finally {
+            setIsLoading(false);
         }
-
-        if (user.password !== formData.password) {
-            setErrors({ password: 'Invalid password' });
-            return;
-        }
-
-        // Store user info in localStorage (for demo purposes)
-        localStorage.setItem('userRole', user.role);
-        localStorage.setItem('username', formData.username);
-
-        // Redirect to appropriate dashboard
-        navigate(user.redirect);
     };
 
     return (
@@ -102,13 +110,13 @@ export function LoginPage() {
 
                     <form onSubmit={handleSubmit} className={styles.form}>
                         <Input
-                            label="Username"
-                            name="username"
+                            label="Email / School ID"
+                            name="email"
                             type="text"
-                            placeholder="Enter your username"
-                            value={formData.username}
+                            placeholder="Enter your email or school ID"
+                            value={formData.email}
                             onChange={handleChange}
-                            error={errors.username}
+                            error={errors.email}
                             icon={User}
                             required
                         />
@@ -136,9 +144,10 @@ export function LoginPage() {
                             variant="primary"
                             size="large"
                             className={styles.submitButton}
+                            disabled={isLoading}
                         >
-                            Sign In
-                            <ArrowRight size={18} />
+                            {isLoading ? 'Signing In...' : 'Sign In'}
+                            {!isLoading && <ArrowRight size={18} />}
                         </Button>
                     </form>
 
@@ -157,28 +166,13 @@ export function LoginPage() {
                     <p className={styles.demoTitle}>🔐 Demo Credentials</p>
                     <div className={styles.demoGrid}>
                         <div className={styles.demoItem}>
-                            <strong>Admin:</strong> admin / admin123
-                        </div>
-                        <div className={styles.demoItem}>
-                            <strong>QCE:</strong> qce / qce123
-                        </div>
-                        <div className={styles.demoItem}>
-                            <strong>Dean:</strong> dean / dean123
-                        </div>
-                        <div className={styles.demoItem}>
-                            <strong>Chair:</strong> chair / chair123
-                        </div>
-                        <div className={styles.demoItem}>
-                            <strong>Faculty:</strong> faculty / faculty123
-                        </div>
-                        <div className={styles.demoItem}>
-                            <strong>Student:</strong> student / student123
+                            <strong>Zonal Admin:</strong> admin@faculty.edu / admin123
                         </div>
                     </div>
                 </div>
 
                 <div className={styles.copyright}>
-                    © 2024 Zamboanga Peninsula Polytechnic State University
+                    © 2025 Zamboanga Peninsula Polytechnic State University
                     <br />
                     Faculty Performance Evaluation System
                 </div>

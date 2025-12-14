@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building2, Users, GraduationCap, Activity, Edit, Trash2, UserPlus, Plus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
@@ -9,18 +9,23 @@ import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './ZonalDashboardPage.module.css';
 
-// Mock data
-const mockColleges = [
-    { id: 1, name: 'College of Engineering', dean: 'Dr. Sarah Smith', facultyCount: 45, status: 'Active' },
-    { id: 2, name: 'College of Arts and Sciences', dean: 'Dr. James Wilson', facultyCount: 62, status: 'Active' },
-    { id: 3, name: 'College of Education', dean: 'Dr. Maria Garcia', facultyCount: 38, status: 'Active' },
-    { id: 4, name: 'College of Technology', dean: 'Dr. Robert Brown', facultyCount: 51, status: 'Active' },
-];
-
 export function ZonalDashboardPage() {
-    const [colleges] = useState(mockColleges);
+    const [stats, setStats] = useState({
+        totalColleges: 0,
+        qceAccounts: 0,
+        totalFaculty: 0,
+        activeEvaluations: 0,
+        newCollegesThisYear: 0
+    });
+    const [colleges, setColleges] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Modal states
     const [isCollegeModalOpen, setIsCollegeModalOpen] = useState(false);
     const [isQCEModalOpen, setIsQCEModalOpen] = useState(false);
+
+    // Form states
     const [collegeFormData, setCollegeFormData] = useState({
         collegeName: '',
         collegeCode: '',
@@ -29,9 +34,41 @@ export function ZonalDashboardPage() {
         firstName: '',
         lastName: '',
         email: '',
-        assignedCollege: '',
+        collegeId: '',
         temporaryPassword: '',
     });
+
+    // Fetch dashboard data
+    const fetchDashboardData = async () => {
+        try {
+            // Only set loading on initial load, not refreshes
+            if (stats.totalColleges === 0) setIsLoading(true);
+
+            // Fetch stats
+            const statsRes = await fetch('http://localhost:5000/api/zonal/dashboard/stats');
+            const statsData = await statsRes.json();
+
+            if (statsData.success) {
+                setStats(statsData.data);
+            }
+
+            // Fetch colleges
+            const collegesRes = await fetch('http://localhost:5000/api/zonal/dashboard/colleges');
+            const collegesData = await collegesRes.json();
+
+            if (collegesData.success) {
+                setColleges(collegesData.data);
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, []);
 
     const handleCollegeInputChange = (e) => {
         const { name, value } = e.target;
@@ -49,18 +86,70 @@ export function ZonalDashboardPage() {
         }));
     };
 
-    const handleCollegeSubmit = (e) => {
+    const handleCollegeSubmit = async (e) => {
         e.preventDefault();
-        console.log('Creating college:', collegeFormData);
-        setIsCollegeModalOpen(false);
-        setCollegeFormData({ collegeName: '', collegeCode: '' });
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/zonal/colleges', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    college_name: collegeFormData.collegeName,
+                    college_code: collegeFormData.collegeCode,
+                    dean_id: null,
+                    faculty_count: 0
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                await fetchDashboardData(); // Refresh stats and table
+                setIsCollegeModalOpen(false);
+                setCollegeFormData({ collegeName: '', collegeCode: '' });
+                // Optional: Add success toast/alert here
+            } else {
+                alert(data.message || 'Error creating college');
+            }
+        } catch (error) {
+            console.error('Error creating college:', error);
+            alert('Server error occurred');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleQCESubmit = (e) => {
+    const handleQCESubmit = async (e) => {
         e.preventDefault();
-        console.log('Creating QCE account:', qceFormData);
-        setIsQCEModalOpen(false);
-        setQCEFormData({ firstName: '', lastName: '', email: '', assignedCollege: '', temporaryPassword: '' });
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/zonal/qce', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(qceFormData),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                await fetchDashboardData(); // Refresh stats to show new count
+                setIsQCEModalOpen(false);
+                setQCEFormData({ firstName: '', lastName: '', email: '', collegeId: '', temporaryPassword: '' });
+            } else {
+                alert(data.message || 'Error creating QCE account');
+            }
+        } catch (error) {
+            console.error('Error creating QCE account:', error);
+            alert('Server error occurred');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleCollegeCancel = () => {
@@ -70,23 +159,24 @@ export function ZonalDashboardPage() {
 
     const handleQCECancel = () => {
         setIsQCEModalOpen(false);
-        setQCEFormData({ firstName: '', lastName: '', email: '', assignedCollege: '', temporaryPassword: '' });
+        setQCEFormData({ firstName: '', lastName: '', email: '', collegeId: '', temporaryPassword: '' });
     };
 
     const columns = [
         {
             header: 'College Name',
-            accessor: 'name',
+            accessor: 'college_name',
             width: '35%',
         },
         {
             header: 'Dean',
-            accessor: 'dean',
+            accessor: 'dean_name',
             width: '25%',
+            render: (value) => value || <span className="text-gray-400 italic">Not Assigned</span>
         },
         {
             header: 'Faculty Count',
-            accessor: 'facultyCount',
+            accessor: 'faculty_count',
             width: '15%',
             align: 'center',
         },
@@ -96,8 +186,8 @@ export function ZonalDashboardPage() {
             width: '15%',
             align: 'center',
             render: (value) => (
-                <Badge variant={value === 'Active' ? 'active' : 'inactive'}>
-                    {value}
+                <Badge variant={value === 'active' ? 'active' : 'inactive'}>
+                    {value === 'active' ? 'Active' : 'Inactive'}
                 </Badge>
             ),
         },
@@ -118,6 +208,16 @@ export function ZonalDashboardPage() {
             ),
         },
     ];
+
+    if (isLoading) {
+        return (
+            <DashboardLayout role="Zonal Admin" userName="Zonal Admin">
+                <div className="flex items-center justify-center h-full">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout
@@ -146,29 +246,27 @@ export function ZonalDashboardPage() {
                 <div className={styles.stats}>
                     <StatCard
                         title="Total Colleges"
-                        value={8}
-                        subtitle="2 new this year"
-                        trendValue="+12%"
+                        value={stats.totalColleges}
+                        subtitle={`${stats.newCollegesThisYear} new this year`}
+                        trendValue={stats.newCollegesThisYear > 0 ? `+${stats.newCollegesThisYear}` : null}
                         icon={Building2}
                     />
                     <StatCard
                         title="QCE Accounts"
-                        value={12}
+                        value={stats.qceAccounts}
                         subtitle="All active"
                         icon={Users}
                     />
                     <StatCard
                         title="Total Faculty"
-                        value={342}
-                        subtitle="+5% Across all colleges"
-                        trendValue="+5%"
+                        value={stats.totalFaculty}
+                        subtitle="Across all colleges"
                         icon={GraduationCap}
                     />
                     <StatCard
                         title="Active Evaluations"
-                        value="1,205"
-                        subtitle="+24% Current semester"
-                        trendValue="+24%"
+                        value={stats.activeEvaluations}
+                        subtitle="Current semester"
                         icon={Activity}
                     />
                 </div>
@@ -218,14 +316,16 @@ export function ZonalDashboardPage() {
                                 type="button"
                                 variant="ghost"
                                 onClick={handleCollegeCancel}
+                                disabled={isSubmitting}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 variant="primary"
+                                disabled={isSubmitting}
                             >
-                                Create College
+                                {isSubmitting ? 'Creating...' : 'Create College'}
                             </Button>
                         </div>
                     </form>
@@ -274,18 +374,18 @@ export function ZonalDashboardPage() {
                                 Assigned College<span className={styles.required}>*</span>
                             </label>
                             <select
-                                name="assignedCollege"
-                                value={qceFormData.assignedCollege}
+                                name="collegeId"
+                                value={qceFormData.collegeId}
                                 onChange={handleQCEInputChange}
                                 className={styles.select}
                                 required
                             >
                                 <option value="">Select a college</option>
-                                <option value="College of Computing Studies">College of Computing Studies</option>
-                                <option value="College of Arts and Sciences">College of Arts and Sciences</option>
-                                <option value="College of Education">College of Education</option>
-                                <option value="College of Technology">College of Technology</option>
-                                <option value="College of Marine Engineering">College of Marine Engineering</option>
+                                {colleges.map(college => (
+                                    <option key={college.id} value={college.id}>
+                                        {college.college_name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -304,14 +404,16 @@ export function ZonalDashboardPage() {
                                 type="button"
                                 variant="ghost"
                                 onClick={handleQCECancel}
+                                disabled={isSubmitting}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 variant="primary"
+                                disabled={isSubmitting}
                             >
-                                Create Account
+                                {isSubmitting ? 'Creating Account...' : 'Create Account'}
                             </Button>
                         </div>
                     </form>

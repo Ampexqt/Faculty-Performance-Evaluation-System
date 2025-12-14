@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
@@ -8,52 +8,47 @@ import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './CollegesPage.module.css';
 
-// Mock data
-const mockColleges = [
-    {
-        id: 1,
-        code: 'CCS',
-        name: 'College of Computing Studies',
-        dean: 'Dr. Sarah Smith',
-        status: 'Active'
-    },
-    {
-        id: 2,
-        code: 'CAS',
-        name: 'College of Arts and Sciences',
-        dean: 'Dr. James Wilson',
-        status: 'Active'
-    },
-    {
-        id: 3,
-        code: 'CED',
-        name: 'College of Education',
-        dean: 'Dr. Maria Garcia',
-        status: 'Active'
-    },
-    {
-        id: 4,
-        code: 'COT',
-        name: 'College of Technology',
-        dean: 'Dr. Robert Brown',
-        status: 'Active'
-    },
-    {
-        id: 5,
-        code: 'CME',
-        name: 'College of Marine Engineering',
-        dean: 'Capt. John Doe',
-        status: 'Inactive'
-    },
-];
-
 export function CollegesPage() {
-    const [colleges] = useState(mockColleges);
+    const [colleges, setColleges] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedCollege, setSelectedCollege] = useState(null);
+
+    // Form data for creating college
     const [formData, setFormData] = useState({
         collegeName: '',
         collegeCode: '',
     });
+
+    // Edit form data
+    const [editFormData, setEditFormData] = useState({
+        collegeName: '',
+        collegeCode: '',
+    });
+
+    // Fetch colleges data
+    const fetchColleges = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch('http://localhost:5000/api/zonal/colleges');
+            const data = await response.json();
+
+            if (data.success) {
+                setColleges(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching colleges:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchColleges();
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -63,11 +58,40 @@ export function CollegesPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Creating college:', formData);
-        setIsModalOpen(false);
-        setFormData({ collegeName: '', collegeCode: '' });
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/zonal/colleges', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    college_name: formData.collegeName,
+                    college_code: formData.collegeCode,
+                    dean_id: null, // Dean assignment not implemented in UI yet
+                    faculty_count: 0
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Refresh list
+                await fetchColleges();
+                setIsModalOpen(false);
+                setFormData({ collegeName: '', collegeCode: '' });
+            } else {
+                alert(data.message || 'Error creating college');
+            }
+        } catch (error) {
+            console.error('Error creating college:', error);
+            alert('Server error while creating college');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleCancel = () => {
@@ -75,21 +99,112 @@ export function CollegesPage() {
         setFormData({ collegeName: '', collegeCode: '' });
     };
 
+    const handleEdit = (college) => {
+        setSelectedCollege(college);
+        setEditFormData({
+            collegeName: college.college_name,
+            collegeCode: college.college_code,
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/zonal/colleges/${selectedCollege.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    college_name: editFormData.collegeName,
+                    college_code: editFormData.collegeCode,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                await fetchColleges();
+                setIsEditModalOpen(false);
+                setSelectedCollege(null);
+            } else {
+                alert(data.message || 'Error updating college');
+            }
+        } catch (error) {
+            console.error('Error updating college:', error);
+            alert('Server error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEditCancel = () => {
+        setIsEditModalOpen(false);
+        setSelectedCollege(null);
+    };
+
+    const handleDeleteClick = (college) => {
+        setSelectedCollege(college);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/zonal/colleges/${selectedCollege.id}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                await fetchColleges();
+                setIsDeleteModalOpen(false);
+                setSelectedCollege(null);
+            } else {
+                alert(data.message || 'Error deleting college');
+            }
+        } catch (error) {
+            console.error('Error deleting college:', error);
+            alert('Server error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteCancel = () => {
+        setIsDeleteModalOpen(false);
+        setSelectedCollege(null);
+    };
+
     const columns = [
         {
             header: 'Code',
-            accessor: 'code',
+            accessor: 'college_code',
             width: '10%',
         },
         {
             header: 'College Name',
-            accessor: 'name',
+            accessor: 'college_name',
             width: '40%',
         },
         {
             header: 'Dean',
-            accessor: 'dean',
+            accessor: 'dean_id', // Currently just ID, would need join or separate fetch for name if not in view
             width: '25%',
+            render: (value) => value ? `Dean ID: ${value}` : <span className="text-gray-400 italic">Not Assigned</span>
         },
         {
             header: 'Status',
@@ -97,8 +212,8 @@ export function CollegesPage() {
             width: '15%',
             align: 'center',
             render: (value) => (
-                <Badge variant={value === 'Active' ? 'active' : 'inactive'}>
-                    {value}
+                <Badge variant={value === 'active' ? 'active' : 'inactive'}>
+                    {value === 'active' ? 'Active' : 'Inactive'}
                 </Badge>
             ),
         },
@@ -107,18 +222,36 @@ export function CollegesPage() {
             accessor: 'actions',
             width: '10%',
             align: 'center',
-            render: () => (
+            render: (_, row) => (
                 <div className={styles.actions}>
-                    <button className={styles.actionButton} aria-label="Edit">
+                    <button
+                        className={styles.actionButton}
+                        aria-label="Edit"
+                        onClick={() => handleEdit(row)}
+                    >
                         <Edit size={16} />
                     </button>
-                    <button className={styles.actionButton} aria-label="Delete">
+                    <button
+                        className={styles.actionButton}
+                        aria-label="Delete"
+                        onClick={() => handleDeleteClick(row)}
+                    >
                         <Trash2 size={16} />
                     </button>
                 </div>
             ),
         },
     ];
+
+    if (isLoading) {
+        return (
+            <DashboardLayout role="Zonal Admin" userName="Zonal Admin">
+                <div className="flex items-center justify-center h-full">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout
@@ -174,14 +307,16 @@ export function CollegesPage() {
                                 type="button"
                                 variant="ghost"
                                 onClick={handleCancel}
+                                disabled={isSubmitting}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 variant="primary"
+                                disabled={isSubmitting}
                             >
-                                Create College
+                                {isSubmitting ? 'Creating...' : 'Create College'}
                             </Button>
                         </div>
                     </form>

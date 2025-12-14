@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/Auth/LoginPage/LoginPage';
+import { RegisterPage } from './pages/Auth/RegisterPage/RegisterPage';
 import { ZonalDashboardPage } from './pages/ZonalAdmin/Dashboard/ZonalDashboardPage';
 import { CollegesPage } from './pages/ZonalAdmin/Colleges/CollegesPage';
 import { QCEManagementPage } from './pages/ZonalAdmin/QCEManagement/QCEManagementPage';
@@ -33,6 +34,7 @@ export function App() {
         {/* Public Routes */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* Zonal Admin Routes */}
         <Route path="/zonal/dashboard" element={<ZonalDashboardPage />} />

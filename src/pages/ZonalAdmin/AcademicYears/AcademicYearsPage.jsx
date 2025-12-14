@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
@@ -8,43 +8,40 @@ import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './AcademicYearsPage.module.css';
 
-// Mock data
-const mockSemesters = [
-    {
-        id: 1,
-        academicYear: '2023-2024',
-        semester: '1st Semester',
-        startDate: 'Aug 2023',
-        endDate: 'Dec 2023',
-        status: 'Active'
-    },
-    {
-        id: 2,
-        academicYear: '2022-2023',
-        semester: '2nd Semester',
-        startDate: 'Jan 2023',
-        endDate: 'May 2023',
-        status: 'Closed'
-    },
-    {
-        id: 3,
-        academicYear: '2022-2023',
-        semester: '1st Semester',
-        startDate: 'Aug 2022',
-        endDate: 'Dec 2022',
-        status: 'Closed'
-    },
-];
-
 export function AcademicYearsPage() {
-    const [semesters] = useState(mockSemesters);
+    const [semesters, setSemesters] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Form data
     const [formData, setFormData] = useState({
         academicYear: '',
         semester: '',
         startDate: '',
         endDate: '',
     });
+
+    // Fetch academic years
+    const fetchAcademicYears = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch('http://localhost:5000/api/zonal/academic-years');
+            const data = await response.json();
+
+            if (data.success) {
+                setSemesters(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching academic years:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAcademicYears();
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -54,11 +51,43 @@ export function AcademicYearsPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Opening new semester:', formData);
-        setIsModalOpen(false);
-        setFormData({ academicYear: '', semester: '', startDate: '', endDate: '' });
+        setIsSubmitting(true);
+
+        try {
+            // Generate simple code
+            const yearCode = formData.academicYear.replace(/\s+/g, '');
+
+            const response = await fetch('http://localhost:5000/api/zonal/academic-years', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    year_code: yearCode,
+                    year_label: formData.academicYear,
+                    semester: formData.semester,
+                    start_date: formData.startDate,
+                    end_date: formData.endDate
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                await fetchAcademicYears();
+                setIsModalOpen(false);
+                setFormData({ academicYear: '', semester: '', startDate: '', endDate: '' });
+            } else {
+                alert(data.message || 'Error creating academic year');
+            }
+        } catch (error) {
+            console.error('Error creating academic year:', error);
+            alert('Server error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleCancel = () => {
@@ -66,10 +95,16 @@ export function AcademicYearsPage() {
         setFormData({ academicYear: '', semester: '', startDate: '', endDate: '' });
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    };
+
     const columns = [
         {
             header: 'Academic Year',
-            accessor: 'academicYear',
+            accessor: 'year_label',
             width: '20%',
         },
         {
@@ -79,13 +114,15 @@ export function AcademicYearsPage() {
         },
         {
             header: 'Start Date',
-            accessor: 'startDate',
+            accessor: 'start_date',
             width: '15%',
+            render: (value) => formatDate(value)
         },
         {
             header: 'End Date',
-            accessor: 'endDate',
+            accessor: 'end_date',
             width: '15%',
+            render: (value) => formatDate(value)
         },
         {
             header: 'Status',
@@ -93,8 +130,8 @@ export function AcademicYearsPage() {
             width: '15%',
             align: 'center',
             render: (value) => (
-                <Badge variant={value === 'Active' ? 'active' : 'warning'}>
-                    {value}
+                <Badge variant={value === 'active' ? 'active' : 'warning'}>
+                    {value === 'active' ? 'Active' : 'Closed'}
                 </Badge>
             ),
         },
@@ -104,7 +141,7 @@ export function AcademicYearsPage() {
             width: '15%',
             align: 'center',
             render: (_, row) => (
-                row.status === 'Active' ? (
+                row.status === 'active' ? (
                     <Button variant="danger" size="small">
                         Close Semester
                     </Button>
@@ -114,6 +151,16 @@ export function AcademicYearsPage() {
             ),
         },
     ];
+
+    if (isLoading) {
+        return (
+            <DashboardLayout role="Zonal Admin" userName="Zonal Admin">
+                <div className="flex items-center justify-center h-full">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout
@@ -199,14 +246,16 @@ export function AcademicYearsPage() {
                                 type="button"
                                 variant="ghost"
                                 onClick={handleCancel}
+                                disabled={isSubmitting}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 variant="primary"
+                                disabled={isSubmitting}
                             >
-                                Create & Activate
+                                {isSubmitting ? 'Create & Activate' : 'Create & Activate'}
                             </Button>
                         </div>
                     </form>

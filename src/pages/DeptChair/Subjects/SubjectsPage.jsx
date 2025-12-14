@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './SubjectsPage.module.css';
 
 export function SubjectsPage() {
@@ -13,6 +14,27 @@ export function SubjectsPage() {
     const [userInfo, setUserInfo] = useState({
         departmentId: null,
         fullName: ''
+    });
+    const [toasts, setToasts] = useState([]);
+
+    const addToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    };
+
+    // Edit/Delete Modal States
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [selectedSubject, setSelectedSubject] = useState(null);
+
+    const [editFormData, setEditFormData] = useState({
+        subjectCode: '',
+        descriptiveTitle: '',
+        units: ''
     });
 
     const [formData, setFormData] = useState({
@@ -74,15 +96,16 @@ export function SubjectsPage() {
             });
             const result = await response.json();
             if (result.success) {
-                alert('Subject created successfully');
+                addToast('Subject created successfully', 'success');
                 setIsModalOpen(false);
                 setFormData({ subjectCode: '', descriptiveTitle: '', units: '' });
                 fetchSubjects();
             } else {
-                alert(result.message);
+                addToast(result.message, 'error');
             }
         } catch (error) {
             console.error('Error adding subject:', error);
+            addToast('An error occurred while adding subject', 'error');
         }
     };
 
@@ -93,6 +116,74 @@ export function SubjectsPage() {
             descriptiveTitle: '',
             units: '',
         });
+    };
+
+    const handleEditClick = (subject) => {
+        setSelectedSubject(subject);
+        setEditFormData({
+            subjectCode: subject.subjectCode,
+            descriptiveTitle: subject.descriptiveTitle,
+            units: subject.units
+        });
+        setEditModalOpen(true);
+    };
+
+    const handleDeleteClick = (subject) => {
+        setSelectedSubject(subject);
+        setDeleteModalOpen(true);
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleUpdateSubject = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/subjects/${selectedSubject.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subjectCode: editFormData.subjectCode,
+                    subjectName: editFormData.descriptiveTitle,
+                    units: editFormData.units
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                addToast('Subject updated successfully', 'success');
+                setEditModalOpen(false);
+                fetchSubjects();
+            } else {
+                addToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error updating subject:', error);
+            addToast('Error updating subject', 'error');
+        }
+    };
+
+    const handleDeleteSubject = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/subjects/${selectedSubject.id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (result.success) {
+                addToast('Subject deleted successfully', 'success');
+                setDeleteModalOpen(false);
+                fetchSubjects();
+            } else {
+                addToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting subject:', error);
+            addToast('Error deleting subject', 'error');
+        }
     };
 
     const columns = [
@@ -123,8 +214,23 @@ export function SubjectsPage() {
             accessor: 'actions',
             width: '10%',
             align: 'center',
-            render: () => (
-                <button className={styles.editButton}>Edit</button>
+            render: (value, subject) => (
+                <div className={styles.actionButtons}>
+                    <button
+                        className={styles.iconButton}
+                        onClick={() => handleEditClick(subject)}
+                        title="Edit"
+                    >
+                        <Edit size={16} />
+                    </button>
+                    <button
+                        className={styles.iconButton}
+                        onClick={() => handleDeleteClick(subject)}
+                        title="Delete"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
             ),
         },
     ];
@@ -205,7 +311,92 @@ export function SubjectsPage() {
                         </div>
                     </form>
                 </Modal>
+
+                {/* Edit Subject Modal */}
+                <Modal
+                    isOpen={editModalOpen}
+                    onClose={() => setEditModalOpen(false)}
+                    title="Edit Subject"
+                >
+                    <form onSubmit={handleUpdateSubject} className={styles.modalForm}>
+                        <Input
+                            label="Subject Code"
+                            name="subjectCode"
+                            type="text"
+                            placeholder="e.g. CS101"
+                            value={editFormData.subjectCode}
+                            onChange={handleEditInputChange}
+                            required
+                        />
+
+                        <Input
+                            label="Descriptive Title"
+                            name="descriptiveTitle"
+                            type="text"
+                            placeholder="e.g. Introduction to Computing"
+                            value={editFormData.descriptiveTitle}
+                            onChange={handleEditInputChange}
+                            required
+                        />
+
+                        <Input
+                            label="Units"
+                            name="units"
+                            type="number"
+                            placeholder="e.g. 3"
+                            value={editFormData.units}
+                            onChange={handleEditInputChange}
+                            required
+                        />
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setEditModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Save Changes
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={deleteModalOpen}
+                    onClose={() => setDeleteModalOpen(false)}
+                    title="Delete Subject"
+                >
+                    <div className={styles.deleteConfirmation}>
+                        <p>Are you sure you want to delete <strong>{selectedSubject?.subjectCode} - {selectedSubject?.descriptiveTitle}</strong>?</p>
+                        <p className={styles.warningText}>This action cannot be undone.</p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setDeleteModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="danger"
+                                onClick={handleDeleteSubject}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
         </DashboardLayout>
     );
 }

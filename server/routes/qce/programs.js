@@ -29,8 +29,8 @@ router.get('/', async (req, res) => {
             query += ` AND p.chairperson_id = ?`;
             params.push(chairperson_id);
         } else if (department_id) {
-            // If filtering by specific Program ID
-            query += ` AND p.id = ?`;
+            // Find programs in the same college as the department
+            query += ` AND p.college_id = (SELECT college_id FROM departments WHERE id = ?)`;
             params.push(department_id);
         } else if (college_id) {
             query += ` AND p.college_id = ?`;

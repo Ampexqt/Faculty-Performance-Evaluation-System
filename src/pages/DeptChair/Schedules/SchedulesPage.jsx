@@ -14,6 +14,7 @@ export function SchedulesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({
         departmentId: null,
+        collegeId: null,
         fullName: ''
     });
 
@@ -27,16 +28,50 @@ export function SchedulesPage() {
     useEffect(() => {
         const departmentId = localStorage.getItem('departmentId');
         const fullName = localStorage.getItem('fullName') || 'Department Chair';
-        setUserInfo({ departmentId, fullName });
+        const userId = localStorage.getItem('userId');
+
+        // Fetch the department chair's college_id
+        if (userId) {
+            fetchUserCollege(userId, departmentId, fullName);
+        } else {
+            setUserInfo({ departmentId, collegeId: null, fullName });
+        }
     }, []);
 
+    const fetchUserCollege = async (userId, departmentId, fullName) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty`);
+            const data = await response.json();
+            if (data.success) {
+                // Try to find by ID first, then by name/role if needed
+                let currentUser = data.data.find(f => f.id === parseInt(userId));
+
+                if (!currentUser && fullName) {
+                    currentUser = data.data.find(f => f.name === fullName && f.role === 'Department Chair');
+                }
+
+                const collegeId = currentUser?.college_id || null;
+                setUserInfo({ departmentId, collegeId, fullName });
+            }
+        } catch (error) {
+            console.error('Error fetching user college:', error);
+            setUserInfo({ departmentId, collegeId: null, fullName });
+        }
+    };
+
     useEffect(() => {
-        if (userInfo.departmentId) {
+        if (userInfo.departmentId || userInfo.collegeId) {
             fetchAssignments();
             fetchSubjects();
-            fetchFaculty();
+
+            // Prioritize college-wide faculty, fallback to department-only
+            if (userInfo.collegeId) {
+                fetchFaculty(userInfo.collegeId, 'college_id');
+            } else if (userInfo.departmentId) {
+                fetchFaculty(userInfo.departmentId, 'department_id');
+            }
         }
-    }, [userInfo.departmentId]);
+    }, [userInfo.departmentId, userInfo.collegeId]);
 
     const fetchAssignments = async () => {
         try {
@@ -68,9 +103,9 @@ export function SchedulesPage() {
         }
     };
 
-    const fetchFaculty = async () => {
+    const fetchFaculty = async (id, type = 'college_id') => {
         try {
-            const response = await fetch(`http://localhost:5000/api/qce/faculty?department_id=${userInfo.departmentId}`);
+            const response = await fetch(`http://localhost:5000/api/qce/faculty?${type}=${id}`);
             const data = await response.json();
             if (data.success) {
                 setFacultyList(data.data);
@@ -263,7 +298,7 @@ export function SchedulesPage() {
                                 <option value="">Select Faculty</option>
                                 {facultyList.map(faculty => (
                                     <option key={faculty.id} value={faculty.id}>
-                                        {faculty.first_name} {faculty.last_name}
+                                        {faculty.firstName} {faculty.lastName} - {faculty.role}
                                     </option>
                                 ))}
                             </select>

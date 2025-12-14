@@ -45,9 +45,9 @@ export function FacultyAccountsPage() {
 
     const fetchPrograms = async () => {
         try {
-            // Fetch programs managed by this chairperson
-            // The backend prioritizes chairperson_id if present
-            const response = await fetch(`http://localhost:5000/api/qce/programs?chairperson_id=${userInfo.userId}`);
+            // Fetch programs based on the department's college
+            // This ensures we see all programs relevant to the Dept Chair, regardless of who is assigned as Program Chair
+            const response = await fetch(`http://localhost:5000/api/qce/programs?department_id=${userInfo.departmentId}`);
             const data = await response.json();
             if (data.success) {
                 setPrograms(data.data);
@@ -427,10 +427,11 @@ export function FacultyAccountsPage() {
                                 onChange={handleInputChange}
                                 required
                             >
-                                <option value="">Select Status</option>
+                                <option value="">Select employment status</option>
                                 <option value="Regular">Regular</option>
                                 <option value="Part-time">Part-time</option>
-                                <option value="Contract">Contract</option>
+                                <option value="Contractual">Contractual</option>
+                                <option value="Temporary">Temporary</option>
                             </select>
                         </div>
 
@@ -575,10 +576,11 @@ export function FacultyAccountsPage() {
                                 onChange={handleEditInputChange}
                                 required
                             >
-                                <option value="">Select Status</option>
+                                <option value="">Select employment status</option>
                                 <option value="Regular">Regular</option>
                                 <option value="Part-time">Part-time</option>
-                                <option value="Contract">Contract</option>
+                                <option value="Contractual">Contractual</option>
+                                <option value="Temporary">Temporary</option>
                             </select>
                         </div>
 

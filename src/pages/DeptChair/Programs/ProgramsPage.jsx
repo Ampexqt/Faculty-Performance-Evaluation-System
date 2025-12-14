@@ -5,6 +5,7 @@ import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './ProgramsPage.module.css';
 
 export function ProgramsPage() {
@@ -26,6 +27,17 @@ export function ProgramsPage() {
         programName: '',
     });
 
+    const [toasts, setToasts] = useState([]);
+
+    const addToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    };
+
     useEffect(() => {
         const departmentId = localStorage.getItem('departmentId');
         const fullName = localStorage.getItem('fullName') || 'Department Chair';
@@ -42,8 +54,8 @@ export function ProgramsPage() {
     const fetchPrograms = async () => {
         try {
             const queryParams = new URLSearchParams();
+            // Use department_id to fetch all programs in the college, regardless of assigned chair
             if (userInfo.departmentId) queryParams.append('department_id', userInfo.departmentId);
-            if (userInfo.userId) queryParams.append('chairperson_id', userInfo.userId);
 
             const response = await fetch(`http://localhost:5000/api/qce/programs?${queryParams.toString()}`);
             const data = await response.json();
@@ -88,15 +100,16 @@ export function ProgramsPage() {
             });
             const result = await response.json();
             if (result.success) {
-                alert('Program added successfully');
+                addToast('Program added successfully', 'success');
                 setIsModalOpen(false);
                 setFormData({ programCode: '', programName: '' });
                 fetchPrograms();
             } else {
-                alert(result.message);
+                addToast(result.message, 'error');
             }
         } catch (error) {
             console.error('Error adding program:', error);
+            addToast('An error occurred while adding program', 'error');
         }
     };
 
@@ -141,14 +154,15 @@ export function ProgramsPage() {
             });
             const result = await response.json();
             if (result.success) {
-                alert('Program updated successfully');
+                addToast('Program updated successfully', 'success');
                 setEditModalOpen(false);
                 fetchPrograms();
             } else {
-                alert(result.message);
+                addToast(result.message, 'error');
             }
         } catch (error) {
             console.error('Error updating program:', error);
+            addToast('Error updating program', 'error');
         }
     };
 
@@ -159,14 +173,15 @@ export function ProgramsPage() {
             });
             const result = await response.json();
             if (result.success) {
-                alert('Program deleted successfully');
+                addToast('Program deleted successfully', 'success');
                 setDeleteModalOpen(false);
                 fetchPrograms();
             } else {
-                alert(result.message);
+                addToast(result.message, 'error');
             }
         } catch (error) {
             console.error('Error deleting program:', error);
+            addToast('Error deleting program', 'error');
         }
     };
 
@@ -353,6 +368,7 @@ export function ProgramsPage() {
                     </div>
                 </Modal>
             </div>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
         </DashboardLayout>
     );
 }

@@ -225,4 +225,85 @@ router.post('/assignments', async (req, res) => {
     }
 });
 
+/**
+ * PUT /api/qce/subjects/:id
+ * Update subject details
+ */
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { subjectCode, subjectName, units } = req.body;
+
+        if (!subjectCode || !subjectName) {
+            return res.status(400).json({
+                success: false,
+                message: 'Subject code and name are required'
+            });
+        }
+
+        const [result] = await promisePool.query(
+            'UPDATE subjects SET subject_code = ?, subject_name = ?, units = ? WHERE id = ?',
+            [subjectCode, subjectName, units || 3, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Subject not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Subject updated successfully'
+        });
+
+    } catch (error) {
+        console.error('Error updating subject:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating subject',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/qce/subjects/:id
+ * Soft delete (set status to inactive) a subject
+ */
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if subject exists
+        const [existing] = await promisePool.query('SELECT id FROM subjects WHERE id = ?', [id]);
+        if (existing.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Subject not found'
+            });
+        }
+
+        // Soft delete
+        await promisePool.query(
+            "UPDATE subjects SET status = 'inactive' WHERE id = ?",
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Subject deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error deleting subject:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting subject',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

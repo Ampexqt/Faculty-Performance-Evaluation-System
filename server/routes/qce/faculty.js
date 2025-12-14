@@ -59,6 +59,8 @@ router.get('/', async (req, res) => {
             email: f.email,
             gender: f.gender,
             department: f.department_name || f.college_name, // Show college name if department is missing
+            department_id: f.department_id,
+            college_id: f.college_id,
             assignedPrograms: f.assigned_programs ? f.assigned_programs.split(',') : []
         }));
 
@@ -215,26 +217,63 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, email, gender, employmentStatus, facultyRole } = req.body;
+        const { firstName, lastName, email, gender, employmentStatus, facultyRole, assignedPrograms } = req.body;
 
-        const [result] = await promisePool.query(
-            `UPDATE faculty 
-             SET first_name = ?, last_name = ?, email = ?, gender = ?, employment_status = ?, position = ?
-             WHERE id = ?`,
-            [firstName, lastName, email, gender, employmentStatus, facultyRole, id]
-        );
+        console.log(`Updating faculty ${id}. Role: ${facultyRole}, Programs:`, assignedPrograms);
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Faculty not found'
+        // Start transaction
+        const connection = await promisePool.getConnection();
+        await connection.beginTransaction();
+
+        try {
+            // Update faculty details
+            await connection.query(
+                `UPDATE faculty 
+                 SET first_name = ?, last_name = ?, email = ?, gender = ?, employment_status = ?, position = ?
+                 WHERE id = ?`,
+                [firstName, lastName, email, gender, employmentStatus, facultyRole, id]
+            );
+
+            // Handle Program Assignments if provided
+            if (facultyRole === 'Program Chair') {
+                // 1. Reset existing programs for this chair
+                await connection.query(
+                    'UPDATE programs SET chairperson_id = NULL WHERE chairperson_id = ?',
+                    [id]
+                );
+
+                if (Array.isArray(assignedPrograms) && assignedPrograms.length > 0) {
+                    // 2. Assign new programs
+                    console.log('Assigning programs:', assignedPrograms, 'to faculty:', id);
+                    for (const code of assignedPrograms) {
+                        const [res] = await connection.query(
+                            'UPDATE programs SET chairperson_id = ? WHERE program_code = ?',
+                            [id, code]
+                        );
+                        console.log(`Assigned ${code} to ${id}:`, res.affectedRows);
+                    }
+                }
+            } else if (facultyRole !== 'Program Chair') {
+                // If role changed from Program Chair to something else, remove all program assignments
+                await connection.query(
+                    'UPDATE programs SET chairperson_id = NULL WHERE chairperson_id = ?',
+                    [id]
+                );
+            }
+
+            await connection.commit();
+            res.json({
+                success: true,
+                message: 'Faculty updated successfully'
             });
+
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
         }
 
-        res.json({
-            success: true,
-            message: 'Faculty updated successfully'
-        });
     } catch (error) {
         console.error('Error updating faculty:', error);
         res.status(500).json({
@@ -280,3 +319,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+

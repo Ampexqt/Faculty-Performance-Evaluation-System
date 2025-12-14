@@ -1,0 +1,670 @@
+.page {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.formContainer {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Form Header Styles */
+.formHeader {
+    padding: 2rem;
+    background: white;
+    border-bottom: 2px solid #800000;
+}
+
+.formTitle {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.headerInfo {
+    margin-bottom: 1.5rem;
+}
+
+.qceInfo {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.ratingPeriod {
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+.ratingPeriod strong {
+    color: #1f2937;
+}
+
+.facultyInfo {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.infoRow {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.infoRow:last-child {
+    margin-bottom: 0;
+}
+
+.infoLabel {
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 180px;
+    font-size: 0.95rem;
+}
+
+.infoValue {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #d1d5db;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.evaluatorType {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.evaluatorLabel {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.95rem;
+}
+
+.checkboxGroup {
+    display: flex;
+    gap: 2rem;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: default;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: default;
+}
+
+.checkbox input[type="checkbox"]:checked {
+    accent-color: #800000;
+}
+
+.subjectBar {
+    padding: 1rem 2rem;
+    background: #800000;
+    color: white;
+    font-size: 1rem;
+}
+
+.subjectBar strong {
+    margin-right: 0.5rem;
+}
+
+.formContainer {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.instructions {
+    padding: 2rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.instructions h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.instructions p {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+.ratingScale h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.scaleTable {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.scaleTable thead {
+    background: #800000;
+    color: white;
+}
+
+.scaleTable th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.scaleTable td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+}
+
+.scaleTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.scaleTable tbody tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+.evaluationForm {
+    padding: 2rem;
+}
+
+.categorySection {
+    margin-bottom: 3rem;
+}
+
+.categoryTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #800000;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #800000;
+}
+
+.criteriaTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    border: 1px solid #d1d5db;
+}
+
+.criteriaTable thead {
+    background: #800000;
+    color: white;
+}
+
+.criteriaTable th {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: 1px solid #991b1b;
+}
+
+.numberCol {
+    width: 40px;
+}
+
+.indicatorCol {
+    text-align: left !important;
+    padding-left: 1rem !important;
+}
+
+.ratingCol {
+    width: 60px;
+}
+
+.criteriaTable tbody tr {
+    border-bottom: 1px solid #d1d5db;
+}
+
+.criteriaTable tbody tr:hover {
+    background: #f9fafb;
+}
+
+.numberCell {
+    text-align: center;
+    font-weight: 600;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    padding: 1rem 0.5rem;
+}
+
+.indicatorCell {
+    padding: 1rem;
+    color: #374151;
+    line-height: 1.5;
+    border: 1px solid #d1d5db;
+}
+
+.ratingCell {
+    text-align: center;
+    padding: 1rem 0.5rem;
+    border: 1px solid #d1d5db;
+}
+
+.radioLabel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.radioInput {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radioCustom {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.radioInput:checked+.radioCustom {
+    border-color: #800000;
+    background: #800000;
+}
+
+.radioInput:checked+.radioCustom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+}
+
+.radioLabel:hover .radioCustom {
+    border-color: #800000;
+    transform: scale(1.1);
+}
+
+.totalScore {
+    text-align: right;
+    padding: 1rem;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-top: 2px solid #800000;
+    font-size: 1rem;
+    color: #1f2937;
+}
+
+.totalScore strong {
+    color: #800000;
+}
+
+.commentsSection {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+}
+
+.commentsTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #800000;
+    margin-bottom: 0.5rem;
+}
+
+.commentsSubtitle {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.commentsTextarea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+}
+
+.commentsTextarea:focus {
+    outline: none;
+    border-color: #800000;
+    box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+}
+
+.commentsTextarea::placeholder {
+    color: #9ca3af;
+}
+
+.characterCount {
+    text-align: right;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1rem;
+}
+
+.error h2 {
+    color: #6b7280;
+    font-size: 1.5rem;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+    .page {
+        padding: 0.5rem;
+    }
+
+    .formContainer {
+        border-radius: 8px;
+    }
+
+    .formHeader {
+        padding: 1rem;
+    }
+
+    .formTitle {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .headerInfo {
+        margin-bottom: 1rem;
+    }
+
+    .qceInfo {
+        font-size: 0.875rem;
+    }
+
+    .ratingPeriod {
+        font-size: 0.8rem;
+    }
+
+    .facultyInfo {
+        padding: 0.75rem;
+    }
+
+    .infoRow {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .infoLabel {
+        min-width: auto;
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .infoValue {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .evaluatorType {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.75rem;
+    }
+
+    .evaluatorLabel {
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .checkboxGroup {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .checkbox {
+        font-size: 0.85rem;
+    }
+
+    .subjectBar {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .instructions {
+        padding: 1rem;
+    }
+
+    .instructions h3 {
+        font-size: 1.1rem;
+    }
+
+    .instructions p {
+        font-size: 0.875rem;
+    }
+
+    .ratingScale h4 {
+        font-size: 1rem;
+    }
+
+    .scaleTable {
+        font-size: 0.75rem;
+        display: block;
+        overflow-x: auto;
+    }
+
+    .scaleTable th,
+    .scaleTable td {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .evaluationForm {
+        padding: 1rem;
+    }
+
+    .categorySection {
+        margin-bottom: 2rem;
+    }
+
+    .categoryTitle {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .criteriaTable {
+        font-size: 0.75rem;
+        display: block;
+        overflow-x: auto;
+    }
+
+    .criteriaTable thead,
+    .criteriaTable tbody,
+    .criteriaTable tr {
+        display: block;
+    }
+
+    .criteriaTable thead {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .criteriaTable th {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.75rem;
+    }
+
+    .numberCell,
+    .indicatorCell,
+    .ratingCell {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .indicatorCell {
+        padding: 0.75rem;
+    }
+
+    .radioCustom {
+        width: 20px;
+        height: 20px;
+    }
+
+    .totalScore {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .commentsSection {
+        padding: 1rem;
+        margin-top: 2rem;
+    }
+
+    .commentsTitle {
+        font-size: 1.1rem;
+    }
+
+    .commentsSubtitle {
+        font-size: 0.85rem;
+    }
+
+    .commentsTextarea {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .formActions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .formActions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .page {
+        padding: 0.25rem;
+    }
+
+    .formHeader {
+        padding: 0.75rem;
+    }
+
+    .formTitle {
+        font-size: 1.1rem;
+    }
+
+    .qceInfo,
+    .ratingPeriod {
+        font-size: 0.75rem;
+    }
+
+    .facultyInfo {
+        padding: 0.5rem;
+    }
+
+    .infoLabel,
+    .infoValue {
+        font-size: 0.75rem;
+    }
+
+    .subjectBar {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .instructions {
+        padding: 0.75rem;
+    }
+
+    .evaluationForm {
+        padding: 0.75rem;
+    }
+
+    .categoryTitle {
+        font-size: 1rem;
+    }
+
+    .scaleTable th,
+    .scaleTable td {
+        padding: 0.4rem 0.25rem;
+        font-size: 0.7rem;
+    }
+
+    .criteriaTable th {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.7rem;
+    }
+
+    .numberCell,
+    .ratingCell {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .indicatorCell {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .radioCustom {
+        width: 18px;
+        height: 18px;
+    }
+}

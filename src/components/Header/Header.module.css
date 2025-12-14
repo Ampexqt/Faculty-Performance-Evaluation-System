@@ -106,6 +106,35 @@
     font-weight: var(--font-medium);
 }
 
+/* Hamburger Menu - Hidden on Desktop */
+.hamburger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-text-white);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.hamburger:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile User Name - Hidden on Desktop */
+.mobileUserName {
+    display: none;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-text-white);
+}
+
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 768px) {
@@ -113,24 +142,28 @@
         padding: 0 var(--spacing-md);
     }
 
-    .title {
-        font-size: var(--text-base);
+    /* Show hamburger on mobile */
+    .hamburger {
+        display: flex;
     }
 
-    .userName {
+    /* Hide title on mobile */
+    .title {
         display: none;
     }
 
-    .userButton {
-        padding: var(--spacing-sm);
+    /* Show mobile user name */
+    .mobileUserName {
+        display: flex;
+    }
+
+    /* Hide desktop user menu (icon + name) on mobile */
+    .userMenu {
+        display: none;
     }
 }
 
 @media (max-width: 480px) {
-    .title {
-        font-size: var(--text-sm);
-    }
-
     .roleBadge {
         display: none;
     }

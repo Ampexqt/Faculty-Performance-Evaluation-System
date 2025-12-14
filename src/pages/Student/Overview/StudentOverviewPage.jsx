@@ -5,6 +5,12 @@ import { StatCard } from '@/components/StatCard/StatCard';
 import styles from './StudentOverviewPage.module.css';
 
 export function StudentOverviewPage() {
+    const fullName = localStorage.getItem('fullName') || 'Student';
+    const collegeName = localStorage.getItem('collegeName') || '';
+    const programName = localStorage.getItem('programName') || '';
+    const section = localStorage.getItem('section') || '';
+    const yearLevel = localStorage.getItem('yearLevel') || '';
+
     // Mock data - replace with actual data from API
     const stats = {
         totalEvaluations: 3,
@@ -16,14 +22,17 @@ export function StudentOverviewPage() {
     return (
         <DashboardLayout
             role="Student"
-            userName="Student"
+            userName={fullName}
             notificationCount={2}
         >
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
                         <h1 className={styles.title}>Dashboard</h1>
-                        <p className={styles.subtitle}>Welcome back! Here's an overview of your evaluation progress.</p>
+                        <p className={styles.subtitle}>
+                            {programName} {yearLevel}-{section} <br />
+                            <span className={styles.collegeName}>{collegeName}</span>
+                        </p>
                     </div>
                 </div>
 

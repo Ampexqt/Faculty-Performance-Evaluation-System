@@ -16,6 +16,7 @@ export function DashboardLayout({
 }) {
     const navigate = useNavigate();
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
     const handleLogoutClick = () => {
         setIsLogoutModalOpen(true);
@@ -33,6 +34,14 @@ export function DashboardLayout({
         setIsLogoutModalOpen(false);
     };
 
+    const toggleMobileSidebar = () => {
+        setIsMobileSidebarOpen(!isMobileSidebarOpen);
+    };
+
+    const closeMobileSidebar = () => {
+        setIsMobileSidebarOpen(false);
+    };
+
     return (
         <div className={styles.layout}>
             <Header
@@ -40,10 +49,15 @@ export function DashboardLayout({
                 userName={userName}
                 notificationCount={notificationCount}
                 onLogout={handleLogoutClick}
+                onMenuClick={toggleMobileSidebar}
             />
 
             <div className={styles.container}>
-                <Sidebar role={role} />
+                <Sidebar
+                    role={role}
+                    isMobileOpen={isMobileSidebarOpen}
+                    onClose={closeMobileSidebar}
+                />
 
                 <main className={cn(styles.main, className)} {...props}>
                     {children}

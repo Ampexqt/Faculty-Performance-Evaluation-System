@@ -75,6 +75,9 @@
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 768px) {
+    .tableWrapper {
+        border-radius: 8px;
+    }
 
     .th,
     .td {

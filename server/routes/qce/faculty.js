@@ -39,8 +39,18 @@ router.get('/', async (req, res) => {
             // Optional: Filter out Dept Chair if needed
             // query += ` AND f.position != 'Department Chair'`;
         } else if (college_id) {
-            query += ` WHERE f.college_id = ? OR c.id = ?`;
+            query += ` WHERE (f.college_id = ? OR c.id = ?)`;
             params.push(college_id, college_id);
+        } else {
+            // Default WHERE to ensure we can append AND validly if no department/college but role exists
+            // Or better, handle the WHERE logic more robustly
+            query += ` WHERE 1=1`;
+        }
+
+        // Add role filter if provided
+        if (req.query.role) {
+            query += ` AND f.position = ?`;
+            params.push(req.query.role);
         }
 
         query += ` ORDER BY f.last_name ASC`;

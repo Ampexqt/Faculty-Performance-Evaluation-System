@@ -1,45 +1,90 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ClipboardList, CheckCircle } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Input } from '@/components/Input/Input';
 import { Badge } from '@/components/Badge/Badge';
+import { useToast } from '@/hooks/useToast';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './StudentEvaluationsPage.module.css';
 
-// Mock data
-const mockPendingEvaluations = [
-    {
-        id: 1,
-        subject: 'CS101 - Intro to Computing',
-        instructor: 'Prof. Alan Turing',
-        status: 'Pending'
-    },
-    {
-        id: 2,
-        subject: 'CS102 - Programming I',
-        instructor: 'Prof. Ada Lovelace',
-        status: 'Pending'
-    },
-];
-
-const mockCompletedEvaluations = [
-    {
-        id: 3,
-        subject: 'MATH101 - Calculus',
-        instructor: 'Prof. Isaac Newton',
-        completedDate: '2024-12-10'
-    },
-];
-
 export function StudentEvaluationsPage() {
+    const navigate = useNavigate();
+    const fullName = localStorage.getItem('fullName') || 'Student';
+    const studentId = localStorage.getItem('userId');
     const [evalCode, setEvalCode] = useState('');
-    const [pendingEvaluations] = useState(mockPendingEvaluations);
-    const [completedEvaluations] = useState(mockCompletedEvaluations);
 
-    const handleValidate = () => {
-        // TODO: Implement validation logic
-        console.log('Validating code:', evalCode);
+    // Initialize pending evaluations from localStorage
+    const [pendingEvaluations, setPendingEvaluations] = useState(() => {
+        const saved = localStorage.getItem(`pendingEvaluations_${studentId} `);
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const [completedEvaluations, setCompletedEvaluations] = useState([]);
+    const { toasts, removeToast, success, error: showError } = useToast();
+
+    // Save to localStorage whenever pendingEvaluations changes
+    React.useEffect(() => {
+        if (studentId) {
+            localStorage.setItem(`pendingEvaluations_${studentId}`, JSON.stringify(pendingEvaluations));
+        }
+    }, [pendingEvaluations, studentId]);
+
+    // Migrate old data: Check if any pending evaluation is missing facultyRole
+    React.useEffect(() => {
+        const needsMigration = pendingEvaluations.some(item => !item.facultyRole);
+        if (needsMigration && pendingEvaluations.length > 0) {
+            console.log('Old data detected, please re-validate your codes to get faculty roles');
+            // Optionally: Clear old data
+            // setPendingEvaluations([]);
+        }
+    }, [pendingEvaluations]);
+
+    const handleValidate = async () => {
+        if (!evalCode) {
+            showError('Please enter an evaluation code');
+            return;
+        }
+
+        try {
+            console.log('Validating code:', evalCode);
+            const response = await fetch('http://localhost:5000/api/student/evaluations/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: evalCode,
+                    studentId: studentId
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                success('Evaluation code validated! Subject added to pending list.');
+
+                // Add to pending evaluations if not already there
+                setPendingEvaluations(prev => {
+                    const exists = prev.some(item => item.id === data.data.id);
+                    if (exists) return prev;
+                    return [...prev, data.data];
+                });
+
+                setEvalCode(''); // Clear input
+            } else {
+                showError(data.message || 'Invalid evaluation code');
+            }
+        } catch (error) {
+            console.error('Validation error:', error);
+            showError('An error occurred while validating the code');
+        }
+    };
+
+    const handleEvaluateNow = (evaluation) => {
+        navigate('/student/evaluation-form', { state: { evaluation } });
     };
 
     const pendingColumns = [
@@ -69,8 +114,8 @@ export function StudentEvaluationsPage() {
             accessor: 'action',
             width: '10%',
             align: 'center',
-            render: () => (
-                <Button variant="primary" size="small">
+            render: (value, row) => (
+                <Button variant="primary" size="small" onClick={() => handleEvaluateNow(row)}>
                     Evaluate Now
                 </Button>
             ),
@@ -99,9 +144,10 @@ export function StudentEvaluationsPage() {
     return (
         <DashboardLayout
             role="Student"
-            userName="Student"
+            userName={fullName}
             notificationCount={2}
         >
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
@@ -149,8 +195,40 @@ export function StudentEvaluationsPage() {
                         </div>
                     </div>
 
+                    {/* Desktop Table View */}
                     <div className={styles.tableContainer}>
                         <Table columns={pendingColumns} data={pendingEvaluations} />
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className={styles.mobileCards}>
+                        {pendingEvaluations.length === 0 ? (
+                            <div className={styles.emptyState}>No pending evaluations</div>
+                        ) : (
+                            pendingEvaluations.map((evaluation, index) => (
+                                <div key={index} className={styles.evaluationCard}>
+                                    <div className={styles.cardHeader}>
+                                        <h3 className={styles.cardSubject}>{evaluation.subject}</h3>
+                                        <Badge variant="warning">{evaluation.status}</Badge>
+                                    </div>
+                                    <div className={styles.cardBody}>
+                                        <p className={styles.cardInstructor}>
+                                            <strong>Instructor:</strong> {evaluation.instructor}
+                                        </p>
+                                    </div>
+                                    <div className={styles.cardFooter}>
+                                        <Button
+                                            variant="primary"
+                                            size="small"
+                                            onClick={() => handleEvaluateNow(evaluation)}
+                                            className={styles.cardButton}
+                                        >
+                                            Evaluate Now
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -163,8 +241,32 @@ export function StudentEvaluationsPage() {
                         </div>
                     </div>
 
+                    {/* Desktop Table View */}
                     <div className={styles.tableContainer}>
                         <Table columns={completedColumns} data={completedEvaluations} />
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className={styles.mobileCards}>
+                        {completedEvaluations.length === 0 ? (
+                            <div className={styles.emptyState}>No data available</div>
+                        ) : (
+                            completedEvaluations.map((evaluation, index) => (
+                                <div key={index} className={styles.evaluationCard}>
+                                    <div className={styles.cardHeader}>
+                                        <h3 className={styles.cardSubject}>{evaluation.subject}</h3>
+                                    </div>
+                                    <div className={styles.cardBody}>
+                                        <p className={styles.cardInstructor}>
+                                            <strong>Instructor:</strong> {evaluation.instructor}
+                                        </p>
+                                        <p className={styles.cardDate}>
+                                            <strong>Completed:</strong> {evaluation.completedDate}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>

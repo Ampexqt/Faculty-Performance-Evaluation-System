@@ -90,6 +90,17 @@ app.use('/api/qce/programs', qceProgramsRoutes);
 app.use('/api/qce/stats', qceDashboardRoutes);
 app.use('/api/qce/subjects', qceSubjectsRoutes);
 
+// Faculty routes
+const facultyDashboardRoutes = require('./routes/Faculty/dashboard');
+const facultySubjectsRoutes = require('./routes/Faculty/subjects');
+
+app.use('/api/faculty/dashboard', facultyDashboardRoutes);
+app.use('/api/faculty/subjects', facultySubjectsRoutes);
+
+// Student routes
+const studentEvaluationsRoutes = require('./routes/Student/evaluations');
+app.use('/api/student/evaluations', studentEvaluationsRoutes);
+
 // Start server
 const startServer = async () => {
     // Test database connection first

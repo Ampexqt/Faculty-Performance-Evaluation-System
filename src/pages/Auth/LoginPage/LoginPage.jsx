@@ -105,6 +105,14 @@ export function LoginPage() {
                     localStorage.setItem('collegeName', data.user.college_name);
                     localStorage.setItem('departmentId', data.user.department_id);
                     localStorage.setItem('departmentName', data.user.department_name);
+                } else if (data.user.role === 'Student') {
+                    localStorage.setItem('collegeId', data.user.college_id);
+                    localStorage.setItem('collegeName', data.user.college_name);
+                    localStorage.setItem('programId', data.user.program_id);
+                    localStorage.setItem('programName', data.user.program_name);
+                    localStorage.setItem('section', data.user.section);
+                    localStorage.setItem('yearLevel', data.user.year_level);
+                    localStorage.setItem('studentId', data.user.student_id);
                 }
 
                 // Redirect based on role
@@ -118,6 +126,8 @@ export function LoginPage() {
                     navigate('/dept-chair/faculty');
                 } else if (data.user.role === 'Faculty') {
                     navigate('/faculty/overview');
+                } else if (data.user.role === 'Student') {
+                    navigate('/student/dashboard');
                 } else {
                     // Default fallback
                     navigate('/dashboard');

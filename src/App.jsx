@@ -25,6 +25,7 @@ import { MySubjectsPage } from './pages/Faculty/MySubjects/MySubjectsPage';
 import { EvaluationResultsPage } from './pages/Faculty/EvaluationResults/EvaluationResultsPage';
 import { StudentOverviewPage } from './pages/Student/Overview/StudentOverviewPage';
 import { StudentEvaluationsPage } from './pages/Student/Evaluations/StudentEvaluationsPage';
+import { EvaluationFormPage } from './pages/Student/EvaluationForm/EvaluationFormPage';
 import './styles/globals.css';
 
 export function App() {
@@ -70,6 +71,7 @@ export function App() {
         {/* Student Routes */}
         <Route path="/student/dashboard" element={<StudentOverviewPage />} />
         <Route path="/student/evaluations" element={<StudentEvaluationsPage />} />
+        <Route path="/student/evaluation-form" element={<EvaluationFormPage />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />

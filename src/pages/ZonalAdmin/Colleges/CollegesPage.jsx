@@ -209,9 +209,9 @@ export function CollegesPage() {
         },
         {
             header: 'Dean',
-            accessor: 'dean_id', // Currently just ID, would need join or separate fetch for name if not in view
+            accessor: 'dean_name',
             width: '25%',
-            render: (value) => value ? `Dean ID: ${value}` : <span className="text-gray-400 italic">Not Assigned</span>
+            render: (value) => value ? <span className="font-medium text-gray-700">{value}</span> : <span className="text-gray-400 italic">Not Assigned</span>
         },
         {
             header: 'Status',

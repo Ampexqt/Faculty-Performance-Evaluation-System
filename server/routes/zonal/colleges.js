@@ -16,7 +16,8 @@ router.get('/', async (req, res) => {
         dean_id,
         faculty_count,
         status,
-        created_at
+        created_at,
+        (SELECT CONCAT(first_name, ' ', last_name) FROM faculty WHERE college_id = colleges.id AND position = 'Dean' LIMIT 1) as dean_name
       FROM colleges
       WHERE status = 'active'
       ORDER BY college_name ASC
@@ -53,7 +54,8 @@ router.get('/:id', async (req, res) => {
         dean_id,
         faculty_count,
         status,
-        created_at
+        created_at,
+        (SELECT CONCAT(first_name, ' ', last_name) FROM faculty WHERE college_id = colleges.id AND position = 'Dean' LIMIT 1) as dean_name
       FROM colleges
       WHERE id = ?
     `, [id]);

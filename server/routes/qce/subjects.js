@@ -116,6 +116,8 @@ router.get('/assignments', async (req, res) => {
         let query = `
             SELECT 
                 fa.id,
+                fa.subject_id,
+                fa.faculty_id,
                 fa.section,
                 fa.schedule,
                 fa.room,
@@ -140,6 +142,11 @@ router.get('/assignments', async (req, res) => {
             params.push(department_id);
         }
 
+        if (req.query.faculty_id) {
+            query += ` AND fa.faculty_id = ?`;
+            params.push(req.query.faculty_id);
+        }
+
         query += ` ORDER BY s.subject_code ASC, fa.section ASC`;
 
         const [assignments] = await promisePool.query(query, params);
@@ -148,6 +155,8 @@ router.get('/assignments', async (req, res) => {
             success: true,
             data: assignments.map(a => ({
                 id: a.id,
+                subjectId: a.subject_id,
+                facultyId: a.faculty_id,
                 subjectCode: a.subject_code,
                 subjectName: a.subject_name,
                 section: a.section,
@@ -301,6 +310,141 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error deleting subject',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * PUT /api/qce/subjects/assignments/:id
+ * Update a subject assignment
+ */
+router.put('/assignments/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { subjectId, facultyId, section } = req.body;
+
+        // Validate required fields
+        if (!subjectId || !facultyId || !section) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Check if assignment exists
+        const [existing] = await promisePool.query(
+            'SELECT id FROM faculty_assignments WHERE id = ?',
+            [id]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Assignment not found'
+            });
+        }
+
+        // Update assignment
+        await promisePool.query(
+            'UPDATE faculty_assignments SET faculty_id = ?, subject_id = ?, section = ? WHERE id = ?',
+            [facultyId, subjectId, section, id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Assignment updated successfully'
+        });
+
+    } catch (error) {
+        console.error('Error updating assignment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating assignment',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/qce/subjects/assignments/:id
+ * Delete a subject assignment
+ */
+router.delete('/assignments/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if assignment exists
+        const [existing] = await promisePool.query(
+            'SELECT id FROM faculty_assignments WHERE id = ?',
+            [id]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Assignment not found'
+            });
+        }
+
+        // Delete assignment
+        await promisePool.query(
+            'DELETE FROM faculty_assignments WHERE id = ?',
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Assignment deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error deleting assignment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting assignment',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/qce/subjects/assignments/generate-code
+ * Save generated evaluation code for an assignment
+ */
+router.post('/assignments/generate-code', async (req, res) => {
+    try {
+        const { assignmentId, code } = req.body;
+
+        if (!assignmentId || !code) {
+            return res.status(400).json({
+                success: false,
+                message: 'Assignment ID and Code are required'
+            });
+        }
+
+        const [result] = await promisePool.query(
+            'UPDATE faculty_assignments SET eval_code = ? WHERE id = ?',
+            [code, assignmentId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Assignment not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Evaluation code saved successfully'
+        });
+
+    } catch (error) {
+        console.error('Error saving evaluation code:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error saving evaluation code',
             error: error.message
         });
     }

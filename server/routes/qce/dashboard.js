@@ -19,9 +19,12 @@ router.get('/', async (req, res) => {
             );
             const totalFaculty = facultyResult[0].count;
 
-            // 2. Placeholder for Subjects/Courses count
-            // TODO: Implement subjects table and query
-            const activeSubjects = 0;
+            // 2. Get active Subjects count for this department
+            const [subjectsResult] = await promisePool.query(
+                'SELECT COUNT(*) as count FROM subjects WHERE department_id = ? AND status = "active"',
+                [department_id]
+            );
+            const activeSubjects = subjectsResult[0].count;
 
             // 3. Placeholder for active evaluations
             const activeEvaluations = 0;

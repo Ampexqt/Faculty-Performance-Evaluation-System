@@ -47,6 +47,16 @@
     white-space: nowrap;
 }
 
+/* Close Button - Hidden on Desktop */
+.closeButton {
+    display: none;
+}
+
+/* Overlay - Hidden on Desktop */
+.overlay {
+    display: none;
+}
+
 /* ========== SCROLLBAR ========== */
 
 .sidebar::-webkit-scrollbar {
@@ -79,12 +89,64 @@
         position: fixed;
         left: -100%;
         top: var(--header-height);
-        z-index: var(--z-fixed);
-        transition: left var(--transition-base);
+        z-index: var(--z-modal);
+        width: 280px;
+        transition: left 0.3s ease-in-out;
         box-shadow: var(--shadow-lg);
     }
 
-    .sidebar.open {
+    .sidebar.mobileOpen {
         left: 0;
+    }
+
+    /* Show close button on mobile */
+    .closeButton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 36px;
+        height: 36px;
+        background-color: transparent;
+        border: none;
+        border-radius: var(--radius-md);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        z-index: 10;
+    }
+
+    .closeButton:hover {
+        background-color: var(--color-background-hover);
+        color: var(--color-text-primary);
+    }
+
+    /* Show overlay on mobile when sidebar is open */
+    .overlay {
+        display: block;
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: calc(var(--z-modal) - 1);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .nav {
+        padding-top: 4rem;
     }
 }

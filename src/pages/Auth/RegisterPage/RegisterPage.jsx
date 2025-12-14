@@ -1,46 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock, User, IdCard } from 'lucide-react';
 import { Input } from '@/components/Input/Input';
 import { Select } from '@/components/Select/Select';
 import { Button } from '@/components/Button/Button';
+import { useToast } from '@/hooks/useToast';
 import styles from './RegisterPage.module.css';
 
 // Mock data - Replace with actual API calls
-const DEPARTMENTS = [
-    { value: 'ccs', label: 'College of Computer Studies' },
-    { value: 'coe', label: 'College of Engineering' },
-    { value: 'cba', label: 'College of Business Administration' },
-    { value: 'cte', label: 'College of Teacher Education' },
-    { value: 'cas', label: 'College of Arts and Sciences' },
-];
-
-const PROGRAMS_BY_DEPARTMENT = {
-    ccs: [
-        { value: 'bsit', label: 'BS Information Technology' },
-        { value: 'bscs', label: 'BS Computer Science' },
-        { value: 'bsis', label: 'BS Information Systems' },
-    ],
-    coe: [
-        { value: 'bsce', label: 'BS Civil Engineering' },
-        { value: 'bsee', label: 'BS Electrical Engineering' },
-        { value: 'bsme', label: 'BS Mechanical Engineering' },
-    ],
-    cba: [
-        { value: 'bsba', label: 'BS Business Administration' },
-        { value: 'bsaccountancy', label: 'BS Accountancy' },
-        { value: 'bshm', label: 'BS Hospitality Management' },
-    ],
-    cte: [
-        { value: 'beed', label: 'Bachelor of Elementary Education' },
-        { value: 'bsed', label: 'Bachelor of Secondary Education' },
-    ],
-    cas: [
-        { value: 'bspsych', label: 'BS Psychology' },
-        { value: 'ab-english', label: 'AB English' },
-        { value: 'ab-polsci', label: 'AB Political Science' },
-    ],
-};
+// Mock data - Replace with actual API calls
+// const DEPARTMENTS = [];
+// const PROGRAMS_BY_DEPARTMENT = {};
 
 const YEAR_LEVELS = [
     { value: '1', label: '1st Year' },
@@ -60,13 +30,20 @@ const SECTIONS = [
     { value: 'H', label: 'Section H' },
 ];
 
+const SEX_OPTIONS = [
+    { value: 'Male', label: 'Male' },
+    { value: 'Female', label: 'Female' },
+];
+
 export function RegisterPage() {
     const navigate = useNavigate();
+    const { toast } = useToast();
     const [formData, setFormData] = useState({
         schoolId: '',
         firstName: '',
         lastName: '',
         middleInitial: '',
+        sex: '',
         email: '',
         department: '',
         program: '',
@@ -76,7 +53,59 @@ export function RegisterPage() {
         confirmPassword: '',
     });
     const [errors, setErrors] = useState({});
+    const [departments, setDepartments] = useState([]);
     const [availablePrograms, setAvailablePrograms] = useState([]);
+
+    // Fetch colleges (departments) on mount
+    useEffect(() => {
+        const fetchColleges = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/zonal/colleges');
+                const data = await response.json();
+                if (data.success) {
+                    setDepartments(data.data.map(college => ({
+                        value: college.id,
+                        label: college.college_name
+                    })));
+                } else {
+                    console.error('Failed to fetch colleges:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching colleges:', error);
+            }
+        };
+
+        fetchColleges();
+    }, []);
+
+    // Fetch programs when department (college) changes
+    useEffect(() => {
+        const fetchPrograms = async () => {
+            if (!formData.department) {
+                setAvailablePrograms([]);
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/qce/programs?college_id=${formData.department}`);
+                const data = await response.json();
+                if (data.success) {
+                    setAvailablePrograms(data.data.map(program => ({
+                        value: program.id,
+                        label: program.name
+                    })));
+                } else {
+                    console.error('Failed to fetch programs:', data.message);
+                    setAvailablePrograms([]);
+                }
+            } catch (error) {
+                console.error('Error fetching programs:', error);
+                setAvailablePrograms([]);
+            }
+        };
+
+        fetchPrograms();
+    }, [formData.department]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -95,7 +124,7 @@ export function RegisterPage() {
 
         // Update available programs when department changes
         if (name === 'department') {
-            setAvailablePrograms(PROGRAMS_BY_DEPARTMENT[value] || []);
+            // Programs will be fetched by the useEffect hook
             setFormData(prev => ({
                 ...prev,
                 program: '' // Reset program when department changes
@@ -109,8 +138,8 @@ export function RegisterPage() {
         // School ID validation
         if (!formData.schoolId) {
             newErrors.schoolId = 'School ID is required';
-        } else if (!/^\d{4}-\d{5}$/.test(formData.schoolId)) {
-            newErrors.schoolId = 'School ID must be in format: YYYY-NNNNN (e.g., 2023-00123)';
+        } else if (!/^\d{7}$/.test(formData.schoolId)) {
+            newErrors.schoolId = 'School ID must be 7 numbers (e.g. 2365335)';
         }
 
         // First Name validation
@@ -159,6 +188,11 @@ export function RegisterPage() {
             newErrors.section = 'Section is required';
         }
 
+        // Sex validation
+        if (!formData.sex) {
+            newErrors.sex = 'Sex is required';
+        }
+
         // Password validation
         if (!formData.password) {
             newErrors.password = 'Password is required';
@@ -176,7 +210,7 @@ export function RegisterPage() {
         return newErrors;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const newErrors = validateForm();
@@ -186,12 +220,39 @@ export function RegisterPage() {
             return;
         }
 
-        // TODO: Replace with actual API call
-        console.log('Registration data:', formData);
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
 
-        // Mock successful registration
-        alert('Registration successful! Please login with your credentials.');
-        navigate('/login');
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success('Registration successful! Please login with your credentials.');
+                // Add a small delay so user can see the toast before navigating
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            } else {
+                setErrors(prev => ({
+                    ...prev,
+                    submit: data.message || 'Registration failed'
+                }));
+                // Show error as toast if it's a general error
+                if (!data.message.includes('School ID') && !data.message.includes('Email')) {
+                    toast.error(data.message || 'Registration failed');
+                } else if (data.message.includes('Student with this School ID or Email already exists')) {
+                    toast.error(data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            toast.error('An error occurred during registration. Please try again.');
+        }
     };
 
     return (
@@ -216,7 +277,7 @@ export function RegisterPage() {
                                 label="School ID"
                                 name="schoolId"
                                 type="text"
-                                placeholder="e.g. 2023-00123"
+                                placeholder="e.g. 2365335"
                                 value={formData.schoolId}
                                 onChange={handleChange}
                                 error={errors.schoolId}
@@ -263,6 +324,17 @@ export function RegisterPage() {
                             />
                         </div>
 
+                        <Select
+                            label="Sex"
+                            name="sex"
+                            placeholder="Select sex"
+                            value={formData.sex}
+                            onChange={handleChange}
+                            options={SEX_OPTIONS}
+                            error={errors.sex}
+                            required
+                        />
+
                         <Input
                             label="Email"
                             name="email"
@@ -281,7 +353,7 @@ export function RegisterPage() {
                             placeholder="Select your department"
                             value={formData.department}
                             onChange={handleChange}
-                            options={DEPARTMENTS}
+                            options={departments}
                             error={errors.department}
                             required
                         />

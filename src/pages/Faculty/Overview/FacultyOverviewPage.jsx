@@ -11,12 +11,35 @@ export function FacultyOverviewPage() {
         position: ''
     });
 
+    const [stats, setStats] = useState({
+        assignedSubjects: 0,
+        totalStudentsHandled: 0,
+        studentsEvaluated: 0
+    });
+
     useEffect(() => {
         const fullName = localStorage.getItem('fullName') || 'Faculty Member';
         const collegeName = localStorage.getItem('collegeName') || 'College';
         const position = localStorage.getItem('position') || 'Faculty';
+        const userId = localStorage.getItem('userId');
 
         setUserInfo({ fullName, collegeName, position });
+
+        // Fetch stats
+        const fetchStats = async () => {
+            if (!userId) return;
+            try {
+                const response = await fetch(`http://localhost:5000/api/faculty/dashboard/stats?faculty_id=${userId}`);
+                const data = await response.json();
+                if (data.success) {
+                    setStats(data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        };
+
+        fetchStats();
     }, []);
 
     return (
@@ -40,22 +63,22 @@ export function FacultyOverviewPage() {
 
                 <div className={styles.stats}>
                     <StatCard
-                        title="Active Subjects"
-                        value={3} // Placeholder
+                        title="Assigned Subjects"
+                        value={stats.assignedSubjects}
                         subtitle="Current semester"
                         icon={BookOpen}
                     />
                     <StatCard
                         title="Students Evaluated"
-                        value={47} // Placeholder
+                        value={stats.studentsEvaluated}
                         subtitle="Total responses received"
-                        icon={Users}
+                        icon={CheckCircle}
                     />
                     <StatCard
-                        title="Completion Rate"
-                        value="35%" // Placeholder
-                        subtitle="Overall progress"
-                        icon={CheckCircle}
+                        title="Total Students Handled"
+                        value={stats.totalStudentsHandled}
+                        subtitle="Across all sections"
+                        icon={Users}
                     />
                 </div>
             </div>

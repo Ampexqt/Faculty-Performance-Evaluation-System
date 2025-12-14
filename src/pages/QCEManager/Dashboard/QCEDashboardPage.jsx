@@ -7,27 +7,9 @@ import { Button } from '@/components/Button/Button';
 import { Badge } from '@/components/Badge/Badge';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import { Modal } from '@/components/Modal/Modal';
+import { ToastContainer } from '@/components/Toast/Toast';
+import { useToast } from '@/hooks/useToast';
 import styles from './QCEDashboardPage.module.css';
-
-// Mock faculty data with roles - KEEPING FOR FORM
-const mockFaculty = [
-    { id: 1, name: 'Prof. Alan Turing', role: 'Professor' },
-    { id: 2, name: 'Prof. Ada Lovelace', role: 'Professor' },
-    { id: 3, name: 'Dr. Grace Hopper', role: 'Dean' },
-    { id: 4, name: 'Inst. Linus Torvalds', role: 'Visiting Lecturer' },
-];
-
-const mockSubjects = [
-    { id: 1, code: 'CS101', name: 'Introduction to Programming' },
-    { id: 2, code: 'CS102', name: 'Data Structures' },
-    { id: 3, code: 'IT201', name: 'Database Management' },
-];
-
-const mockSections = [
-    { id: 1, name: 'BSCS 1-A' },
-    { id: 2, name: 'BSCS 1-B' },
-    { id: 3, name: 'BSIT 2-A' },
-];
 
 // Function to generate random code
 const generateCode = () => {
@@ -53,20 +35,31 @@ export function QCEDashboardPage() {
         section: '',
     });
     const [generatedCode, setGeneratedCode] = useState('');
-    const [filteredFaculty, setFilteredFaculty] = useState([]);
+
+    // Toast hook
+    const { toasts, removeToast, success, error: showError } = useToast();
+
+    // Real data states
+    const [facultyList, setFacultyList] = useState([]);
+    const [facultyAssignments, setFacultyAssignments] = useState([]); // All assignments for selected faculty
+    const [subjectList, setSubjectList] = useState([]); // Unique subjects derived from assignments
+    const [sectionList, setSectionList] = useState([]); // Sections for selected subject
+    const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
     // Get user info from localStorage
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         collegeName: '',
-        departmentName: ''
+        departmentName: '',
+        collegeId: null
     });
 
     useEffect(() => {
         const fullName = localStorage.getItem('fullName') || 'QCE Manager';
         const collegeName = localStorage.getItem('collegeName') || 'Not Assigned';
         const departmentName = localStorage.getItem('departmentName') || '';
-        setUserInfo({ fullName, collegeName, departmentName });
+        const collegeId = localStorage.getItem('collegeId');
+        setUserInfo({ fullName, collegeName, departmentName, collegeId });
     }, []);
 
     const [stats, setStats] = useState({
@@ -80,15 +73,11 @@ export function QCEDashboardPage() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const userStr = localStorage.getItem('user');
-                if (userStr) {
-                    const user = JSON.parse(userStr);
-                    if (user.college_id) {
-                        const response = await fetch(`http://localhost:5000/api/qce/stats?college_id=${user.college_id}`);
-                        const data = await response.json();
-                        if (data.success) {
-                            setStats(data.data);
-                        }
+                if (userInfo.collegeId) {
+                    const response = await fetch(`http://localhost:5000/api/qce/stats?college_id=${userInfo.collegeId}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        setStats(data.data);
                     }
                 }
             } catch (error) {
@@ -96,18 +85,95 @@ export function QCEDashboardPage() {
             }
         };
 
-        fetchStats();
-    }, []);
-
-    // Filter faculty by role
-    useEffect(() => {
-        if (formData.facultyRole) {
-            const filtered = mockFaculty.filter(f => f.role === formData.facultyRole);
-            setFilteredFaculty(filtered);
-        } else {
-            setFilteredFaculty([]);
+        if (userInfo.collegeId) {
+            fetchStats();
         }
-    }, [formData.facultyRole]);
+    }, [userInfo.collegeId]);
+
+    // Fetch faculty when Role changes
+    useEffect(() => {
+        const fetchFaculty = async () => {
+            if (!formData.facultyRole || !userInfo.collegeId) {
+                setFacultyList([]);
+                return;
+            }
+
+            try {
+                setIsLoadingOptions(true);
+                const response = await fetch(`http://localhost:5000/api/qce/faculty?college_id=${userInfo.collegeId}&role=${formData.facultyRole}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    setFacultyList(data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching faculty:', error);
+            } finally {
+                setIsLoadingOptions(false);
+            }
+        };
+
+        fetchFaculty();
+    }, [formData.facultyRole, userInfo.collegeId]);
+
+    // Fetch faculty assignments when Faculty selected
+    useEffect(() => {
+        const fetchAssignments = async () => {
+            if (!formData.faculty) {
+                setFacultyAssignments([]);
+                setSubjectList([]);
+                return;
+            }
+
+            try {
+                setIsLoadingOptions(true);
+                const response = await fetch(`http://localhost:5000/api/qce/subjects/assignments?faculty_id=${formData.faculty}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    setFacultyAssignments(data.data);
+
+                    // Extract unique subjects
+                    const uniqueSubjects = [];
+                    const map = new Map();
+                    for (const item of data.data) {
+                        if (!map.has(item.subjectId)) {
+                            map.set(item.subjectId, true);
+                            uniqueSubjects.push({
+                                id: item.subjectId,
+                                code: item.subjectCode,
+                                name: item.subjectName
+                            });
+                        }
+                    }
+                    setSubjectList(uniqueSubjects);
+                }
+            } catch (error) {
+                console.error('Error fetching assignments:', error);
+            } finally {
+                setIsLoadingOptions(false);
+            }
+        };
+
+        fetchAssignments();
+    }, [formData.faculty]);
+
+    // Update Section list when Subject selected
+    useEffect(() => {
+        if (!formData.subject || facultyAssignments.length === 0) {
+            setSectionList([]);
+            return;
+        }
+
+        const sections = facultyAssignments
+            .filter(a => a.subjectId.toString() === formData.subject.toString())
+            .map(a => ({
+                id: a.id, // Use Assignment ID as the value
+                name: a.section
+            }));
+
+        setSectionList(sections);
+    }, [formData.subject, facultyAssignments]);
 
     // Generate code when all fields are filled
     useEffect(() => {
@@ -120,20 +186,55 @@ export function QCEDashboardPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value,
-            // Reset faculty when role changes
-            ...(name === 'facultyRole' ? { faculty: '' } : {})
-        }));
+        setFormData(prev => {
+            const newState = { ...prev, [name]: value };
+
+            // Reset dependent fields
+            if (name === 'facultyRole') {
+                newState.faculty = '';
+                newState.subject = '';
+                newState.section = '';
+            } else if (name === 'faculty') {
+                newState.subject = '';
+                newState.section = '';
+            } else if (name === 'subject') {
+                newState.section = '';
+            }
+
+            return newState;
+        });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Generating evaluation code:', { ...formData, code: generatedCode });
-        setIsModalOpen(false);
-        setFormData({ facultyRole: '', faculty: '', subject: '', section: '' });
-        setGeneratedCode('');
+
+        try {
+            const response = await fetch('http://localhost:5000/api/qce/subjects/assignments/generate-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    assignmentId: formData.section, // This now holds the assignment ID
+                    code: generatedCode
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                success('Evaluation code generated and activated successfully!');
+                setIsModalOpen(false);
+                setFormData({ facultyRole: '', faculty: '', subject: '', section: '' });
+                setGeneratedCode('');
+                // Optionally refresh evaluations list here
+            } else {
+                showError('Failed to save code: ' + data.message);
+            }
+        } catch (err) {
+            console.error('Error saving code:', err);
+            showError('An error occurred while saving the code.');
+        }
     };
 
     const handleCancel = () => {
@@ -211,6 +312,7 @@ export function QCEDashboardPage() {
             userName={userInfo.fullName}
             notificationCount={2}
         >
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
@@ -302,6 +404,7 @@ export function QCEDashboardPage() {
                                 <option value="Visiting Lecturer">Visiting Lecturer</option>
                                 <option value="Program Chair">Program Chair</option>
                                 <option value="Department Chair">Department Chair</option>
+                                <option value="Faculty">Faculty</option>
                             </select>
                         </div>
 
@@ -315,10 +418,10 @@ export function QCEDashboardPage() {
                                 onChange={handleInputChange}
                                 className={styles.select}
                                 required
-                                disabled={!formData.facultyRole}
+                                disabled={!formData.facultyRole || isLoadingOptions}
                             >
                                 <option value="">Select an option</option>
-                                {filteredFaculty.map(f => (
+                                {facultyList.map(f => (
                                     <option key={f.id} value={f.id}>{f.name}</option>
                                 ))}
                             </select>
@@ -334,9 +437,10 @@ export function QCEDashboardPage() {
                                 onChange={handleInputChange}
                                 className={styles.select}
                                 required
+                                disabled={!formData.faculty || isLoadingOptions}
                             >
                                 <option value="">Select an option</option>
-                                {mockSubjects.map(s => (
+                                {subjectList.map(s => (
                                     <option key={s.id} value={s.id}>{s.code} - {s.name}</option>
                                 ))}
                             </select>
@@ -352,9 +456,10 @@ export function QCEDashboardPage() {
                                 onChange={handleInputChange}
                                 className={styles.select}
                                 required
+                                disabled={!formData.subject || isLoadingOptions}
                             >
                                 <option value="">Select an option</option>
-                                {mockSections.map(s => (
+                                {sectionList.map(s => (
                                     <option key={s.id} value={s.id}>{s.name}</option>
                                 ))}
                             </select>

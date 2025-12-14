@@ -1,67 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Copy } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Badge } from '@/components/Badge/Badge';
 import styles from './MySubjectsPage.module.css';
 
-// Mock data - Subject evaluation status
-const mockSubjects = [
-    {
-        id: 1,
-        subjectCode: 'CS101',
-        subjectName: 'Intro to Computing',
-        section: 'BSCS 1-A',
-        evalCode: 'X7K-9P2',
-        progress: 71,
-        totalStudents: 100
-    },
-    {
-        id: 2,
-        subjectCode: 'CS102',
-        subjectName: 'Programming I',
-        section: 'BSCS 1-B',
-        evalCode: 'M4R-2L9',
-        progress: 39,
-        totalStudents: 100
-    },
-];
-
-// Mock data - Recent evaluators
-const mockEvaluators = [
-    {
-        id: 1,
-        studentName: 'Student Name Hidden',
-        section: 'BSCS 1-A',
-        status: 'Submitted'
-    },
-    {
-        id: 2,
-        studentName: 'Student Name Hidden',
-        section: 'BSCS 1-A',
-        status: 'Submitted'
-    },
-    {
-        id: 3,
-        studentName: 'Student Name Hidden',
-        section: 'BSCS 1-A',
-        status: 'Submitted'
-    },
-];
-
 export function MySubjectsPage() {
-    const [subjects] = useState(mockSubjects);
-    const [evaluators] = useState(mockEvaluators);
+    const [subjects, setSubjects] = useState([]);
+    const [evaluators, setEvaluators] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const getProgressColor = (progress) => {
-        if (progress >= 70) return styles.progressHigh;
-        if (progress >= 40) return styles.progressMedium;
+    useEffect(() => {
+        const fetchSubjectsData = async () => {
+            const userId = localStorage.getItem('userId');
+            if (!userId) return;
+
+            try {
+                setIsLoading(true);
+                // Fetch subjects
+                const subjectsRes = await fetch(`http://localhost:5000/api/faculty/subjects/list?faculty_id=${userId}`);
+                const subjectsData = await subjectsRes.json();
+
+                if (subjectsData.success) {
+                    setSubjects(subjectsData.data);
+                }
+
+                // Fetch evaluators
+                const evaluatorsRes = await fetch(`http://localhost:5000/api/faculty/subjects/evaluators?faculty_id=${userId}`);
+                const evaluatorsData = await evaluatorsRes.json();
+
+                if (evaluatorsData.success) {
+                    setEvaluators(evaluatorsData.data);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSubjectsData();
+    }, []);
+
+    const getProgressColor = (evaluated, total) => {
+        if (total === 0) return styles.progressLow;
+        const percentage = (evaluated / total) * 100;
+        if (percentage >= 70) return styles.progressHigh;
+        if (percentage >= 40) return styles.progressMedium;
         return styles.progressLow;
     };
 
     return (
         <DashboardLayout
             role="Faculty"
-            userName="Faculty Member"
+            userName={localStorage.getItem('fullName') || "Faculty Member"}
             notificationCount={3}
         >
             <div className={styles.page}>
@@ -84,42 +75,56 @@ export function MySubjectsPage() {
                                         <th>Subject</th>
                                         <th>Section</th>
                                         <th>Eval Code</th>
-                                        <th>Progress</th>
+                                        <th>Student Evaluate</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {subjects.map((subject) => (
-                                        <tr key={subject.id}>
-                                            <td>
-                                                <div className={styles.subjectInfo}>
-                                                    <span className={styles.subjectCode}>{subject.subjectCode}</span>
-                                                    <span className={styles.subjectName}>{subject.subjectName}</span>
-                                                </div>
-                                            </td>
-                                            <td>{subject.section}</td>
-                                            <td>
-                                                <div className={styles.evalCode}>
-                                                    {subject.evalCode}
-                                                    <button className={styles.copyButton}>
-                                                        <Copy size={16} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className={styles.progressContainer}>
-                                                    <div className={styles.progressBar}>
-                                                        <div
-                                                            className={`${styles.progressFill} ${getProgressColor(subject.progress)}`}
-                                                            style={{ width: `${subject.progress}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <span className={styles.progressText}>
-                                                        {subject.progress}/{subject.totalStudents}
-                                                    </span>
-                                                </div>
+                                    {subjects.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
+                                                No subjects assigned yet.
                                             </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        subjects.map((subject) => (
+                                            <tr key={subject.id}>
+                                                <td>
+                                                    <div className={styles.subjectInfo}>
+                                                        <span className={styles.subjectCode}>{subject.subject_code}</span>
+                                                        <span className={styles.subjectName}>{subject.subject_name}</span>
+                                                    </div>
+                                                </td>
+                                                <td>{subject.section}</td>
+                                                <td>
+                                                    <div className={styles.evalCode}>
+                                                        {subject.evalCode ? (
+                                                            <>
+                                                                {subject.evalCode}
+                                                                <button className={styles.copyButton}>
+                                                                    <Copy size={16} />
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>--</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className={styles.progressContainer}>
+                                                        <div className={styles.progressBar}>
+                                                            <div
+                                                                className={`${styles.progressFill} ${getProgressColor(subject.students_evaluated, subject.total_students)}`}
+                                                                style={{ width: `${subject.total_students > 0 ? (subject.students_evaluated / subject.total_students) * 100 : 0}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        <span className={styles.progressText}>
+                                                            {subject.students_evaluated}/{subject.total_students}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -130,15 +135,19 @@ export function MySubjectsPage() {
                         <h2 className={styles.sectionTitle}>Recent Evaluators</h2>
 
                         <div className={styles.evaluatorsList}>
-                            {evaluators.map((evaluator) => (
-                                <div key={evaluator.id} className={styles.evaluatorCard}>
-                                    <div className={styles.evaluatorInfo}>
-                                        <span className={styles.evaluatorName}>{evaluator.studentName}</span>
-                                        <span className={styles.evaluatorSection}>{evaluator.section}</span>
+                            {evaluators.length === 0 ? (
+                                <p style={{ color: '#6b7280', textAlign: 'center' }}>No evaluations yet.</p>
+                            ) : (
+                                evaluators.map((evaluator) => (
+                                    <div key={evaluator.id} className={styles.evaluatorCard}>
+                                        <div className={styles.evaluatorInfo}>
+                                            <span className={styles.evaluatorName}>{evaluator.studentName}</span>
+                                            <span className={styles.evaluatorSection}>{evaluator.section}</span>
+                                        </div>
+                                        <Badge variant="success">{evaluator.status}</Badge>
                                     </div>
-                                    <Badge variant="success">{evaluator.status}</Badge>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>

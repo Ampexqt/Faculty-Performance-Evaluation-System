@@ -9,7 +9,8 @@ import {
     Settings,
     ClipboardList,
     Briefcase,
-    GraduationCap
+    GraduationCap,
+    X
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import styles from './Sidebar.module.css';
@@ -57,6 +58,8 @@ const studentMenuItems = [
 
 export function Sidebar({
     role = 'Zonal Admin',
+    isMobileOpen = false,
+    onClose,
     className,
     ...props
 }) {
@@ -75,21 +78,41 @@ export function Sidebar({
     }
 
     return (
-        <aside className={cn(styles.sidebar, className)} {...props}>
-            <nav className={styles.nav}>
-                {menuItems.map((item, index) => (
-                    <NavLink
-                        key={index}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            cn(styles.navItem, isActive && styles.active)
-                        }
-                    >
-                        <item.icon size={20} className={styles.icon} />
-                        <span className={styles.label}>{item.label}</span>
-                    </NavLink>
-                ))}
-            </nav>
-        </aside>
+        <>
+            {/* Mobile Overlay */}
+            {isMobileOpen && (
+                <div className={styles.overlay} onClick={onClose} />
+            )}
+
+            <aside
+                className={cn(
+                    styles.sidebar,
+                    isMobileOpen && styles.mobileOpen,
+                    className
+                )}
+                {...props}
+            >
+                {/* Mobile Close Button */}
+                <button className={styles.closeButton} onClick={onClose}>
+                    <X size={24} />
+                </button>
+
+                <nav className={styles.nav}>
+                    {menuItems.map((item, index) => (
+                        <NavLink
+                            key={index}
+                            to={item.path}
+                            className={({ isActive }) =>
+                                cn(styles.navItem, isActive && styles.active)
+                            }
+                            onClick={onClose}
+                        >
+                            <item.icon size={20} className={styles.icon} />
+                            <span className={styles.label}>{item.label}</span>
+                        </NavLink>
+                    ))}
+                </nav>
+            </aside>
+        </>
     );
 }

@@ -113,7 +113,8 @@
 @media (max-width: 768px) {
     .input {
         font-size: var(--text-sm);
-        padding: var(--spacing-xs) var(--spacing-sm);
+        padding: 0.75rem var(--spacing-sm);
+        min-height: 48px;
     }
 
     .withIcon {

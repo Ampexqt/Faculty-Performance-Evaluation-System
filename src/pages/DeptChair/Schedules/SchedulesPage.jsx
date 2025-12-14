@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './SchedulesPage.module.css';
 
 export function SchedulesPage() {
@@ -12,6 +13,9 @@ export function SchedulesPage() {
     const [subjectsList, setSubjectsList] = useState([]);
     const [facultyList, setFacultyList] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [selectedAssignment, setSelectedAssignment] = useState(null);
     const [userInfo, setUserInfo] = useState({
         departmentId: null,
         collegeId: null,
@@ -24,6 +28,24 @@ export function SchedulesPage() {
         section: '',
         facultyId: '',
     });
+
+    const [editFormData, setEditFormData] = useState({
+        subjectId: '',
+        yearLevel: '',
+        section: '',
+        facultyId: '',
+    });
+
+    const [toasts, setToasts] = useState([]);
+
+    const addToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    };
 
     useEffect(() => {
         const departmentId = localStorage.getItem('departmentId');
@@ -80,6 +102,8 @@ export function SchedulesPage() {
             if (data.success) {
                 setSchedules(data.data.map(item => ({
                     id: item.id,
+                    subjectId: item.subjectId,
+                    facultyId: item.facultyId,
                     subject: item.subjectCode,
                     descriptiveTitle: item.subjectName,
                     section: item.section,
@@ -141,15 +165,16 @@ export function SchedulesPage() {
             });
             const result = await response.json();
             if (result.success) {
-                alert('Subject assigned successfully');
+                addToast('Subject assigned successfully', 'success');
                 setIsModalOpen(false);
                 setFormData({ subjectId: '', yearLevel: '', section: '', facultyId: '' });
                 fetchAssignments();
             } else {
-                alert(result.message);
+                addToast(result.message, 'error');
             }
         } catch (error) {
             console.error('Error assigning subject:', error);
+            addToast('Error assigning subject', 'error');
         }
     };
 
@@ -161,6 +186,79 @@ export function SchedulesPage() {
             section: '',
             facultyId: '',
         });
+    };
+
+    const handleEditClick = (assignment) => {
+        setSelectedAssignment(assignment);
+        // Parse section (e.g., "4-B" -> yearLevel: "4", section: "B")
+        const [yearLevel, section] = assignment.section.split('-');
+        setEditFormData({
+            subjectId: assignment.subjectId || '',
+            yearLevel: yearLevel || '',
+            section: section || '',
+            facultyId: assignment.facultyId || ''
+        });
+        setEditModalOpen(true);
+    };
+
+    const handleDeleteClick = (assignment) => {
+        setSelectedAssignment(assignment);
+        setDeleteModalOpen(true);
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleUpdateAssignment = async (e) => {
+        e.preventDefault();
+        const sectionName = `${editFormData.yearLevel}-${editFormData.section}`;
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/subjects/assignments/${selectedAssignment.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subjectId: editFormData.subjectId,
+                    facultyId: editFormData.facultyId,
+                    section: sectionName
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                addToast('Assignment updated successfully', 'success');
+                setEditModalOpen(false);
+                fetchAssignments();
+            } else {
+                addToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error updating assignment:', error);
+            addToast('Error updating assignment', 'error');
+        }
+    };
+
+    const handleDeleteAssignment = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/subjects/assignments/${selectedAssignment.id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (result.success) {
+                addToast('Assignment deleted successfully', 'success');
+                setDeleteModalOpen(false);
+                fetchAssignments();
+            } else {
+                addToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting assignment:', error);
+            addToast('Error deleting assignment', 'error');
+        }
     };
 
     const columns = [
@@ -182,7 +280,30 @@ export function SchedulesPage() {
         {
             header: 'Faculty',
             accessor: 'faculty',
-            width: '30%',
+            width: '25%',
+        },
+        {
+            header: 'Actions',
+            accessor: 'actions',
+            width: '10%',
+            render: (value, assignment) => (
+                <div className={styles.actionButtons}>
+                    <button
+                        className={styles.iconButton}
+                        onClick={() => handleEditClick(assignment)}
+                        title="Edit"
+                    >
+                        <Edit size={16} />
+                    </button>
+                    <button
+                        className={styles.iconButton}
+                        onClick={() => handleDeleteClick(assignment)}
+                        title="Delete"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+            ),
         },
     ];
 
@@ -321,7 +442,152 @@ export function SchedulesPage() {
                         </div>
                     </form>
                 </Modal>
+
+                {/* Edit Assignment Modal */}
+                <Modal
+                    isOpen={editModalOpen}
+                    onClose={() => setEditModalOpen(false)}
+                    title="Edit Assignment"
+                >
+                    <form onSubmit={handleUpdateAssignment} className={styles.modalForm}>
+                        {/* Subject Dropdown */}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Subject <span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="subjectId"
+                                className={styles.select}
+                                value={editFormData.subjectId}
+                                onChange={handleEditInputChange}
+                                required
+                            >
+                                <option value="">Select Subject</option>
+                                {subjectsList.map(subject => (
+                                    <option key={subject.id} value={subject.id}>
+                                        {subject.code} - {subject.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Year Level and Section Row */}
+                        <div className={styles.formRow}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                    Year Level <span className={styles.required}>*</span>
+                                </label>
+                                <select
+                                    name="yearLevel"
+                                    className={styles.select}
+                                    value={editFormData.yearLevel}
+                                    onChange={handleEditInputChange}
+                                    required
+                                >
+                                    <option value="">Select Year</option>
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                </select>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                    Section <span className={styles.required}>*</span>
+                                </label>
+                                <select
+                                    name="section"
+                                    className={styles.select}
+                                    value={editFormData.section}
+                                    onChange={handleEditInputChange}
+                                    required
+                                >
+                                    <option value="">Select Section</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                    <option value="E">E</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                    <option value="H">H</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Faculty Dropdown */}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Faculty <span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="facultyId"
+                                className={styles.select}
+                                value={editFormData.facultyId}
+                                onChange={handleEditInputChange}
+                                required
+                            >
+                                <option value="">Select Faculty</option>
+                                {facultyList.map(faculty => (
+                                    <option key={faculty.id} value={faculty.id}>
+                                        {faculty.firstName} {faculty.lastName} - {faculty.role}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setEditModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Save Changes
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={deleteModalOpen}
+                    onClose={() => setDeleteModalOpen(false)}
+                    title="Delete Assignment"
+                >
+                    <div className={styles.deleteConfirmation}>
+                        <p>Are you sure you want to delete this assignment?</p>
+                        <p><strong>{selectedAssignment?.subject} - {selectedAssignment?.descriptiveTitle}</strong></p>
+                        <p>Section: <strong>{selectedAssignment?.section}</strong></p>
+                        <p>Faculty: <strong>{selectedAssignment?.faculty}</strong></p>
+                        <p className={styles.warningText}>This action cannot be undone.</p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setDeleteModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="danger"
+                                onClick={handleDeleteAssignment}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
         </DashboardLayout>
     );
 }

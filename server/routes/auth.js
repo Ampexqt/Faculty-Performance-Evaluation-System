@@ -285,6 +285,65 @@ router.post('/login', async (req, res) => {
             }
         }
 
+        // Check students table
+        const [students] = await promisePool.query(
+            'SELECT * FROM students WHERE (email = ? OR student_id = ?) AND status = ?',
+            [email, email, 'active']
+        );
+
+        if (students.length > 0) {
+            const student = students[0];
+
+            // Verify password
+            const isPasswordValid = await bcrypt.compare(password, student.password);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid email or password'
+                });
+            }
+
+            // Get college and program info
+            let collegeName = null;
+            let programName = null;
+
+            if (student.department_id) {
+                const [colleges] = await promisePool.query(
+                    'SELECT college_name FROM colleges WHERE id = ?',
+                    [student.department_id]
+                );
+                if (colleges.length > 0) collegeName = colleges[0].college_name;
+            }
+
+            if (student.program_id) {
+                const [programs] = await promisePool.query(
+                    'SELECT program_name FROM programs WHERE id = ?',
+                    [student.program_id]
+                );
+                if (programs.length > 0) programName = programs[0].program_name;
+            }
+
+            return res.json({
+                success: true,
+                message: 'Login successful',
+                user: {
+                    id: student.id,
+                    student_id: student.student_id,
+                    email: student.email,
+                    full_name: `${student.first_name} ${student.last_name}`,
+                    role: 'Student',
+                    college_id: student.department_id,
+                    college_name: collegeName,
+                    program_id: student.program_id,
+                    program_name: programName,
+                    year_level: student.year_level,
+                    section: student.section,
+                    status: student.status
+                }
+            });
+        }
+
         // User not found in either table
         return res.status(401).json({
             success: false,
@@ -323,6 +382,103 @@ router.get('/verify', (req, res) => {
         success: false,
         message: 'Authentication verification not implemented yet'
     });
+});
+
+/**
+ * POST /api/auth/register
+ * Register new student
+ */
+router.post('/register', async (req, res) => {
+    try {
+        const {
+            schoolId,
+            firstName,
+            lastName,
+            middleInitial,
+            sex,
+            email,
+            department, // This is college_id
+            program,    // This is program_id
+            yearLevel,
+            section,
+            password
+        } = req.body;
+
+        // Basic validation
+        if (!schoolId || !firstName || !lastName || !email || !password || !department || !program) {
+            return res.status(400).json({
+                success: false,
+                message: 'All required fields must be provided'
+            });
+        }
+
+        // Check if student already exists (by School ID or Email)
+        const [existing] = await promisePool.query(
+            'SELECT id FROM students WHERE student_id = ? OR email = ?',
+            [schoolId, email]
+        );
+
+        if (existing.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Student with this School ID or Email already exists'
+            });
+        }
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Insert new student
+        // Mapping: department -> department_id (which is college), program -> program_id
+        const [result] = await promisePool.query(
+            `INSERT INTO students (
+                student_id, 
+                first_name, 
+                middle_name, 
+                last_name, 
+                sex,
+                email, 
+                password, 
+                department_id, 
+                program_id, 
+                year_level, 
+                section, 
+                status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+            [
+                schoolId,
+                firstName,
+                middleInitial || null,
+                lastName,
+                sex,
+                email,
+                hashedPassword,
+                department,
+                program,
+                yearLevel,
+                section
+            ]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Registration successful',
+            data: {
+                id: result.insertId,
+                student_id: schoolId,
+                email: email
+            }
+        });
+
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Registration failed',
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;

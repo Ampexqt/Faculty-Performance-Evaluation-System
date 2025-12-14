@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, MoreHorizontal } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
@@ -6,37 +6,15 @@ import { Button } from '@/components/Button/Button';
 import { Badge } from '@/components/Badge/Badge';
 import { Input } from '@/components/Input/Input';
 import { Modal } from '@/components/Modal/Modal';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './FacultyPage.module.css';
 
-// Mock data
-const mockFaculty = [
-    {
-        id: 1,
-        name: 'Prof. Alan Turing',
-        department: 'Computer Science',
-        status: 'Regular',
-        teachingLoad: '18 units'
-    },
-    {
-        id: 2,
-        name: 'Prof. Ada Lovelace',
-        department: 'Information Technology',
-        status: 'Regular',
-        teachingLoad: '21 units'
-    },
-    {
-        id: 3,
-        name: 'Inst. Linus Torvalds',
-        department: 'Computer Science',
-        status: 'Part-time',
-        teachingLoad: '9 units'
-    },
-];
-
 export function FacultyPage() {
-    const [faculty] = useState(mockFaculty);
+    const [faculty, setFaculty] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [toasts, setToasts] = useState([]);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -47,6 +25,49 @@ export function FacultyPage() {
         password: '',
     });
 
+    // Toast notification helpers
+    const addToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type, duration: 3000 }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(toast => toast.id !== id));
+    };
+
+    // Fetch faculty on mount
+    useEffect(() => {
+        fetchFaculty();
+    }, []);
+
+    const fetchFaculty = async () => {
+        setIsLoading(true);
+        try {
+            // Get user from localStorage to find college_id if possible
+            const userStr = localStorage.getItem('user');
+            let queryParams = '';
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                if (user.college_id) {
+                    queryParams = `?college_id=${user.college_id}`;
+                }
+            }
+
+            const response = await fetch(`http://localhost:5000/api/qce/faculty${queryParams}`);
+            const data = await response.json();
+
+            if (data.success) {
+                setFaculty(data.data);
+            } else {
+                console.error('Failed to fetch faculty:', data.message);
+            }
+        } catch (error) {
+            console.error('Error fetching faculty:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -55,19 +76,54 @@ export function FacultyPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Adding faculty member:', formData);
-        setIsModalOpen(false);
-        setFormData({
-            firstName: '',
-            lastName: '',
-            gender: '',
-            role: '',
-            employmentStatus: '',
-            email: '',
-            password: '',
-        });
+
+        try {
+            // Get QCE user ID from localStorage
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                addToast('User session not found. Please login again.', 'error');
+                return;
+            }
+
+            const user = JSON.parse(userStr);
+
+            const response = await fetch('http://localhost:5000/api/qce/faculty', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    qceId: user.id // Pass QCE ID to backend
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Close modal and reset form
+                setIsModalOpen(false);
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    gender: '',
+                    role: '',
+                    employmentStatus: '',
+                    email: '',
+                    password: '',
+                });
+                // Refresh list
+                fetchFaculty();
+                addToast('Faculty member added successfully!', 'success');
+            } else {
+                addToast(result.message || 'Failed to add faculty member', 'error');
+            }
+        } catch (error) {
+            console.error('Error adding faculty:', error);
+            addToast('An error occurred. Please try again.', 'error');
+        }
     };
 
     const handleCancel = () => {
@@ -87,12 +143,17 @@ export function FacultyPage() {
         {
             header: 'Name',
             accessor: 'name',
-            width: '30%',
+            width: '25%',
         },
         {
-            header: 'Department',
-            accessor: 'department',
+            header: 'Email',
+            accessor: 'email',
             width: '25%',
+        },
+        {
+            header: 'Role',
+            accessor: 'role',
+            width: '20%',
         },
         {
             header: 'Status',
@@ -124,6 +185,12 @@ export function FacultyPage() {
         },
     ];
 
+    // Filter faculty based on search query
+    const filteredFaculty = faculty.filter(f =>
+        f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        f.role.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <DashboardLayout
             role="QCE Manager"
@@ -152,7 +219,11 @@ export function FacultyPage() {
                 </div>
 
                 <div className={styles.tableContainer}>
-                    <Table columns={columns} data={faculty} />
+                    {isLoading ? (
+                        <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+                    ) : (
+                        <Table columns={columns} data={filteredFaculty} />
+                    )}
                 </div>
 
                 {/* Add Faculty Member Modal */}
@@ -277,6 +348,9 @@ export function FacultyPage() {
                         </div>
                     </form>
                 </Modal>
+
+                {/* Toast Notifications */}
+                <ToastContainer toasts={toasts} removeToast={removeToast} />
             </div>
         </DashboardLayout>
     );

@@ -95,10 +95,12 @@ CREATE TABLE IF NOT EXISTS qce_accounts (
   full_name VARCHAR(100) NOT NULL,
   position VARCHAR(100),
   college_id INT,
+  department_id INT,
   status ENUM('active', 'inactive') DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE SET NULL
+  FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE SET NULL,
+  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
 );
 
 -- ============================================================
@@ -113,13 +115,16 @@ CREATE TABLE IF NOT EXISTS faculty (
   first_name VARCHAR(50) NOT NULL,
   middle_name VARCHAR(50),
   last_name VARCHAR(50) NOT NULL,
+  gender ENUM('Male', 'Female'),
   department_id INT,
+  college_id INT,
   position VARCHAR(100),
   employment_status ENUM('Regular', 'Part-time', 'Contractual') DEFAULT 'Regular',
   status ENUM('active', 'inactive') DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
+  FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE SET NULL
 );
 
 -- ============================================================

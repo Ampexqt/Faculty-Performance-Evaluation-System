@@ -28,6 +28,39 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * GET /api/zonal/academic-years/active
+ * Get the currently active academic year
+ */
+router.get('/active', async (req, res) => {
+    try {
+        const [activeYear] = await promisePool.query(`
+            SELECT * FROM academic_years 
+            WHERE status = 'active' OR is_current = TRUE
+            LIMIT 1
+        `);
+
+        if (activeYear.length === 0) {
+            return res.json({
+                success: true,
+                data: null
+            });
+        }
+
+        res.json({
+            success: true,
+            data: activeYear[0] // Return the single active year object
+        });
+    } catch (error) {
+        console.error('Error fetching active academic year:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching active academic year',
+            error: error.message
+        });
+    }
+});
+
+/**
  * POST /api/zonal/academic-years
  * Create new academic year
  */

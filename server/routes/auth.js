@@ -39,45 +39,173 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // Query database for admin user by email
+        // Try to find user in admins table first
         const [admins] = await promisePool.query(
             'SELECT * FROM admins WHERE email = ? AND status = ?',
             [email, 'active']
         );
 
-        // Check if user exists
-        if (admins.length === 0) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid email or password'
-            });
-        }
+        if (admins.length > 0) {
+            const admin = admins[0];
 
-        const admin = admins[0];
+            // Compare password with hashed password
+            const isPasswordValid = await bcrypt.compare(password, admin.password);
 
-        // Compare password with hashed password
-        const isPasswordValid = await bcrypt.compare(password, admin.password);
-
-        if (!isPasswordValid) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid email or password'
-            });
-        }
-
-        // Login successful - return user data (without password)
-        res.json({
-            success: true,
-            message: 'Login successful',
-            user: {
-                id: admin.id,
-                username: admin.username,
-                email: admin.email,
-                full_name: admin.full_name,
-                zone: admin.zone,
-                role: 'Zonal Admin',
-                status: admin.status
+            if (!isPasswordValid) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid email or password'
+                });
             }
+
+            // Login successful - return Zonal Admin data
+            return res.json({
+                success: true,
+                message: 'Login successful',
+                user: {
+                    id: admin.id,
+                    username: admin.username,
+                    email: admin.email,
+                    full_name: admin.full_name,
+                    zone: admin.zone,
+                    role: 'Zonal Admin',
+                    status: admin.status
+                }
+            });
+        }
+
+        // If not found in admins, try qce_accounts table
+        const [qceAccounts] = await promisePool.query(
+            'SELECT * FROM qce_accounts WHERE email = ? AND status = ?',
+            [email, 'active']
+        );
+
+        if (qceAccounts.length > 0) {
+            const qce = qceAccounts[0];
+
+            // Compare password with hashed password
+            const isPasswordValid = await bcrypt.compare(password, qce.password);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid email or password'
+                });
+            }
+
+            // Get college information
+            let collegeName = null;
+            if (qce.college_id) {
+                const [colleges] = await promisePool.query(
+                    'SELECT college_name FROM colleges WHERE id = ?',
+                    [qce.college_id]
+                );
+                if (colleges.length > 0) {
+                    collegeName = colleges[0].college_name;
+                }
+            }
+
+            // Get department information
+            let departmentName = null;
+            if (qce.department_id) {
+                const [departments] = await promisePool.query(
+                    'SELECT department_name FROM departments WHERE id = ?',
+                    [qce.department_id]
+                );
+                if (departments.length > 0) {
+                    departmentName = departments[0].department_name;
+                }
+            }
+
+            // Login successful - return QCE data
+            return res.json({
+                success: true,
+                message: 'Login successful',
+                user: {
+                    id: qce.id,
+                    email: qce.email,
+                    full_name: qce.full_name,
+                    position: qce.position,
+                    college_id: qce.college_id,
+                    college_name: collegeName,
+                    department_id: qce.department_id,
+                    department_name: departmentName,
+                    role: 'QCE Manager',
+                    status: qce.status
+                }
+            });
+        }
+
+        // Check faculty table for Dean
+        const [faculty] = await promisePool.query(
+            'SELECT * FROM faculty WHERE email = ? AND status = ?',
+            [email, 'active']
+        );
+
+        if (faculty.length > 0) {
+            const user = faculty[0];
+
+            // Verify password
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid email or password'
+                });
+            }
+
+            // Check if user is a Dean (using position/role column)
+            // Note: Database schema has 'position', query result uses 'position'
+            if (user.position && user.position.toLowerCase().includes('dean')) {
+
+                // Get college information
+                let collegeName = null;
+                if (user.college_id) {
+                    const [colleges] = await promisePool.query(
+                        'SELECT college_name FROM colleges WHERE id = ?',
+                        [user.college_id]
+                    );
+                    if (colleges.length > 0) {
+                        collegeName = colleges[0].college_name;
+                    }
+                }
+
+                // Get department information
+                let departmentName = null;
+                if (user.department_id) {
+                    const [departments] = await promisePool.query(
+                        'SELECT department_name FROM departments WHERE id = ?',
+                        [user.department_id]
+                    );
+                    if (departments.length > 0) {
+                        departmentName = departments[0].department_name;
+                    }
+                }
+
+                return res.json({
+                    success: true,
+                    message: 'Login successful',
+                    user: {
+                        id: user.id,
+                        email: user.email,
+                        full_name: `${user.first_name} ${user.last_name}`,
+                        position: user.position,
+                        college_id: user.college_id,
+                        college_name: collegeName,
+                        department_id: user.department_id,
+                        department_name: departmentName,
+                        role: 'Dean', // Explicitly set role for frontend routing
+                        status: user.status
+                    }
+                });
+            }
+        }
+
+        // User not found in either table
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid email or password'
         });
 
     } catch (error) {

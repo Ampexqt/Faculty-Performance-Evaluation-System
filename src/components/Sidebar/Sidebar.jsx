@@ -19,7 +19,6 @@ const zonalAdminMenuItems = [
     { icon: Building2, label: 'Colleges', path: '/zonal/colleges' },
     { icon: Users, label: 'QCE Management', path: '/zonal/qce-management' },
     { icon: Calendar, label: 'Academic Years', path: '/zonal/academic-years' },
-    { icon: Settings, label: 'System Settings', path: '/zonal/settings' },
 ];
 
 const qceMenuItems = [

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
@@ -6,44 +6,62 @@ import { Button } from '@/components/Button/Button';
 import { Badge } from '@/components/Badge/Badge';
 import styles from './FacultyResultsPage.module.css';
 
-// Mock data
-const mockFacultyResults = [
-    {
-        id: 1,
-        facultyName: 'Prof. Alan Turing',
-        role: 'Professor',
-        averageRating: 4.85,
-        interpretation: 'Excellent'
-    },
-    {
-        id: 2,
-        facultyName: 'Prof. Ada Lovelace',
-        role: 'Professor',
-        averageRating: 4.92,
-        interpretation: 'Excellent'
-    },
-    {
-        id: 3,
-        facultyName: 'Prof. Grace Hopper',
-        role: 'Department Chair',
-        averageRating: 4.75,
-        interpretation: 'Very Good'
-    },
-    {
-        id: 4,
-        facultyName: 'Dr. John von Neumann',
-        role: 'Visiting Lecturer',
-        averageRating: 4.68,
-        interpretation: 'Very Good'
-    },
-];
-
 export function FacultyResultsPage() {
-    const [results] = useState(mockFacultyResults);
+    const [results, setResults] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Get user info from localStorage
+    const [userInfo, setUserInfo] = useState({
+        fullName: '',
+        collegeId: null,
+    });
+
+    useEffect(() => {
+        const fullName = localStorage.getItem('fullName') || 'College Dean';
+        const collegeId = localStorage.getItem('collegeId');
+        setUserInfo({ fullName, collegeId });
+    }, []);
+
+    // Fetch faculty data
+    useEffect(() => {
+        if (userInfo.collegeId) {
+            fetchFaculty();
+        }
+    }, [userInfo.collegeId]);
+
+    const fetchFaculty = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty?college_id=${userInfo.collegeId}`);
+            const data = await response.json();
+
+            if (data.success) {
+                // Filter out Dean and current user
+                const filteredData = data.data.filter(faculty =>
+                    faculty.role !== 'Dean' && faculty.name !== userInfo.fullName
+                );
+
+                // Map API data to table format, setting N/A for scores currently
+                const mappedData = filteredData.map(faculty => ({
+                    id: faculty.id,
+                    facultyName: faculty.name,
+                    role: faculty.role,
+                    averageRating: 'N/A',
+                    interpretation: 'N/A'
+                }));
+                setResults(mappedData);
+            }
+        } catch (error) {
+            console.error('Error fetching faculty results:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const getInterpretationVariant = (interpretation) => {
         if (interpretation === 'Excellent') return 'success';
         if (interpretation === 'Very Good') return 'active';
+        if (interpretation === 'N/A') return 'neutral';
         return 'warning';
     };
 
@@ -92,7 +110,7 @@ export function FacultyResultsPage() {
     return (
         <DashboardLayout
             role="College Dean"
-            userName="College Dean"
+            userName={userInfo.fullName}
             notificationCount={3}
         >
             <div className={styles.page}>
@@ -108,7 +126,11 @@ export function FacultyResultsPage() {
                 </div>
 
                 <div className={styles.tableContainer}>
-                    <Table columns={columns} data={results} />
+                    {isLoading ? (
+                        <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+                    ) : (
+                        <Table columns={columns} data={results} />
+                    )}
                 </div>
             </div>
         </DashboardLayout>

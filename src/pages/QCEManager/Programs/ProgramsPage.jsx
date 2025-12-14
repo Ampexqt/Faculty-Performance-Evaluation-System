@@ -1,37 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Input } from '@/components/Input/Input';
 import { Modal } from '@/components/Modal/Modal';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './ProgramsPage.module.css';
 
-// Mock data
-const mockPrograms = [
-    {
-        id: 1,
-        code: 'BSCS',
-        name: 'Bachelor of Science in Computer Science',
-        enrolledStudents: 450,
-        activeSections: 12
-    },
-    {
-        id: 2,
-        code: 'BSIT',
-        name: 'Bachelor of Science in Information Technology',
-        enrolledStudents: 620,
-        activeSections: 16
-    },
-];
-
 export function ProgramsPage() {
-    const [programs] = useState(mockPrograms);
+    const [programs, setPrograms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [toasts, setToasts] = useState([]);
     const [formData, setFormData] = useState({
         programCode: '',
         programName: '',
     });
+
+    // Toast notification helpers
+    const addToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type, duration: 3000 }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(toast => toast.id !== id));
+    };
+
+    // Fetch programs on mount
+    useEffect(() => {
+        fetchPrograms();
+    }, []);
+
+    const fetchPrograms = async () => {
+        setIsLoading(true);
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                if (user.college_id) {
+                    const response = await fetch(`http://localhost:5000/api/qce/programs?college_id=${user.college_id}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        setPrograms(data.data);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching programs:', error);
+            addToast('Failed to load programs', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -41,11 +63,42 @@ export function ProgramsPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Adding program:', formData);
-        setIsModalOpen(false);
-        setFormData({ programCode: '', programName: '' });
+
+        try {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                addToast('Please login again', 'error');
+                return;
+            }
+            const user = JSON.parse(userStr);
+
+            const response = await fetch('http://localhost:5000/api/qce/programs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    qceId: user.id
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                addToast('Program added successfully', 'success');
+                setIsModalOpen(false);
+                setFormData({ programCode: '', programName: '' });
+                fetchPrograms(); // Refresh list
+            } else {
+                addToast(result.message || 'Failed to add program', 'error');
+            }
+        } catch (error) {
+            console.error('Error adding program:', error);
+            addToast('An error occurred', 'error');
+        }
     };
 
     const handleCancel = () => {
@@ -97,7 +150,11 @@ export function ProgramsPage() {
                 </div>
 
                 <div className={styles.tableContainer}>
-                    <Table columns={columns} data={programs} />
+                    {isLoading ? (
+                        <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+                    ) : (
+                        <Table columns={columns} data={programs} />
+                    )}
                 </div>
 
                 {/* Add Program Modal */}
@@ -144,6 +201,8 @@ export function ProgramsPage() {
                         </div>
                     </form>
                 </Modal>
+
+                <ToastContainer toasts={toasts} removeToast={removeToast} />
             </div>
         </DashboardLayout>
     );

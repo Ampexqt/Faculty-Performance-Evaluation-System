@@ -1,44 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './DeptChairsPage.module.css';
 
-// Mock data - Programs/Courses in department
-const mockPrograms = [
-    {
-        id: 1,
-        programCode: 'BSCS',
-        programName: 'Bachelor of Science in Computer Science',
-        yearLevel: '1-4',
-        students: 120
-    },
-    {
-        id: 2,
-        programCode: 'BSIT',
-        programName: 'Bachelor of Science in Information Technology',
-        yearLevel: '1-4',
-        students: 95
-    },
-    {
-        id: 3,
-        programCode: 'ACT',
-        programName: 'Associate in Computer Technology',
-        yearLevel: '1-2',
-        students: 45
-    },
-];
-
 export function DeptChairsPage() {
-    const [programs] = useState(mockPrograms);
+    const [programs, setPrograms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [toasts, setToasts] = useState([]);
     const [formData, setFormData] = useState({
         programCode: '',
         programName: '',
     });
+
+    // Get user info from localStorage
+    const [userInfo, setUserInfo] = useState({
+        fullName: '',
+        collegeId: null,
+        collegeName: '',
+    });
+
+    useEffect(() => {
+        const fullName = localStorage.getItem('fullName') || 'College Dean';
+        const collegeId = localStorage.getItem('collegeId');
+        const collegeName = localStorage.getItem('collegeName') || '';
+        setUserInfo({ fullName, collegeId, collegeName });
+    }, []);
+
+    // Toast notification helpers
+    const addToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type, duration: 3000 }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(toast => toast.id !== id));
+    };
+
+    // Fetch programs when collegeId is available
+    useEffect(() => {
+        if (userInfo.collegeId) {
+            fetchPrograms();
+        }
+    }, [userInfo.collegeId]);
+
+    const fetchPrograms = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/programs?college_id=${userInfo.collegeId}`);
+            const data = await response.json();
+            if (data.success) {
+                setPrograms(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching programs:', error);
+            addToast('Failed to load programs', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -48,14 +73,42 @@ export function DeptChairsPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Adding Program:', formData);
-        setIsModalOpen(false);
-        setFormData({
-            programCode: '',
-            programName: '',
-        });
+
+        try {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                addToast('Please login again', 'error');
+                return;
+            }
+
+            const response = await fetch('http://localhost:5000/api/qce/programs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    programCode: formData.programCode,
+                    programName: formData.programName,
+                    qceId: userId
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                addToast('Program added successfully', 'success');
+                setIsModalOpen(false);
+                setFormData({ programCode: '', programName: '' });
+                fetchPrograms(); // Refresh list
+            } else {
+                addToast(result.message || 'Failed to add program', 'error');
+            }
+        } catch (error) {
+            console.error('Error adding program:', error);
+            addToast('An error occurred', 'error');
+        }
     };
 
     const handleCancel = () => {
@@ -69,25 +122,20 @@ export function DeptChairsPage() {
     const columns = [
         {
             header: 'Program Code',
-            accessor: 'programCode',
+            accessor: 'code',
             width: '15%',
         },
         {
             header: 'Program Name',
-            accessor: 'programName',
+            accessor: 'name',
             width: '45%',
         },
         {
-            header: 'Year Level',
-            accessor: 'yearLevel',
+            header: 'Enrolled Students',
+            accessor: 'enrolledStudents',
             width: '15%',
             align: 'center',
-        },
-        {
-            header: 'Students',
-            accessor: 'students',
-            width: '15%',
-            align: 'center',
+            render: (value) => value || 0
         },
         {
             header: 'Actions',
@@ -103,7 +151,7 @@ export function DeptChairsPage() {
     return (
         <DashboardLayout
             role="College Dean"
-            userName="College Dean"
+            userName={userInfo.fullName}
             notificationCount={3}
         >
             <div className={styles.page}>
@@ -119,7 +167,11 @@ export function DeptChairsPage() {
                 </div>
 
                 <div className={styles.tableContainer}>
-                    <Table columns={columns} data={programs} />
+                    {isLoading ? (
+                        <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+                    ) : (
+                        <Table columns={columns} data={programs} />
+                    )}
                 </div>
 
                 {/* Add Program Modal */}
@@ -166,6 +218,8 @@ export function DeptChairsPage() {
                         </div>
                     </form>
                 </Modal>
+
+                <ToastContainer toasts={toasts} removeToast={removeToast} />
             </div>
         </DashboardLayout>
     );

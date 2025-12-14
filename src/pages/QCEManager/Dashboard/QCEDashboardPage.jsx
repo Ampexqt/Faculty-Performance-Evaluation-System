@@ -9,41 +9,7 @@ import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import { Modal } from '@/components/Modal/Modal';
 import styles from './QCEDashboardPage.module.css';
 
-// Mock data
-const mockEvaluations = [
-    {
-        id: 1,
-        facultyName: 'Prof. Alan Turing',
-        subject: 'CS101',
-        section: 'BSCS 1-A',
-        progress: 42,
-        total: 45,
-        rating: 4.8,
-        status: 'Completed'
-    },
-    {
-        id: 2,
-        facultyName: 'Prof. Ada Lovelace',
-        subject: 'CS102',
-        section: 'BSCS 1-B',
-        progress: 38,
-        total: 40,
-        rating: 4.9,
-        status: 'Completed'
-    },
-    {
-        id: 3,
-        facultyName: 'Prof. Grace Hopper',
-        subject: 'IT201',
-        section: 'BSIT 2-A',
-        progress: 14,
-        total: 50,
-        rating: null,
-        status: 'In Progress'
-    },
-];
-
-// Mock faculty data with roles
+// Mock faculty data with roles - KEEPING FOR FORM
 const mockFaculty = [
     { id: 1, name: 'Prof. Alan Turing', role: 'Professor' },
     { id: 2, name: 'Prof. Ada Lovelace', role: 'Professor' },
@@ -78,7 +44,7 @@ const generateCode = () => {
 };
 
 export function QCEDashboardPage() {
-    const [evaluations] = useState(mockEvaluations);
+    const [evaluations, setEvaluations] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         facultyRole: '',
@@ -88,6 +54,50 @@ export function QCEDashboardPage() {
     });
     const [generatedCode, setGeneratedCode] = useState('');
     const [filteredFaculty, setFilteredFaculty] = useState([]);
+
+    // Get user info from localStorage
+    const [userInfo, setUserInfo] = useState({
+        fullName: '',
+        collegeName: '',
+        departmentName: ''
+    });
+
+    useEffect(() => {
+        const fullName = localStorage.getItem('fullName') || 'QCE Manager';
+        const collegeName = localStorage.getItem('collegeName') || 'Not Assigned';
+        const departmentName = localStorage.getItem('departmentName') || '';
+        setUserInfo({ fullName, collegeName, departmentName });
+    }, []);
+
+    const [stats, setStats] = useState({
+        totalFaculty: 0,
+        totalPrograms: 0,
+        activeEvaluations: 0,
+        pendingDeanEvals: 0
+    });
+
+    // Fetch dashboard stats
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if (user.college_id) {
+                        const response = await fetch(`http://localhost:5000/api/qce/stats?college_id=${user.college_id}`);
+                        const data = await response.json();
+                        if (data.success) {
+                            setStats(data.data);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+            }
+        };
+
+        fetchStats();
+    }, []);
 
     // Filter faculty by role
     useEffect(() => {
@@ -198,14 +208,20 @@ export function QCEDashboardPage() {
     return (
         <DashboardLayout
             role="QCE Manager"
-            userName="QCE Manager"
+            userName={userInfo.fullName}
             notificationCount={2}
         >
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
                         <h1 className={styles.title}>Evaluation Management</h1>
-                        <p className={styles.subtitle}>Manage faculty evaluations and monitor progress.</p>
+                        <p className={styles.subtitle}>
+                            <span style={{ fontWeight: '700', color: '#800000', fontSize: '1.1em' }}>
+                                {userInfo.collegeName}
+                                {userInfo.departmentName && ` - ${userInfo.departmentName}`}
+                            </span>
+                            <span style={{ color: '#6b7280' }}> • Manage faculty evaluations and monitor progress.</span>
+                        </p>
                     </div>
                     <Button variant="primary" onClick={() => setIsModalOpen(true)}>
                         + Generate Evaluation Code
@@ -215,26 +231,25 @@ export function QCEDashboardPage() {
                 <div className={styles.stats}>
                     <StatCard
                         title="Total Faculty"
-                        value={128}
+                        value={stats.totalFaculty}
                         subtitle="Active this semester"
                         icon={Users}
                     />
                     <StatCard
                         title="Total Programs"
-                        value={12}
-                        subtitle="Across 3 colleges"
+                        value={stats.totalPrograms}
+                        subtitle="Managed programs"
                         icon={BookOpen}
                     />
                     <StatCard
                         title="Active Evaluations"
-                        value={85}
-                        subtitle="+42 Ongoing"
-                        trendValue="+42"
+                        value={stats.activeEvaluations}
+                        subtitle="Ongoing evaluations"
                         icon={ClipboardList}
                     />
                     <StatCard
                         title="Pending Dean Evals"
-                        value={5}
+                        value={stats.pendingDeanEvals}
                         subtitle="Requires attention"
                         icon={Clock}
                     />

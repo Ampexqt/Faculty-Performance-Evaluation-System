@@ -75,11 +75,37 @@ export function LoginPage() {
                 // Store user info in localStorage
                 localStorage.setItem('user', JSON.stringify(data.user));
                 localStorage.setItem('userRole', data.user.role);
-                localStorage.setItem('username', data.user.username);
                 localStorage.setItem('userId', data.user.id);
+                localStorage.setItem('userEmail', data.user.email);
+                localStorage.setItem('fullName', data.user.full_name);
 
-                // Redirect to Zonal Admin dashboard
-                navigate('/zonal/dashboard');
+                // Store additional info based on role
+                if (data.user.role === 'Zonal Admin') {
+                    localStorage.setItem('username', data.user.username);
+                    localStorage.setItem('zone', data.user.zone);
+                } else if (data.user.role === 'QCE Manager') {
+                    localStorage.setItem('position', data.user.position);
+                    localStorage.setItem('collegeId', data.user.college_id);
+                    localStorage.setItem('collegeName', data.user.college_name);
+                    localStorage.setItem('departmentId', data.user.department_id || '');
+                    localStorage.setItem('departmentName', data.user.department_name || '');
+                } else if (data.user.role === 'Dean') {
+                    localStorage.setItem('position', data.user.position);
+                    localStorage.setItem('collegeId', data.user.college_id);
+                    localStorage.setItem('collegeName', data.user.college_name);
+                }
+
+                // Redirect based on role
+                if (data.user.role === 'Zonal Admin') {
+                    navigate('/zonal/dashboard');
+                } else if (data.user.role === 'QCE Manager') {
+                    navigate('/qce/dashboard');
+                } else if (data.user.role === 'Dean') {
+                    navigate('/dean/overview');
+                } else {
+                    // Default fallback
+                    navigate('/dashboard');
+                }
             }
 
         } catch (error) {
@@ -167,6 +193,9 @@ export function LoginPage() {
                     <div className={styles.demoGrid}>
                         <div className={styles.demoItem}>
                             <strong>Zonal Admin:</strong> admin@faculty.edu / admin123
+                        </div>
+                        <div className={styles.demoItem}>
+                            <strong>QCE Manager:</strong> kyle@gmail.com / password123
                         </div>
                     </div>
                 </div>

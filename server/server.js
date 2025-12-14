@@ -77,6 +77,17 @@ app.use('/api/zonal/dashboard', zonalDashboardRoutes);
 app.use('/api/zonal/qce', zonalQCERoutes);
 app.use('/api/zonal/academic-years', zonalAcademicYearsRoutes);
 
+// QCE Manager routes
+const qceFacultyRoutes = require('./routes/qce/faculty');
+const qceDepartmentsRoutes = require('./routes/qce/departments');
+const qceProgramsRoutes = require('./routes/qce/programs'); // Treat programs as departments
+const qceDashboardRoutes = require('./routes/qce/dashboard');
+
+app.use('/api/qce/faculty', qceFacultyRoutes);
+app.use('/api/qce/departments', qceDepartmentsRoutes);
+app.use('/api/qce/programs', qceProgramsRoutes);
+app.use('/api/qce/stats', qceDashboardRoutes);
+
 // Start server
 const startServer = async () => {
     // Test database connection first

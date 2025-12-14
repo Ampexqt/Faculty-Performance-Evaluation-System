@@ -200,6 +200,7 @@ export function CollegesPage() {
             header: 'Code',
             accessor: 'college_code',
             width: '10%',
+            render: (value) => <strong>{value}</strong>
         },
         {
             header: 'College Name',

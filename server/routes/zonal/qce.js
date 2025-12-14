@@ -17,10 +17,13 @@ router.get('/', async (req, res) => {
                 qa.position,
                 qa.status,
                 qa.college_id,
+                qa.department_id,
                 c.college_name as assigned_college,
+                d.department_name as assigned_department,
                 qa.created_at
             FROM qce_accounts qa
             LEFT JOIN colleges c ON qa.college_id = c.id
+            LEFT JOIN departments d ON qa.department_id = d.id
             ORDER BY qa.full_name ASC
         `);
 
@@ -44,7 +47,7 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { firstName, lastName, email, collegeId, temporaryPassword } = req.body;
+        const { firstName, lastName, email, collegeId, departmentId, temporaryPassword } = req.body;
 
         if (!email || !temporaryPassword || !firstName || !lastName || !collegeId) {
             return res.status(400).json({
@@ -68,9 +71,9 @@ router.post('/', async (req, res) => {
 
         // Insert user
         const [result] = await promisePool.query(`
-            INSERT INTO qce_accounts (email, password, full_name, position, college_id, status)
-            VALUES (?, ?, ?, ?, ?, 'active')
-        `, [email, hashedPassword, fullName, 'QCE Manager', collegeId]);
+            INSERT INTO qce_accounts (email, password, full_name, position, college_id, department_id, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'active')
+        `, [email, hashedPassword, fullName, 'QCE Manager', collegeId, departmentId || null]);
 
         res.status(201).json({
             success: true,
@@ -79,7 +82,8 @@ router.post('/', async (req, res) => {
                 id: result.insertId,
                 full_name: fullName,
                 email,
-                college_id: collegeId
+                college_id: collegeId,
+                department_id: departmentId
             }
         });
 
@@ -100,7 +104,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, email, collegeId } = req.body;
+        const { firstName, lastName, email, collegeId, departmentId } = req.body;
 
         if (!email || !firstName || !lastName || !collegeId) {
             return res.status(400).json({
@@ -126,9 +130,9 @@ router.put('/:id', async (req, res) => {
         // Update account
         await promisePool.query(`
             UPDATE qce_accounts 
-            SET email = ?, full_name = ?, college_id = ?
+            SET email = ?, full_name = ?, college_id = ?, department_id = ?
             WHERE id = ?
-        `, [email, fullName, collegeId, id]);
+        `, [email, fullName, collegeId, departmentId || null, id]);
 
         res.json({
             success: true,
@@ -137,7 +141,8 @@ router.put('/:id', async (req, res) => {
                 id,
                 full_name: fullName,
                 email,
-                college_id: collegeId
+                college_id: collegeId,
+                department_id: departmentId
             }
         });
 

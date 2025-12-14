@@ -368,7 +368,7 @@ export function AcademicYearsPage() {
                         <Button
                             variant="danger"
                             size="small"
-                            onClick={() => handleClose(row)}
+                            onClick={() => handleCloseClick(row)}
                         >
                             Close
                         </Button>
@@ -376,7 +376,7 @@ export function AcademicYearsPage() {
                         <Button
                             variant="primary"
                             size="small"
-                            onClick={() => handleActivate(row)}
+                            onClick={() => handleActivateClick(row)}
                         >
                             Activate
                         </Button>
@@ -617,6 +617,78 @@ export function AcademicYearsPage() {
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? 'Deleting...' : 'Delete Semester'}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Activate Confirmation Modal */}
+                <Modal
+                    isOpen={isActivateModalOpen}
+                    onClose={handleActivateCancel}
+                    title="Activate Semester"
+                >
+                    <div className={styles.deleteConfirmation}>
+                        <p className={styles.deleteMessage}>
+                            Are you sure you want to activate{' '}
+                            <strong>{selectedSemester?.year_label} - {selectedSemester?.semester}</strong>?
+                        </p>
+                        <p className={styles.deleteWarning}>
+                            This will automatically deactivate all other semesters. Only one semester can be active at a time.
+                        </p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleActivateCancel}
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="primary"
+                                onClick={handleActivateConfirm}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Activating...' : 'Activate Semester'}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Close Confirmation Modal */}
+                <Modal
+                    isOpen={isCloseModalOpen}
+                    onClose={handleCloseCancel}
+                    title="Close Semester"
+                >
+                    <div className={styles.deleteConfirmation}>
+                        <p className={styles.deleteMessage}>
+                            Are you sure you want to close{' '}
+                            <strong>{selectedSemester?.year_label} - {selectedSemester?.semester}</strong>?
+                        </p>
+                        <p className={styles.deleteWarning}>
+                            This will deactivate the semester and set its status to inactive.
+                        </p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleCloseCancel}
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="danger"
+                                onClick={handleCloseConfirm}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Closing...' : 'Close Semester'}
                             </Button>
                         </div>
                     </div>

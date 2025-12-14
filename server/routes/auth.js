@@ -199,6 +199,47 @@ router.post('/login', async (req, res) => {
                         status: user.status
                     }
                 });
+            } else if (user.position && user.position.toLowerCase().includes('chair')) {
+                // Get college information
+                let collegeName = null;
+                if (user.college_id) {
+                    const [colleges] = await promisePool.query(
+                        'SELECT college_name FROM colleges WHERE id = ?',
+                        [user.college_id]
+                    );
+                    if (colleges.length > 0) {
+                        collegeName = colleges[0].college_name;
+                    }
+                }
+
+                // Get department information
+                let departmentName = null;
+                if (user.department_id) {
+                    const [departments] = await promisePool.query(
+                        'SELECT department_name FROM departments WHERE id = ?',
+                        [user.department_id]
+                    );
+                    if (departments.length > 0) {
+                        departmentName = departments[0].department_name;
+                    }
+                }
+
+                return res.json({
+                    success: true,
+                    message: 'Login successful',
+                    user: {
+                        id: user.id,
+                        email: user.email,
+                        full_name: `${user.first_name} ${user.last_name}`,
+                        position: user.position,
+                        college_id: user.college_id,
+                        college_name: collegeName,
+                        department_id: user.department_id,
+                        department_name: departmentName,
+                        role: 'Department Chair',
+                        status: user.status
+                    }
+                });
             }
         }
 

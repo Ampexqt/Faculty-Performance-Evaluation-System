@@ -1,41 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Badge } from '@/components/Badge/Badge';
 import styles from './EvaluationsPage.module.css';
 
-// Mock data - Faculty and Department Chairs to evaluate
-const mockEvaluations = [
-    {
-        id: 1,
-        name: 'Prof. Alan Turing',
-        role: 'Professor',
-        status: 'Pending'
-    },
-    {
-        id: 2,
-        name: 'Prof. Ada Lovelace',
-        role: 'Professor',
-        status: 'Completed'
-    },
-    {
-        id: 3,
-        name: 'Prof. Grace Hopper',
-        role: 'Department Chair',
-        status: 'Pending'
-    },
-    {
-        id: 4,
-        name: 'Dr. John von Neumann',
-        role: 'Visiting Lecturer',
-        status: 'Completed'
-    },
-];
-
 export function EvaluationsPage() {
-    const [evaluations] = useState(mockEvaluations);
+    const [evaluations, setEvaluations] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Get user info from localStorage
+    const [userInfo, setUserInfo] = useState({
+        fullName: '',
+        collegeId: null,
+    });
+
+    useEffect(() => {
+        const fullName = localStorage.getItem('fullName') || 'College Dean';
+        const collegeId = localStorage.getItem('collegeId');
+        setUserInfo({ fullName, collegeId });
+    }, []);
+
+    // Fetch faculty data
+    useEffect(() => {
+        if (userInfo.collegeId) {
+            fetchFaculty();
+        }
+    }, [userInfo.collegeId]);
+
+    const fetchFaculty = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty?college_id=${userInfo.collegeId}`);
+            const data = await response.json();
+
+            if (data.success) {
+                // Filter out Dean and current user
+                const filteredData = data.data.filter(faculty =>
+                    faculty.role !== 'Dean' && faculty.name !== userInfo.fullName
+                );
+
+                const mappedData = filteredData.map(faculty => ({
+                    id: faculty.id,
+                    name: faculty.name,
+                    role: faculty.role,
+                    status: 'Pending' // Default for now
+                }));
+                setEvaluations(mappedData);
+            }
+        } catch (error) {
+            console.error('Error fetching faculty for evaluation:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const getStatusVariant = (status) => {
         if (status === 'Completed') return 'success';
@@ -86,7 +105,7 @@ export function EvaluationsPage() {
     return (
         <DashboardLayout
             role="College Dean"
-            userName="College Dean"
+            userName={userInfo.fullName}
             notificationCount={3}
         >
             <div className={styles.page}>
@@ -111,7 +130,11 @@ export function EvaluationsPage() {
                 </div>
 
                 <div className={styles.tableContainer}>
-                    <Table columns={columns} data={filteredEvaluations} />
+                    {isLoading ? (
+                        <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+                    ) : (
+                        <Table columns={columns} data={filteredEvaluations} />
+                    )}
                 </div>
             </div>
         </DashboardLayout>

@@ -9,7 +9,7 @@ const { promisePool } = require('../../config/db');
  */
 router.get('/', async (req, res) => {
     try {
-        const { college_id } = req.query; // If we want to filter by college
+        const { college_id, department_id } = req.query; // If we want to filter by college or department
 
         let query = `
             SELECT 
@@ -32,7 +32,12 @@ router.get('/', async (req, res) => {
 
         const params = [];
 
-        if (college_id) {
+        if (department_id) {
+            query += ` WHERE f.department_id = ? AND f.position != 'Department Chair'`;
+            params.push(department_id);
+            // Optional: Filter out Dept Chair if needed
+            // query += ` AND f.position != 'Department Chair'`;
+        } else if (college_id) {
             query += ` WHERE f.college_id = ? OR c.id = ?`;
             params.push(college_id, college_id);
         }

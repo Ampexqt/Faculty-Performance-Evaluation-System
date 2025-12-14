@@ -8,8 +8,35 @@ const { promisePool } = require('../../config/db');
  */
 router.get('/', async (req, res) => {
     try {
-        const { college_id } = req.query;
+        const { college_id, department_id } = req.query;
 
+        // If department_id is provided (Dept Chair view)
+        if (department_id) {
+            // 1. Get Faculty count for this department
+            const [facultyResult] = await promisePool.query(
+                'SELECT COUNT(*) as count FROM faculty WHERE department_id = ? AND status = "active"',
+                [department_id]
+            );
+            const totalFaculty = facultyResult[0].count;
+
+            // 2. Placeholder for Subjects/Courses count
+            // TODO: Implement subjects table and query
+            const activeSubjects = 0;
+
+            // 3. Placeholder for active evaluations
+            const activeEvaluations = 0;
+
+            return res.json({
+                success: true,
+                data: {
+                    totalFaculty,
+                    activeSubjects,
+                    activeEvaluations
+                }
+            });
+        }
+
+        // If only college_id is provided (Dean/QCE Manager view)
         if (!college_id) {
             return res.status(400).json({
                 success: false,
@@ -31,9 +58,7 @@ router.get('/', async (req, res) => {
         );
         const totalPrograms = programsResult[0].count;
 
-        // 3. For Active Evaluations and Pending Dean Evals, 
-        // we'll use placeholders for now as per current phase, 
-        // or query real tables if available in future.
+        // 3. For Active Evaluations and Pending Dean Evals
         const activeEvaluations = 0;
         const pendingDeanEvals = 0;
 

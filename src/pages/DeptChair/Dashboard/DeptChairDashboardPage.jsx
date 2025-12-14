@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, BookOpen, ClipboardList, UserPlus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
@@ -9,6 +9,17 @@ import styles from './DeptChairDashboardPage.module.css';
 
 export function DeptChairDashboardPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [stats, setStats] = useState({
+        totalFaculty: 0,
+        activeSubjects: 0,
+        activeEvaluations: 0
+    });
+    const [userInfo, setUserInfo] = useState({
+        fullName: '',
+        departmentId: null,
+        departmentName: '',
+        collegeName: ''
+    });
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -18,6 +29,32 @@ export function DeptChairDashboardPage() {
         facultyRole: '',
         password: '',
     });
+
+    useEffect(() => {
+        const fullName = localStorage.getItem('fullName') || 'Department Chair';
+        const departmentId = localStorage.getItem('departmentId');
+        const departmentName = localStorage.getItem('departmentName') || 'Department';
+        const collegeName = localStorage.getItem('collegeName') || 'College';
+        setUserInfo({ fullName, departmentId, departmentName, collegeName });
+    }, []);
+
+    useEffect(() => {
+        if (userInfo.departmentId) {
+            fetchStats();
+        }
+    }, [userInfo.departmentId]);
+
+    const fetchStats = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/stats?department_id=${userInfo.departmentId}`);
+            const data = await response.json();
+            if (data.success) {
+                setStats(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard stats:', error);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -58,14 +95,19 @@ export function DeptChairDashboardPage() {
     return (
         <DashboardLayout
             role="Dept. Chair"
-            userName="Department Chair"
+            userName={userInfo.fullName}
             notificationCount={2}
         >
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
                         <h1 className={styles.title}>Department Management</h1>
-                        <p className={styles.subtitle}>Manage faculty assignments and subject offerings.</p>
+                        <p className={styles.subtitle}>
+                            <span style={{ fontWeight: '700', color: '#800000', fontSize: '1.1em' }}>
+                                {userInfo.collegeName}
+                            </span>
+                            <span style={{ color: '#6b7280' }}> • Overview of faculty performance</span>
+                        </p>
                     </div>
                     <Button variant="primary" onClick={() => setIsModalOpen(true)}>
                         <UserPlus size={18} />
@@ -76,19 +118,19 @@ export function DeptChairDashboardPage() {
                 <div className={styles.stats}>
                     <StatCard
                         title="Subjects Managed"
-                        value={24}
+                        value={stats.activeSubjects}
                         subtitle="Active this semester"
                         icon={BookOpen}
                     />
                     <StatCard
                         title="Faculty Under Chair"
-                        value={18}
+                        value={stats.totalFaculty}
                         subtitle="Regular & Part-time"
                         icon={Users}
                     />
                     <StatCard
                         title="Active Evaluations"
-                        value={12}
+                        value={stats.activeEvaluations}
                         subtitle="Pending completion"
                         icon={ClipboardList}
                     />

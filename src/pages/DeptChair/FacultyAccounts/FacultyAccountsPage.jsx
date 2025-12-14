@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
@@ -8,41 +8,44 @@ import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
 import styles from './FacultyAccountsPage.module.css';
 
-// Mock data - Faculty accounts
-const mockFaculty = [
-    {
-        id: 1,
-        facultyName: 'Prof. Alan Turing',
-        role: 'Professor',
-        status: 'Regular',
-        assignedSubjects: 3
-    },
-    {
-        id: 2,
-        facultyName: 'Prof. Ada Lovelace',
-        role: 'Associate Professor',
-        status: 'Regular',
-        assignedSubjects: 4
-    },
-    {
-        id: 3,
-        facultyName: 'Prof. Grace Hopper',
-        role: 'Professor',
-        status: 'Part-time',
-        assignedSubjects: 2
-    },
-    {
-        id: 4,
-        facultyName: 'Dr. John von Neumann',
-        role: 'Visiting Lecturer',
-        status: 'Part-time',
-        assignedSubjects: 2
-    },
-];
-
 export function FacultyAccountsPage() {
-    const [faculty] = useState(mockFaculty);
+    const [faculty, setFaculty] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userInfo, setUserInfo] = useState({
+        departmentId: null
+    });
+
+    useEffect(() => {
+        const departmentId = localStorage.getItem('departmentId');
+        setUserInfo({ departmentId });
+    }, []);
+
+    useEffect(() => {
+        if (userInfo.departmentId) {
+            fetchFaculty();
+        }
+    }, [userInfo.departmentId]);
+
+    const fetchFaculty = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty?department_id=${userInfo.departmentId}`);
+            const data = await response.json();
+            if (data.success) {
+                // Map API data to table format
+                const mappedFaculty = data.data.map(f => ({
+                    id: f.id,
+                    facultyName: f.name,
+                    role: f.role,
+                    status: f.status,
+                    assignedSubjects: 0 // Placeholder
+                }));
+                setFaculty(mappedFaculty);
+            }
+        } catch (error) {
+            console.error('Error fetching faculty:', error);
+        }
+    };
+
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -71,27 +74,48 @@ export function FacultyAccountsPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validate that Program Chair has at least one program selected
-        if (formData.facultyRole === 'Program Chair' && formData.assignedPrograms.length === 0) {
-            alert('Please select at least one program for the Program Chair');
-            return;
-        }
+        try {
+            const userId = localStorage.getItem('userId'); // Dept Chair's ID
 
-        console.log('Creating Faculty Account:', formData);
-        setIsModalOpen(false);
-        setFormData({
-            firstName: '',
-            lastName: '',
-            email: '',
-            gender: '',
-            employmentStatus: '',
-            facultyRole: '',
-            assignedPrograms: [],
-            password: '',
-        });
+            const response = await fetch('http://localhost:5000/api/qce/faculty', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    departmentId: userInfo.departmentId,
+                    qceId: userId,
+                    creatorType: 'faculty' // Use faculty lookup for college_id etc
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Faculty created successfully');
+                setIsModalOpen(false);
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    gender: '',
+                    employmentStatus: '',
+                    facultyRole: '',
+                    assignedPrograms: [],
+                    password: '',
+                });
+                fetchFaculty(); // Refresh list
+            } else {
+                alert(result.message || 'Failed to create faculty');
+            }
+        } catch (error) {
+            console.error('Error creating faculty:', error);
+            alert('An error occurred');
+        }
     };
 
     const handleCancel = () => {
@@ -141,6 +165,7 @@ export function FacultyAccountsPage() {
             accessor: 'assignedSubjects',
             width: '15%',
             align: 'center',
+            render: (value) => value || 0
         },
         {
             header: 'Actions',

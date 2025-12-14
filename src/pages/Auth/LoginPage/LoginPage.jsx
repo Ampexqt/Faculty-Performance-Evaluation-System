@@ -93,6 +93,12 @@ export function LoginPage() {
                     localStorage.setItem('position', data.user.position);
                     localStorage.setItem('collegeId', data.user.college_id);
                     localStorage.setItem('collegeName', data.user.college_name);
+                } else if (data.user.role === 'Department Chair') {
+                    localStorage.setItem('position', data.user.position);
+                    localStorage.setItem('collegeId', data.user.college_id);
+                    localStorage.setItem('collegeName', data.user.college_name);
+                    localStorage.setItem('departmentId', data.user.department_id);
+                    localStorage.setItem('departmentName', data.user.department_name);
                 }
 
                 // Redirect based on role
@@ -102,6 +108,8 @@ export function LoginPage() {
                     navigate('/qce/dashboard');
                 } else if (data.user.role === 'Dean') {
                     navigate('/dean/overview');
+                } else if (data.user.role === 'Department Chair') {
+                    navigate('/dept-chair/faculty');
                 } else {
                     // Default fallback
                     navigate('/dashboard');

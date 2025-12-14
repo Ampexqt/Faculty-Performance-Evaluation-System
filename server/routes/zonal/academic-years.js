@@ -55,4 +55,73 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * PUT /api/zonal/academic-years/:id
+ * Update academic year
+ */
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { year_code, year_label, semester, start_date, end_date } = req.body;
+
+        const [result] = await promisePool.query(`
+            UPDATE academic_years
+            SET year_code = ?, year_label = ?, semester = ?, start_date = ?, end_date = ?
+            WHERE id = ?
+        `, [year_code, year_label, semester, start_date, end_date, id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Academic year not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Academic year updated successfully'
+        });
+    } catch (error) {
+        console.error('Error updating academic year:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating academic year',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/zonal/academic-years/:id
+ * Delete academic year
+ */
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [result] = await promisePool.query(`
+            DELETE FROM academic_years WHERE id = ?
+        `, [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Academic year not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Academic year deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting academic year:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting academic year',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

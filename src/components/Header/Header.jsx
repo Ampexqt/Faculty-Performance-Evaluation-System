@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, LogOut, User } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Badge } from '../Badge/Badge';
 import styles from './Header.module.css';
@@ -23,13 +23,6 @@ export function Header({
                 </div>
 
                 <div className={styles.right}>
-                    {/* Notifications */}
-                    <button className={styles.iconButton} aria-label="Notifications">
-                        <Bell size={20} />
-                        {notificationCount > 0 && (
-                            <span className={styles.notificationBadge}>{notificationCount}</span>
-                        )}
-                    </button>
 
                     {/* User Menu */}
                     <div className={styles.userMenu}>

@@ -321,6 +321,89 @@ export function CollegesPage() {
                         </div>
                     </form>
                 </Modal>
+
+                {/* Edit College Modal */}
+                <Modal
+                    isOpen={isEditModalOpen}
+                    onClose={handleEditCancel}
+                    title="Edit College"
+                >
+                    <form onSubmit={handleEditSubmit} className={styles.modalForm}>
+                        <Input
+                            label="College Name"
+                            name="collegeName"
+                            type="text"
+                            placeholder="e.g. College of Computing Studies"
+                            value={editFormData.collegeName}
+                            onChange={handleEditInputChange}
+                            required
+                        />
+
+                        <Input
+                            label="College Code"
+                            name="collegeCode"
+                            type="text"
+                            placeholder="e.g. CCS"
+                            value={editFormData.collegeCode}
+                            onChange={handleEditInputChange}
+                            required
+                        />
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleEditCancel}
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Updating...' : 'Update College'}
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onClose={handleDeleteCancel}
+                    title="Delete College"
+                >
+                    <div className={styles.deleteConfirmation}>
+                        <p className={styles.deleteMessage}>
+                            Are you sure you want to delete{' '}
+                            <strong>{selectedCollege?.college_name}</strong>?
+                        </p>
+                        <p className={styles.deleteWarning}>
+                            This action cannot be undone. All associated data will be permanently removed.
+                        </p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleDeleteCancel}
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="danger"
+                                onClick={handleDeleteConfirm}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Deleting...' : 'Delete College'}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </DashboardLayout>
     );

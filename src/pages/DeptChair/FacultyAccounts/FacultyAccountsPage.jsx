@@ -6,27 +6,56 @@ import { Button } from '@/components/Button/Button';
 import { Badge } from '@/components/Badge/Badge';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './FacultyAccountsPage.module.css';
 
 export function FacultyAccountsPage() {
     const [faculty, setFaculty] = useState([]);
+    const [programs, setPrograms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({
         departmentId: null,
-        fullName: ''
+        fullName: '',
+        userId: null
     });
+    const [toasts, setToasts] = useState([]);
+
+    const addToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    };
 
     useEffect(() => {
         const departmentId = localStorage.getItem('departmentId');
         const fullName = localStorage.getItem('fullName') || 'Department Chair';
-        setUserInfo({ departmentId, fullName });
+        const userId = localStorage.getItem('userId');
+        setUserInfo({ departmentId, fullName, userId });
     }, []);
 
     useEffect(() => {
         if (userInfo.departmentId) {
             fetchFaculty();
+            fetchPrograms();
         }
-    }, [userInfo.departmentId]);
+    }, [userInfo.departmentId, userInfo.userId]);
+
+    const fetchPrograms = async () => {
+        try {
+            // Fetch programs managed by this chairperson
+            // The backend prioritizes chairperson_id if present
+            const response = await fetch(`http://localhost:5000/api/qce/programs?chairperson_id=${userInfo.userId}`);
+            const data = await response.json();
+            if (data.success) {
+                setPrograms(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching programs:', error);
+        }
+    };
 
     const fetchFaculty = async () => {
         try {
@@ -34,12 +63,18 @@ export function FacultyAccountsPage() {
             const data = await response.json();
             if (data.success) {
                 // Map API data to table format
+                // Map API data to table format
                 const mappedFaculty = data.data.map(f => ({
                     id: f.id,
                     facultyName: f.name,
+                    firstName: f.firstName,
+                    lastName: f.lastName,
+                    email: f.email,
+                    gender: f.gender,
                     role: f.role,
                     status: f.status,
-                    assignedSubjects: 0 // Placeholder
+                    assignedSubjects: 0, // Placeholder
+                    assignedPrograms: f.assignedPrograms || []
                 }));
                 setFaculty(mappedFaculty);
             }
@@ -47,6 +82,8 @@ export function FacultyAccountsPage() {
             console.error('Error fetching faculty:', error);
         }
     };
+
+
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -89,6 +126,7 @@ export function FacultyAccountsPage() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    role: formData.facultyRole, // Map facultyRole to role for backend validation
                     departmentId: userInfo.departmentId,
                     qceId: userId,
                     creatorType: 'faculty' // Use faculty lookup for college_id etc
@@ -98,7 +136,7 @@ export function FacultyAccountsPage() {
             const result = await response.json();
 
             if (result.success) {
-                alert('Faculty created successfully');
+                addToast('Faculty created successfully', 'success');
                 setIsModalOpen(false);
                 setFormData({
                     firstName: '',
@@ -112,11 +150,11 @@ export function FacultyAccountsPage() {
                 });
                 fetchFaculty(); // Refresh list
             } else {
-                alert(result.message || 'Failed to create faculty');
+                addToast(result.message || 'Failed to create faculty', 'error');
             }
         } catch (error) {
             console.error('Error creating faculty:', error);
-            alert('An error occurred');
+            addToast('An error occurred', 'error');
         }
     };
 
@@ -138,6 +176,106 @@ export function FacultyAccountsPage() {
         if (status === 'Regular') return 'success';
         if (status === 'Part-time') return 'active';
         return 'default';
+    };
+
+    // Modals state
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [selectedFaculty, setSelectedFaculty] = useState(null);
+
+    const [editFormData, setEditFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        gender: '',
+        employmentStatus: '',
+        gender: '',
+        employmentStatus: '',
+        facultyRole: '',
+        assignedPrograms: []
+    });
+
+    const handleEditClick = (faculty) => {
+        setSelectedFaculty(faculty);
+        // We probably need to split the name back to first/last or store them separately.
+        // The API returns "name" combined. Let's fix that in fetch or just split it.
+        // Or better, let's look at the fetchFaculty logic. It maps `name`. 
+        // We should PROBABLY include firstName and lastName in the mapped data for easier editing.
+        // But for now let's split crudely if needed, or update fetchFaculty.
+        // Actually, let's rely on the split for now or update fetch to send them.
+        setEditFormData({
+            firstName: faculty.firstName || '',
+            lastName: faculty.lastName || '',
+            email: faculty.email || '',
+            gender: faculty.gender || '',
+            employmentStatus: faculty.status, // mapped to 'status' in fetchFaculty
+            facultyRole: faculty.role,
+            assignedPrograms: faculty.assignedPrograms || [] // Ensure fetchFaculty maps this if available
+        });
+        setEditModalOpen(true);
+    };
+
+    const handleEditProgramCheckbox = (programCode) => {
+        setEditFormData(prev => ({
+            ...prev,
+            assignedPrograms: prev.assignedPrograms.includes(programCode)
+                ? prev.assignedPrograms.filter(p => p !== programCode)
+                : [...prev.assignedPrograms, programCode]
+        }));
+    };
+
+    const handleDeleteClick = (faculty) => {
+        setSelectedFaculty(faculty);
+        setDeleteModalOpen(true);
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleUpdateFaculty = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty/${selectedFaculty.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editFormData)
+            });
+            const result = await response.json();
+            if (result.success) {
+                addToast('Faculty updated successfully', 'success');
+                setEditModalOpen(false);
+                fetchFaculty();
+            } else {
+                addToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error updating faculty:', error);
+            addToast('Error updating faculty', 'error');
+        }
+    };
+
+    const handleDeleteFaculty = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty/${selectedFaculty.id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (result.success) {
+                addToast('Faculty deleted successfully', 'success');
+                setDeleteModalOpen(false);
+                fetchFaculty();
+            } else {
+                addToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting faculty:', error);
+            addToast('Error deleting faculty', 'error');
+        }
     };
 
     const columns = [
@@ -174,12 +312,20 @@ export function FacultyAccountsPage() {
             accessor: 'actions',
             width: '15%',
             align: 'center',
-            render: () => (
+            render: (_, faculty) => (
                 <div className={styles.actions}>
-                    <button className={styles.iconButton} title="Edit">
+                    <button
+                        className={styles.iconButton}
+                        title="Edit"
+                        onClick={() => handleEditClick(faculty)}
+                    >
                         <Edit size={16} />
                     </button>
-                    <button className={styles.iconButton} title="Delete">
+                    <button
+                        className={styles.iconButton}
+                        title="Delete"
+                        onClick={() => handleDeleteClick(faculty)}
+                    >
                         <Trash2 size={16} />
                     </button>
                 </div>
@@ -215,6 +361,12 @@ export function FacultyAccountsPage() {
                     onClose={handleCancel}
                     title="Create Faculty Account"
                 >
+                    {/* ... (Existing form content is fine, we just render it inside Modal) ... */}
+                    {/* Actually, I need to preserve the inner content of the existing Modal if I replace it. 
+                        Wait, I am replacing from columns to tableContainer. The Modal is outside that range in my TargetContent matching?
+                        The user asked to add logic AND Modals.
+                        The existing code has the "Create Faculty" modal. I should append the Edit/Delete modals AFTER it.
+                    */}
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
                         <div className={styles.formRow}>
                             <Input
@@ -310,33 +462,21 @@ export function FacultyAccountsPage() {
                                     Assigned Programs <span className={styles.required}>*</span>
                                 </label>
                                 <div className={styles.checkboxGroup}>
-                                    <label className={styles.checkboxLabel}>
-                                        <input
-                                            type="checkbox"
-                                            className={styles.checkbox}
-                                            checked={formData.assignedPrograms.includes('BSCS')}
-                                            onChange={() => handleProgramCheckbox('BSCS')}
-                                        />
-                                        <span>BSCS - Bachelor of Science in Computer Science</span>
-                                    </label>
-                                    <label className={styles.checkboxLabel}>
-                                        <input
-                                            type="checkbox"
-                                            className={styles.checkbox}
-                                            checked={formData.assignedPrograms.includes('BSIT')}
-                                            onChange={() => handleProgramCheckbox('BSIT')}
-                                        />
-                                        <span>BSIT - Bachelor of Science in Information Technology</span>
-                                    </label>
-                                    <label className={styles.checkboxLabel}>
-                                        <input
-                                            type="checkbox"
-                                            className={styles.checkbox}
-                                            checked={formData.assignedPrograms.includes('ACT')}
-                                            onChange={() => handleProgramCheckbox('ACT')}
-                                        />
-                                        <span>ACT - Associate in Computer Technology</span>
-                                    </label>
+                                    {programs.length === 0 ? (
+                                        <p className={styles.helperText}>No programs available.</p>
+                                    ) : (
+                                        programs.map(program => (
+                                            <label key={program.id} className={styles.checkboxLabel}>
+                                                <input
+                                                    type="checkbox"
+                                                    className={styles.checkbox}
+                                                    checked={formData.assignedPrograms.includes(program.code)}
+                                                    onChange={() => handleProgramCheckbox(program.code)}
+                                                />
+                                                <span>{program.code} - {program.name}</span>
+                                            </label>
+                                        ))
+                                    )}
                                 </div>
                                 {formData.assignedPrograms.length === 0 && (
                                     <span className={styles.helperText}>Please select at least one program</span>
@@ -371,7 +511,175 @@ export function FacultyAccountsPage() {
                         </div>
                     </form>
                 </Modal>
+
+                {/* Edit Faculty Modal */}
+                <Modal
+                    isOpen={editModalOpen}
+                    onClose={() => setEditModalOpen(false)}
+                    title="Edit Faculty Account"
+                >
+                    <form onSubmit={handleUpdateFaculty} className={styles.modalForm}>
+                        <div className={styles.formRow}>
+                            <Input
+                                label="First Name"
+                                name="firstName"
+                                type="text"
+                                value={editFormData.firstName}
+                                onChange={handleEditInputChange}
+                                required
+                            />
+                            <Input
+                                label="Last Name"
+                                name="lastName"
+                                type="text"
+                                value={editFormData.lastName}
+                                onChange={handleEditInputChange}
+                                required
+                            />
+                        </div>
+
+                        <Input
+                            label="Email Address"
+                            name="email"
+                            type="email"
+                            value={editFormData.email}
+                            onChange={handleEditInputChange}
+                            required
+                        />
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Gender <span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="gender"
+                                className={styles.select}
+                                value={editFormData.gender}
+                                onChange={handleEditInputChange}
+                                required
+                            >
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Employment Status <span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="employmentStatus"
+                                className={styles.select}
+                                value={editFormData.employmentStatus}
+                                onChange={handleEditInputChange}
+                                required
+                            >
+                                <option value="">Select Status</option>
+                                <option value="Regular">Regular</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Contract">Contract</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Faculty Role <span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="facultyRole"
+                                className={styles.select}
+                                value={editFormData.facultyRole}
+                                onChange={handleEditInputChange}
+                                required
+                            >
+                                <option value="">Select Role</option>
+                                <option value="Professor">Professor</option>
+                                <option value="Associate Professor">Associate Professor</option>
+                                <option value="Assistant Professor">Assistant Professor</option>
+                                <option value="Instructor">Instructor</option>
+                                <option value="Visiting Lecturer">Visiting Lecturer</option>
+                                <option value="Program Chair">Program Chair</option>
+                            </select>
+                        </div>
+
+                        {/* Conditional Program Assignment Field for Edit */}
+                        {editFormData.facultyRole === 'Program Chair' && (
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                    Assigned Programs <span className={styles.required}>*</span>
+                                </label>
+                                <div className={styles.checkboxGroup}>
+                                    {programs.length === 0 ? (
+                                        <p className={styles.helperText}>No programs available.</p>
+                                    ) : (
+                                        programs.map(program => (
+                                            <label key={program.id} className={styles.checkboxLabel}>
+                                                <input
+                                                    type="checkbox"
+                                                    className={styles.checkbox}
+                                                    checked={editFormData.assignedPrograms.includes(program.code)}
+                                                    onChange={() => handleEditProgramCheckbox(program.code)}
+                                                />
+                                                <span>{program.code} - {program.name}</span>
+                                            </label>
+                                        ))
+                                    )}
+                                </div>
+                                {editFormData.assignedPrograms.length === 0 && (
+                                    <span className={styles.helperText}>Please select at least one program</span>
+                                )}
+                            </div>
+                        )}
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setEditModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Save Changes
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={deleteModalOpen}
+                    onClose={() => setDeleteModalOpen(false)}
+                    title="Delete Faculty Account"
+                >
+                    <div className={styles.deleteConfirmation}>
+                        <p>Are you sure you want to delete <strong>{selectedFaculty?.facultyName}</strong>?</p>
+                        <p className={styles.warningText}>This action cannot be undone.</p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setDeleteModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="danger"
+                                onClick={handleDeleteFaculty}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
         </DashboardLayout>
     );
 }

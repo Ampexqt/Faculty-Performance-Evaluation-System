@@ -24,7 +24,8 @@ router.get('/', async (req, res) => {
                 f.department_id,
                 f.college_id,
                 d.department_name,
-                c.college_name
+                c.college_name,
+                (SELECT GROUP_CONCAT(program_code) FROM programs WHERE chairperson_id = f.id AND status = 'active') as assigned_programs
             FROM faculty f
             LEFT JOIN departments d ON f.department_id = d.id
             LEFT JOIN colleges c ON f.college_id = c.id
@@ -49,13 +50,16 @@ router.get('/', async (req, res) => {
         // Transform data to match frontend expectation
         const formattedFaculty = faculty.map(f => ({
             id: f.id,
+            firstName: f.first_name,
+            lastName: f.last_name,
             name: `${f.first_name} ${f.last_name}`,
             role: f.role,
             status: f.status, // employment_status
             teachingLoad: '0 units', // Placeholder as per UI
             email: f.email,
             gender: f.gender,
-            department: f.department_name || f.college_name // Show college name if department is missing
+            department: f.department_name || f.college_name, // Show college name if department is missing
+            assignedPrograms: f.assigned_programs ? f.assigned_programs.split(',') : []
         }));
 
         res.json({
@@ -199,6 +203,77 @@ router.post('/', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error creating faculty member',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * PUT /api/qce/faculty/:id
+ * Update faculty details
+ */
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { firstName, lastName, email, gender, employmentStatus, facultyRole } = req.body;
+
+        const [result] = await promisePool.query(
+            `UPDATE faculty 
+             SET first_name = ?, last_name = ?, email = ?, gender = ?, employment_status = ?, position = ?
+             WHERE id = ?`,
+            [firstName, lastName, email, gender, employmentStatus, facultyRole, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Faculty not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Faculty updated successfully'
+        });
+    } catch (error) {
+        console.error('Error updating faculty:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating faculty',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/qce/faculty/:id
+ * Soft delete faculty member
+ */
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [result] = await promisePool.query(
+            "UPDATE faculty SET status = 'inactive' WHERE id = ?",
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Faculty not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Faculty deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting faculty:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting faculty',
             error: error.message
         });
     }

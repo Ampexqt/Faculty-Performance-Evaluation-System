@@ -179,5 +179,86 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * PUT /api/qce/programs/:id
+ * Update program details
+ */
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { programCode, programName } = req.body;
+
+        if (!programCode || !programName) {
+            return res.status(400).json({
+                success: false,
+                message: 'Program code and name are required'
+            });
+        }
+
+        const [result] = await promisePool.query(
+            'UPDATE programs SET program_code = ?, program_name = ? WHERE id = ?',
+            [programCode, programName, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Program not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Program updated successfully'
+        });
+
+    } catch (error) {
+        console.error('Error updating program:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating program',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/qce/programs/:id
+ * Soft delete (set status to inactive) a program
+ */
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if program exists
+        const [existing] = await promisePool.query('SELECT id FROM programs WHERE id = ?', [id]);
+        if (existing.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Program not found'
+            });
+        }
+
+        // Soft delete
+        await promisePool.query(
+            "UPDATE programs SET status = 'inactive' WHERE id = ?",
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Program deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error deleting program:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting program',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
 

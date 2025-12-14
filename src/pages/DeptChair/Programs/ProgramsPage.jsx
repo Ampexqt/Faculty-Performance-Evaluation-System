@@ -16,6 +16,16 @@ export function ProgramsPage() {
         userId: null
     });
 
+    // Edit/Delete Modal States
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [selectedProgram, setSelectedProgram] = useState(null);
+
+    const [editFormData, setEditFormData] = useState({
+        programCode: '',
+        programName: '',
+    });
+
     useEffect(() => {
         const departmentId = localStorage.getItem('departmentId');
         const fullName = localStorage.getItem('fullName') || 'Department Chair';
@@ -73,7 +83,7 @@ export function ProgramsPage() {
                 body: JSON.stringify({
                     ...formData,
                     qceId: userId,
-                    userType: 'faculty' // Explicitly state user type to avoid ID collisions
+                    userType: 'faculty'
                 })
             });
             const result = await response.json();
@@ -98,7 +108,70 @@ export function ProgramsPage() {
         });
     };
 
+
+    const handleEditClick = (program) => {
+        setSelectedProgram(program);
+        setEditFormData({
+            programCode: program.programCode,
+            programName: program.programName
+        });
+        setEditModalOpen(true);
+    };
+
+    const handleDeleteClick = (program) => {
+        setSelectedProgram(program);
+        setDeleteModalOpen(true);
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleUpdateProgram = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/programs/${selectedProgram.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editFormData)
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Program updated successfully');
+                setEditModalOpen(false);
+                fetchPrograms();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error updating program:', error);
+        }
+    };
+
+    const handleDeleteProgram = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/programs/${selectedProgram.id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Program deleted successfully');
+                setDeleteModalOpen(false);
+                fetchPrograms();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error deleting program:', error);
+        }
+    };
+
     const columns = [
+        // ... (previous columns remain same, but modifying Actions)
         {
             header: 'Program Code',
             accessor: 'programCode',
@@ -120,12 +193,20 @@ export function ProgramsPage() {
             accessor: 'actions',
             width: '15%',
             align: 'center',
-            render: () => (
+            render: (_, program) => (
                 <div className={styles.actions}>
-                    <button className={styles.iconButton} title="Edit">
+                    <button
+                        className={styles.iconButton}
+                        title="Edit"
+                        onClick={() => handleEditClick(program)}
+                    >
                         <Edit size={16} />
                     </button>
-                    <button className={styles.iconButton} title="Delete">
+                    <button
+                        className={styles.iconButton}
+                        title="Delete"
+                        onClick={() => handleDeleteClick(program)}
+                    >
                         <Trash2 size={16} />
                     </button>
                 </div>
@@ -198,6 +279,78 @@ export function ProgramsPage() {
                             </Button>
                         </div>
                     </form>
+                </Modal>
+
+                {/* Edit Program Modal */}
+                <Modal
+                    isOpen={editModalOpen}
+                    onClose={() => setEditModalOpen(false)}
+                    title="Edit Program"
+                >
+                    <form onSubmit={handleUpdateProgram} className={styles.modalForm}>
+                        <Input
+                            label="Program Code"
+                            name="programCode"
+                            type="text"
+                            value={editFormData.programCode}
+                            onChange={handleEditInputChange}
+                            required
+                        />
+
+                        <Input
+                            label="Program Name"
+                            name="programName"
+                            type="text"
+                            value={editFormData.programName}
+                            onChange={handleEditInputChange}
+                            required
+                        />
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setEditModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Save Changes
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={deleteModalOpen}
+                    onClose={() => setDeleteModalOpen(false)}
+                    title="Delete Program"
+                >
+                    <div className={styles.deleteConfirmation}>
+                        <p>Are you sure you want to delete <strong>{selectedProgram?.programName}</strong>?</p>
+                        <p className={styles.warningText}>This action cannot be undone.</p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setDeleteModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="danger" // Assuming danger variant exists, otherwise use primary with red style manually or standard button
+                                onClick={handleDeleteProgram}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
                 </Modal>
             </div>
         </DashboardLayout>

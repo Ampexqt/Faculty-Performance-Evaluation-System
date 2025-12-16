@@ -35,9 +35,15 @@ const SEX_OPTIONS = [
     { value: 'Female', label: 'Female' },
 ];
 
+import { ToastContainer } from '@/components/Toast/Toast';
+
 export function RegisterPage() {
     const navigate = useNavigate();
-    const { toast } = useToast();
+    const { toasts, removeToast, success, error } = useToast(); // Destructure directly
+
+    // Create a toast object wrapper to maintain existing calls like toast.success()
+    const toast = { success, error };
+
     const [formData, setFormData] = useState({
         schoolId: '',
         firstName: '',
@@ -440,6 +446,7 @@ export function RegisterPage() {
                     </div>
                 </div>
             </div>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
@@ -36,6 +36,34 @@ export function SchedulesPage() {
         section: '',
         facultyId: '',
     });
+
+    // Search and Pagination Logic
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    // Filter schedules based on search query
+    const filteredSchedules = schedules.filter(s =>
+        s.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.descriptiveTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.faculty.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Calculate pagination logic
+    const totalPages = Math.ceil(filteredSchedules.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentSchedules = filteredSchedules.slice(startIndex, startIndex + itemsPerPage);
+
+    // Reset to first page when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
 
     const [toasts, setToasts] = useState([]);
 
@@ -326,8 +354,71 @@ export function SchedulesPage() {
                     </Button>
                 </div>
 
+
+                <div className={styles.controls}>
+                    <div className={styles.searchContainer}>
+                        <Input
+                            placeholder="Search subjects or faculty..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            icon={Search}
+                        />
+                    </div>
+                </div>
+
                 <div className={styles.tableContainer}>
-                    <Table columns={columns} data={schedules} />
+                    <Table columns={columns} data={currentSchedules} />
+
+                    {filteredSchedules.length > 0 && (
+                        <div className={styles.pagination}>
+                            <div className={styles.pageInfo}>
+                                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredSchedules.length)} of {filteredSchedules.length} entries
+                            </div>
+                            <div className={styles.paginationControls}>
+                                <button
+                                    className={styles.pageButton}
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                    .filter(page => {
+                                        // Show first, last, current, and surrounding pages
+                                        return page === 1 ||
+                                            page === totalPages ||
+                                            Math.abs(page - currentPage) <= 1;
+                                    })
+                                    .map((page, index, array) => {
+                                        // Add ellipsis if there are gaps
+                                        const prevPage = array[index - 1];
+                                        const showEllipsis = prevPage && page - prevPage > 1;
+
+                                        return (
+                                            <React.Fragment key={page}>
+                                                {showEllipsis && <span className={styles.ellipsis}>...</span>}
+                                                <button
+                                                    className={`${styles.pageButton} ${currentPage === page ? styles.active : ''}`}
+                                                    onClick={() => handlePageChange(page)}
+                                                >
+                                                    {page}
+                                                </button>
+                                            </React.Fragment>
+                                        );
+                                    })
+                                }
+
+                                <button
+                                    className={styles.pageButton}
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Assign Subject Modal */}

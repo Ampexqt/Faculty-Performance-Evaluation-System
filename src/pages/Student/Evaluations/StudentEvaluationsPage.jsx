@@ -18,7 +18,7 @@ export function StudentEvaluationsPage() {
 
     // Initialize pending evaluations from localStorage
     const [pendingEvaluations, setPendingEvaluations] = useState(() => {
-        const saved = localStorage.getItem(`pendingEvaluations_${studentId} `);
+        const saved = localStorage.getItem(`pendingEvaluations_${studentId}`);
         return saved ? JSON.parse(saved) : [];
     });
 

@@ -371,6 +371,35 @@ export function EvaluationFormPage() {
                             </div>
                         </div>
 
+                        {/* Evaluator Information Section */}
+                        <div className={styles.evaluatorSection}>
+                            <h3 className={styles.evaluatorSectionTitle}>Evaluator Information</h3>
+                            <div className={styles.evaluatorFields}>
+                                <div className={styles.evaluatorField}>
+                                    <label className={styles.evaluatorLabel}>Signature of Evaluator:</label>
+                                    <div className={styles.signatureLine}></div>
+                                </div>
+                                <div className={styles.evaluatorField}>
+                                    <label className={styles.evaluatorLabel}>Name of Evaluator:</label>
+                                    <div className={styles.evaluatorValue}>{fullName}</div>
+                                </div>
+                                <div className={styles.evaluatorField}>
+                                    <label className={styles.evaluatorLabel}>Position of Evaluator:</label>
+                                    <div className={styles.evaluatorValue}>Student</div>
+                                </div>
+                                <div className={styles.evaluatorField}>
+                                    <label className={styles.evaluatorLabel}>Date:</label>
+                                    <div className={styles.evaluatorValue}>
+                                        {new Date().toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className={styles.formActions}>
                             <Button type="button" variant="ghost" onClick={handleCancel}>
                                 Cancel

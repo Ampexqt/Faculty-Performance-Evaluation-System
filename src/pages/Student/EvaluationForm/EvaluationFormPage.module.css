@@ -384,6 +384,60 @@
     margin-top: 0.5rem;
 }
 
+/* Evaluator Information Section */
+.evaluatorSection {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: white;
+    border: 2px solid #800000;
+    border-radius: 8px;
+}
+
+.evaluatorSectionTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #800000;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #800000;
+}
+
+.evaluatorFields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.evaluatorField {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.evaluatorLabel {
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 200px;
+    font-size: 0.95rem;
+}
+
+.signatureLine {
+    flex: 1;
+    border-bottom: 2px solid #1f2937;
+    min-height: 40px;
+}
+
+.evaluatorValue {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    color: #1f2937;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
 .formActions {
     display: flex;
     justify-content: flex-end;
@@ -586,6 +640,37 @@
     .commentsTextarea {
         padding: 0.75rem;
         font-size: 0.875rem;
+    }
+
+    .evaluatorSection {
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .evaluatorSectionTitle {
+        font-size: 1.1rem;
+    }
+
+    .evaluatorField {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .evaluatorLabel {
+        min-width: auto;
+        font-size: 0.85rem;
+    }
+
+    .signatureLine {
+        width: 100%;
+        min-height: 30px;
+    }
+
+    .evaluatorValue {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
     }
 
     .formActions {

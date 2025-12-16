@@ -34,17 +34,16 @@ router.get('/', async (req, res) => {
         const params = [];
 
         if (department_id) {
-            query += ` WHERE f.department_id = ? AND f.position != 'Department Chair'`;
+            query += ` WHERE f.department_id = ? AND f.position != 'Department Chair' AND f.status = 'active'`;
             params.push(department_id);
             // Optional: Filter out Dept Chair if needed
             // query += ` AND f.position != 'Department Chair'`;
         } else if (college_id) {
-            query += ` WHERE (f.college_id = ? OR c.id = ?)`;
+            query += ` WHERE (f.college_id = ? OR c.id = ?) AND f.status = 'active'`;
             params.push(college_id, college_id);
         } else {
-            // Default WHERE to ensure we can append AND validly if no department/college but role exists
-            // Or better, handle the WHERE logic more robustly
-            query += ` WHERE 1=1`;
+            // Default check for active status
+            query += ` WHERE f.status = 'active'`;
         }
 
         // Add role filter if provided

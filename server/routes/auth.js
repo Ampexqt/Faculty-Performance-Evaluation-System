@@ -199,7 +199,7 @@ router.post('/login', async (req, res) => {
                         status: user.status
                     }
                 });
-            } else if (user.position && user.position.toLowerCase().includes('chair')) {
+            } else if (user.position && user.position.toLowerCase().includes('department chair')) {
                 // Get college information
                 let collegeName = null;
                 if (user.college_id) {

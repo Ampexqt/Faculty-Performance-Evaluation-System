@@ -34,6 +34,13 @@
     overflow: hidden;
 }
 
+.actionButtons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
 .actionButton {
     display: flex;
     align-items: center;
@@ -51,6 +58,58 @@
 .actionButton:hover {
     background-color: var(--color-background-hover);
     color: var(--color-primary);
+}
+
+.actionButton:last-child:hover {
+    color: #dc2626;
+}
+
+.deleteModalContent {
+    padding: var(--spacing-md) 0;
+}
+
+.deleteModalContent p {
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--color-text-primary);
+}
+
+.deleteWarning {
+    color: var(--color-error);
+    font-size: var(--text-sm);
+}
+
+/* Program Selection */
+.programSelection {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    background: #f9fafb;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
+.programCheckbox {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.programCheckbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+.label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-text-primary);
 }
 
 /* ========== MODAL ========== */

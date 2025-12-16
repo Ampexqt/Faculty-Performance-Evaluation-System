@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, MoreHorizontal } from 'lucide-react';
+import { Plus, PenSquare, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
@@ -13,6 +13,9 @@ export function FacultyPage() {
     const [faculty, setFaculty] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [toasts, setToasts] = useState([]);
     const [formData, setFormData] = useState({
@@ -22,8 +25,11 @@ export function FacultyPage() {
         role: '',
         employmentStatus: '',
         email: '',
+        email: '',
         password: '',
+        assignedPrograms: [],
     });
+    const [programs, setPrograms] = useState([]);
 
     // Toast notification helpers
     const addToast = (message, type = 'success') => {
@@ -38,7 +44,26 @@ export function FacultyPage() {
     // Fetch faculty on mount
     useEffect(() => {
         fetchFaculty();
+        fetchPrograms();
     }, []);
+
+    const fetchPrograms = async () => {
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                if (user.college_id) {
+                    const response = await fetch(`http://localhost:5000/api/qce/programs?college_id=${user.college_id}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        setPrograms(data.data);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching programs:', error);
+        }
+    };
 
     const fetchFaculty = async () => {
         setIsLoading(true);
@@ -68,6 +93,17 @@ export function FacultyPage() {
         }
     };
 
+    const handleProgramChange = (programCode) => {
+        setFormData(prev => {
+            const current = prev.assignedPrograms || [];
+            if (current.includes(programCode)) {
+                return { ...prev, assignedPrograms: current.filter(c => c !== programCode) };
+            } else {
+                return { ...prev, assignedPrograms: [...current, programCode] };
+            }
+        });
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -78,6 +114,12 @@ export function FacultyPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate program selection if Program Chair
+        if (formData.role === 'Program Chair' && (!formData.assignedPrograms || formData.assignedPrograms.length === 0)) {
+            addToast('Please select at least one program', 'error');
+            return;
+        }
 
         try {
             // Get QCE user ID from localStorage
@@ -96,6 +138,7 @@ export function FacultyPage() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    assignedPrograms: formData.role === 'Program Chair' ? formData.assignedPrograms : [],
                     qceId: user.id // Pass QCE ID to backend
                 }),
             });
@@ -113,6 +156,7 @@ export function FacultyPage() {
                     employmentStatus: '',
                     email: '',
                     password: '',
+                    assignedPrograms: [],
                 });
                 // Refresh list
                 fetchFaculty();
@@ -136,7 +180,122 @@ export function FacultyPage() {
             employmentStatus: '',
             email: '',
             password: '',
+            assignedPrograms: [],
         });
+    };
+
+    const handleEdit = (facultyMember) => {
+        setSelectedFaculty(facultyMember);
+        setFormData({
+            firstName: facultyMember.firstName,
+            lastName: facultyMember.lastName,
+            gender: facultyMember.gender,
+            role: facultyMember.role,
+            employmentStatus: facultyMember.status,
+            email: facultyMember.email,
+            password: '', // Don't populate password
+            assignedPrograms: facultyMember.assignedPrograms || [],
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+
+        // Validate program selection if Program Chair
+        if (formData.role === 'Program Chair' && (!formData.assignedPrograms || formData.assignedPrograms.length === 0)) {
+            addToast('Please select at least one program', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty/${selectedFaculty.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    email: formData.email,
+                    gender: formData.gender,
+                    employmentStatus: formData.employmentStatus,
+                    facultyRole: formData.role,
+                    assignedPrograms: formData.role === 'Program Chair' ? formData.assignedPrograms : [],
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setIsEditModalOpen(false);
+                setSelectedFaculty(null);
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    gender: '',
+                    role: '',
+                    employmentStatus: '',
+                    email: '',
+                    password: '',
+                    assignedPrograms: [],
+                });
+                fetchFaculty();
+                addToast('Faculty member updated successfully!', 'success');
+            } else {
+                addToast(result.message || 'Failed to update faculty member', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating faculty:', error);
+            addToast('An error occurred. Please try again.', 'error');
+        }
+    };
+
+    const handleEditCancel = () => {
+        setIsEditModalOpen(false);
+        setSelectedFaculty(null);
+        setFormData({
+            firstName: '',
+            lastName: '',
+            gender: '',
+            role: '',
+            employmentStatus: '',
+            email: '',
+            password: '',
+            assignedPrograms: [],
+        });
+    };
+
+    const handleDeleteClick = (facultyMember) => {
+        setSelectedFaculty(facultyMember);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/faculty/${selectedFaculty.id}`, {
+                method: 'DELETE',
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setIsDeleteModalOpen(false);
+                setSelectedFaculty(null);
+                fetchFaculty();
+                addToast('Faculty member deleted successfully!', 'success');
+            } else {
+                addToast(result.message || 'Failed to delete faculty member', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting faculty:', error);
+            addToast('An error occurred. Please try again.', 'error');
+        }
+    };
+
+    const handleDeleteCancel = () => {
+        setIsDeleteModalOpen(false);
+        setSelectedFaculty(null);
     };
 
     const columns = [
@@ -177,10 +336,23 @@ export function FacultyPage() {
             accessor: 'actions',
             width: '10%',
             align: 'center',
-            render: () => (
-                <button className={styles.actionButton} aria-label="More actions">
-                    <MoreHorizontal size={16} />
-                </button>
+            render: (value, row) => (
+                <div className={styles.actionButtons}>
+                    <button
+                        className={styles.actionButton}
+                        onClick={() => handleEdit(row)}
+                        aria-label="Edit faculty"
+                    >
+                        <PenSquare size={16} />
+                    </button>
+                    <button
+                        className={styles.actionButton}
+                        onClick={() => handleDeleteClick(row)}
+                        aria-label="Delete faculty"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
             ),
         },
     ];
@@ -348,6 +520,149 @@ export function FacultyPage() {
                         </div>
                     </form>
                 </Modal>
+
+                {/* Edit Faculty Member Modal */}
+                <Modal
+                    isOpen={isEditModalOpen}
+                    onClose={handleEditCancel}
+                    title="Edit Faculty Member"
+                >
+                    <form onSubmit={handleEditSubmit} className={styles.modalForm}>
+                        <div className={styles.formRow}>
+                            <Input
+                                label="First Name"
+                                name="firstName"
+                                type="text"
+                                placeholder="e.g. John"
+                                value={formData.firstName}
+                                onChange={handleInputChange}
+                                required
+                            />
+                            <Input
+                                label="Last Name"
+                                name="lastName"
+                                type="text"
+                                placeholder="e.g. Doe"
+                                value={formData.lastName}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Gender<span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="gender"
+                                value={formData.gender}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="">Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Role<span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="role"
+                                value={formData.role}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="">Select role</option>
+                                <option value="Dean">Dean</option>
+                                <option value="Visiting Lecturer">Visiting Lecturer</option>
+                                <option value="Program Chair">Program Chair</option>
+                                <option value="Department Chair">Department Chair</option>
+                                <option value="J.O">J.O</option>
+                                <option value="Professor">Professor</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Employment Status<span className={styles.required}>*</span>
+                            </label>
+                            <select
+                                name="employmentStatus"
+                                value={formData.employmentStatus}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="">Select employment status</option>
+                                <option value="Regular">Regular</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Contractual">Contractual</option>
+                                <option value="Temporary">Temporary</option>
+                            </select>
+                        </div>
+
+                        <Input
+                            label="Email Address"
+                            name="email"
+                            type="email"
+                            placeholder="john.doe@university.edu"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
+                        />
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleEditCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Update Faculty Member
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onClose={handleDeleteCancel}
+                    title="Delete Faculty Member"
+                >
+                    <div className={styles.deleteModalContent}>
+                        <p>Are you sure you want to delete <strong>{selectedFaculty?.name}</strong>?</p>
+                        <p className={styles.deleteWarning}>This action cannot be undone.</p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleDeleteCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="danger"
+                                onClick={handleDeleteConfirm}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
 
                 {/* Toast Notifications */}
                 <ToastContainer toasts={toasts} removeToast={removeToast} />

@@ -65,8 +65,8 @@ export function QCEDashboardPage() {
     const [stats, setStats] = useState({
         totalFaculty: 0,
         totalPrograms: 0,
-        activeEvaluations: 0,
-        pendingDeanEvals: 0
+        evaluationsCreated: 0,
+        evaluationsNotCreated: 0
     });
 
     // Fetch dashboard stats
@@ -344,15 +344,15 @@ export function QCEDashboardPage() {
                         icon={BookOpen}
                     />
                     <StatCard
-                        title="Active Evaluations"
-                        value={stats.activeEvaluations}
-                        subtitle="Ongoing evaluations"
+                        title="Evaluations Created"
+                        value={stats.evaluationsCreated}
+                        subtitle="Ready for students"
                         icon={ClipboardList}
                     />
                     <StatCard
-                        title="Pending Dean Evals"
-                        value={stats.pendingDeanEvals}
-                        subtitle="Requires attention"
+                        title="Evaluations Not Created"
+                        value={stats.evaluationsNotCreated}
+                        subtitle="Pending activation"
                         icon={Clock}
                     />
                 </div>
@@ -399,7 +399,7 @@ export function QCEDashboardPage() {
                                 required
                             >
                                 <option value="">Select faculty role</option>
-                                <option value="Dean">Dean</option>
+
                                 <option value="Professor">Professor</option>
                                 <option value="Visiting Lecturer">Visiting Lecturer</option>
                                 <option value="Program Chair">Program Chair</option>

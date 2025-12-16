@@ -102,6 +102,7 @@ router.get('/:facultyId', async (req, res) => {
                     WHEN fa.section REGEXP '^[0-9]+-' THEN SUBSTRING_INDEX(fa.section, '-', 1)
                     ELSE SUBSTRING(fa.section, LOCATE('-', fa.section) + 1, 1)
                 END as year_level,
+                fa.eval_code,
                 COUNT(DISTINCT st.id) as total_students,
                 COUNT(DISTINCT se.student_id) as evaluated_count,
                 COALESCE(
@@ -112,6 +113,7 @@ router.get('/:facultyId', async (req, res) => {
                     0
                 ) as progress,
                 CASE 
+                    WHEN fa.eval_code IS NULL OR fa.eval_code = '' THEN 'Not Created'
                     WHEN COUNT(DISTINCT se.student_id) = COUNT(DISTINCT st.id) AND COUNT(DISTINCT st.id) > 0 
                     THEN 'Completed'
                     ELSE 'In Progress'

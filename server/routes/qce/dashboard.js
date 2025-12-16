@@ -54,24 +54,33 @@ router.get('/', async (req, res) => {
         );
         const totalFaculty = facultyResult[0].count;
 
-        // 2. Get Total Programs (Departments) count for this college
+        // 2. Get Total Programs count for this college
         const [programsResult] = await promisePool.query(
-            'SELECT COUNT(*) as count FROM departments WHERE college_id = ? AND status = "active"',
+            'SELECT COUNT(*) as count FROM programs WHERE college_id = ? AND status = "active"',
             [college_id]
         );
         const totalPrograms = programsResult[0].count;
 
-        // 3. For Active Evaluations and Pending Dean Evals
-        const activeEvaluations = 0;
-        const pendingDeanEvals = 0;
+        // 3. Get Created and Not Created Evaluation counts
+        const [evalStats] = await promisePool.query(`
+            SELECT 
+                COUNT(CASE WHEN fa.eval_code IS NOT NULL AND fa.eval_code != '' THEN 1 END) as created_count,
+                COUNT(CASE WHEN fa.eval_code IS NULL OR fa.eval_code = '' THEN 1 END) as not_created_count
+            FROM faculty_assignments fa
+            JOIN faculty f ON fa.faculty_id = f.id
+            WHERE f.college_id = ? AND fa.status = 'active' AND f.status = 'active'
+        `, [college_id]);
+
+        const evaluationsCreated = evalStats[0].created_count;
+        const evaluationsNotCreated = evalStats[0].not_created_count;
 
         res.json({
             success: true,
             data: {
                 totalFaculty,
                 totalPrograms,
-                activeEvaluations,
-                pendingDeanEvals
+                evaluationsCreated,
+                evaluationsNotCreated
             }
         });
 

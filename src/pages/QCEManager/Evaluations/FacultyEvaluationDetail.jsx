@@ -108,7 +108,10 @@ export function FacultyEvaluationDetail() {
             width: '12%',
             align: 'center',
             render: (value) => (
-                <Badge variant={value === 'Completed' ? 'success' : 'warning'}>
+                <Badge
+                    variant={value === 'Completed' ? 'success' : value === 'Not Created' ? 'neutral' : 'warning'}
+                    className={value === 'Not Created' ? styles.badgeNotCreated : ''}
+                >
                     {value}
                 </Badge>
             )

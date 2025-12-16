@@ -199,6 +199,12 @@
     margin: 0;
 }
 
+.badgeNotCreated {
+    background-color: #1a1a1a !important;
+    color: white !important;
+    border: 1px solid #000 !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .page {

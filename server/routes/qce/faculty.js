@@ -25,7 +25,16 @@ router.get('/', async (req, res) => {
                 f.college_id,
                 d.department_name,
                 c.college_name,
-                (SELECT GROUP_CONCAT(program_code) FROM programs WHERE chairperson_id = f.id AND status = 'active') as assigned_programs
+                (SELECT GROUP_CONCAT(program_code) FROM programs WHERE chairperson_id = f.id AND status = 'active') as assigned_programs,
+                (
+                    SELECT COALESCE(SUM(s.units), 0)
+                    FROM faculty_assignments fa
+                    JOIN subjects s ON fa.subject_id = s.id
+                    JOIN academic_years ay ON fa.academic_year_id = ay.id
+                    WHERE fa.faculty_id = f.id 
+                    AND fa.status = 'active'
+                    AND ay.is_current = 1
+                ) as teaching_load_units
             FROM faculty f
             LEFT JOIN departments d ON f.department_id = d.id
             LEFT JOIN colleges c ON f.college_id = c.id
@@ -64,7 +73,7 @@ router.get('/', async (req, res) => {
             name: `${f.first_name} ${f.last_name}`,
             role: f.role,
             status: f.status, // employment_status
-            teachingLoad: '0 units', // Placeholder as per UI
+            teachingLoad: `${f.teaching_load_units || 0} units`,
             email: f.email,
             gender: f.gender,
             department: f.department_name || f.college_name, // Show college name if department is missing

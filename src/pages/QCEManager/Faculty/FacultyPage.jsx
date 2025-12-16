@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, PenSquare, Trash2 } from 'lucide-react';
+import { Plus, PenSquare, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
@@ -18,6 +18,11 @@ export function FacultyPage() {
     const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [toasts, setToasts] = useState([]);
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -363,6 +368,22 @@ export function FacultyPage() {
         f.role.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // Pagination Logic
+    const totalPages = Math.ceil(filteredFaculty.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentFaculty = filteredFaculty.slice(startIndex, startIndex + itemsPerPage);
+
+    // Reset to first page when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
     return (
         <DashboardLayout
             role="QCE Manager"
@@ -394,7 +415,60 @@ export function FacultyPage() {
                     {isLoading ? (
                         <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
                     ) : (
-                        <Table columns={columns} data={filteredFaculty} />
+                        <>
+                            <Table columns={columns} data={currentFaculty} />
+
+                            {filteredFaculty.length > 0 && (
+                                <div className={styles.pagination}>
+                                    <div className={styles.pageInfo}>
+                                        Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredFaculty.length)} of {filteredFaculty.length} entries
+                                    </div>
+                                    <div className={styles.paginationControls}>
+                                        <button
+                                            className={styles.pageButton}
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <ChevronLeft size={16} />
+                                        </button>
+
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                            .filter(page => {
+                                                // Show first, last, current, and surrounding pages
+                                                return page === 1 ||
+                                                    page === totalPages ||
+                                                    Math.abs(page - currentPage) <= 1;
+                                            })
+                                            .map((page, index, array) => {
+                                                // Add ellipsis if there are gaps
+                                                const prevPage = array[index - 1];
+                                                const showEllipsis = prevPage && page - prevPage > 1;
+
+                                                return (
+                                                    <React.Fragment key={page}>
+                                                        {showEllipsis && <span className={styles.ellipsis}>...</span>}
+                                                        <button
+                                                            className={`${styles.pageButton} ${currentPage === page ? styles.active : ''}`}
+                                                            onClick={() => handlePageChange(page)}
+                                                        >
+                                                            {page}
+                                                        </button>
+                                                    </React.Fragment>
+                                                );
+                                            })
+                                        }
+
+                                        <button
+                                            className={styles.pageButton}
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 

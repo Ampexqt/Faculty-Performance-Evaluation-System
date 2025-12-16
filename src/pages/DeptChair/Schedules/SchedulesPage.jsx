@@ -161,7 +161,11 @@ export function SchedulesPage() {
             const response = await fetch(`http://localhost:5000/api/qce/faculty?${type}=${id}`);
             const data = await response.json();
             if (data.success) {
-                setFacultyList(data.data);
+                // Filter out Dean and Department Chair
+                const filteredFaculty = data.data.filter(f =>
+                    f.role !== 'Dean' && f.role !== 'Department Chair'
+                );
+                setFacultyList(filteredFaculty);
             }
         } catch (error) {
             console.error('Error fetching faculty:', error);

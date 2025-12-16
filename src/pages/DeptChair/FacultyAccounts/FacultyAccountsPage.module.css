@@ -24,6 +24,17 @@
     margin: 0;
 }
 
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.searchContainer {
+    width: 300px;
+}
+
 .tableContainer {
     background-color: var(--color-background-white);
     border-radius: var(--radius-lg);
@@ -52,6 +63,61 @@
 
 .iconButton:hover {
     color: var(--color-primary);
+    background-color: var(--color-background-subtle);
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-background-white);
+}
+
+.pageInfo {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+}
+
+.paginationControls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.pageButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 var(--spacing-xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background-white);
+    color: var(--color-text-primary);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.pageButton:hover:not(:disabled) {
+    background-color: var(--color-background-subtle);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.pageButton.active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.pageButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
     background-color: var(--color-background-subtle);
 }
 
@@ -148,6 +214,23 @@
     margin-top: var(--spacing-md);
 }
 
+.deleteConfirmation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.deleteConfirmation p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+}
+
+.warningText {
+    color: var(--color-error);
+    font-size: var(--text-xs);
+}
+
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 768px) {
@@ -158,6 +241,15 @@
 
     .title {
         font-size: var(--text-2xl);
+    }
+
+    .controls {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .searchContainer {
+        width: 100%;
     }
 
     .formRow {

@@ -11,13 +11,44 @@ export function StudentOverviewPage() {
     const section = localStorage.getItem('section') || '';
     const yearLevel = localStorage.getItem('yearLevel') || '';
 
-    // Mock data - replace with actual data from API
-    const stats = {
-        totalEvaluations: 3,
-        pendingEvaluations: 2,
-        completedEvaluations: 1,
-        completionRate: 33
-    };
+    const [stats, setStats] = React.useState({
+        totalEvaluations: 0,
+        pendingEvaluations: 0,
+        completedEvaluations: 0,
+        completionRate: 0
+    });
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const userId = localStorage.getItem('userId');
+                const programId = localStorage.getItem('programId'); // This is actually department_id
+                const section = localStorage.getItem('section');
+
+                if (!userId || !programId || !section) {
+                    console.log('Missing user details in localStorage');
+                    setIsLoading(false);
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:5000/api/student/dashboard/stats?studentId=${userId}&programId=${programId}&section=${section}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    setStats(data.stats);
+                } else {
+                    console.error('Failed to fetch stats:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
 
     return (
         <DashboardLayout

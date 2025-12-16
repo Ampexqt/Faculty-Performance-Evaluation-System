@@ -5,6 +5,7 @@ import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
 import { Modal } from '@/components/Modal/Modal';
 import { Input } from '@/components/Input/Input';
+import { Select } from '@/components/Select/Select';
 import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './SchedulesPage.module.css';
 
@@ -338,91 +339,64 @@ export function SchedulesPage() {
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
                         {/* Subject Dropdown */}
                         <div className={styles.formGroup}>
-                            <label className={styles.label}>
-                                Subject <span className={styles.required}>*</span>
-                            </label>
-                            <select
+                            <Select
+                                label="Subject"
                                 name="subjectId"
-                                className={styles.select}
+                                placeholder="Select Subject"
                                 value={formData.subjectId}
                                 onChange={handleInputChange}
+                                options={subjectsList.map(s => ({ value: s.id, label: `${s.code} - ${s.name}` }))}
+                                searchable
                                 required
-                            >
-                                <option value="">Select Subject</option>
-                                {subjectsList.map(subject => (
-                                    <option key={subject.id} value={subject.id}>
-                                        {subject.code} - {subject.name}
-                                    </option>
-                                ))}
-                            </select>
+                            />
                         </div>
 
                         {/* Year Level and Section Row */}
                         <div className={styles.formRow}>
                             {/* Year Level Dropdown */}
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    Year Level <span className={styles.required}>*</span>
-                                </label>
-                                <select
+                                <Select
+                                    label="Year Level"
                                     name="yearLevel"
-                                    className={styles.select}
+                                    placeholder="Select Year"
                                     value={formData.yearLevel}
                                     onChange={handleInputChange}
+                                    options={[
+                                        { value: '1', label: '1st Year' },
+                                        { value: '2', label: '2nd Year' },
+                                        { value: '3', label: '3rd Year' },
+                                        { value: '4', label: '4th Year' }
+                                    ]}
                                     required
-                                >
-                                    <option value="">Select Year</option>
-                                    <option value="1">1st Year</option>
-                                    <option value="2">2nd Year</option>
-                                    <option value="3">3rd Year</option>
-                                    <option value="4">4th Year</option>
-                                </select>
+                                />
                             </div>
 
                             {/* Section Dropdown */}
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    Section <span className={styles.required}>*</span>
-                                </label>
-                                <select
+                                <Select
+                                    label="Section"
                                     name="section"
-                                    className={styles.select}
+                                    placeholder="Select Section"
                                     value={formData.section}
                                     onChange={handleInputChange}
+                                    options={['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(s => ({ value: s, label: s }))}
                                     required
-                                >
-                                    <option value="">Select Section</option>
-                                    <option value="A">A</option>
-                                    <option value="B">B</option>
-                                    <option value="C">C</option>
-                                    <option value="D">D</option>
-                                    <option value="E">E</option>
-                                    <option value="F">F</option>
-                                    <option value="G">G</option>
-                                    <option value="H">H</option>
-                                </select>
+                                />
                             </div>
                         </div>
 
                         {/* Faculty Dropdown */}
                         <div className={styles.formGroup}>
-                            <label className={styles.label}>
-                                Faculty <span className={styles.required}>*</span>
-                            </label>
-                            <select
+                            <Select
+                                label="Faculty"
                                 name="facultyId"
-                                className={styles.select}
+                                placeholder="Select Faculty"
                                 value={formData.facultyId}
                                 onChange={handleInputChange}
+                                options={facultyList.map(f => ({ value: f.id, label: `${f.firstName} ${f.lastName} - ${f.role}` }))}
+                                searchable
                                 required
-                            >
-                                <option value="">Select Faculty</option>
-                                {facultyList.map(faculty => (
-                                    <option key={faculty.id} value={faculty.id}>
-                                        {faculty.firstName} {faculty.lastName} - {faculty.role}
-                                    </option>
-                                ))}
-                            </select>
+                            />
                         </div>
 
                         <div className={styles.modalActions}>
@@ -452,89 +426,62 @@ export function SchedulesPage() {
                     <form onSubmit={handleUpdateAssignment} className={styles.modalForm}>
                         {/* Subject Dropdown */}
                         <div className={styles.formGroup}>
-                            <label className={styles.label}>
-                                Subject <span className={styles.required}>*</span>
-                            </label>
-                            <select
+                            <Select
+                                label="Subject"
                                 name="subjectId"
-                                className={styles.select}
+                                placeholder="Select Subject"
                                 value={editFormData.subjectId}
                                 onChange={handleEditInputChange}
+                                options={subjectsList.map(s => ({ value: s.id, label: `${s.code} - ${s.name}` }))}
+                                searchable
                                 required
-                            >
-                                <option value="">Select Subject</option>
-                                {subjectsList.map(subject => (
-                                    <option key={subject.id} value={subject.id}>
-                                        {subject.code} - {subject.name}
-                                    </option>
-                                ))}
-                            </select>
+                            />
                         </div>
 
                         {/* Year Level and Section Row */}
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    Year Level <span className={styles.required}>*</span>
-                                </label>
-                                <select
+                                <Select
+                                    label="Year Level"
                                     name="yearLevel"
-                                    className={styles.select}
+                                    placeholder="Select Year"
                                     value={editFormData.yearLevel}
                                     onChange={handleEditInputChange}
+                                    options={[
+                                        { value: '1', label: '1st Year' },
+                                        { value: '2', label: '2nd Year' },
+                                        { value: '3', label: '3rd Year' },
+                                        { value: '4', label: '4th Year' }
+                                    ]}
                                     required
-                                >
-                                    <option value="">Select Year</option>
-                                    <option value="1">1st Year</option>
-                                    <option value="2">2nd Year</option>
-                                    <option value="3">3rd Year</option>
-                                    <option value="4">4th Year</option>
-                                </select>
+                                />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    Section <span className={styles.required}>*</span>
-                                </label>
-                                <select
+                                <Select
+                                    label="Section"
                                     name="section"
-                                    className={styles.select}
+                                    placeholder="Select Section"
                                     value={editFormData.section}
                                     onChange={handleEditInputChange}
+                                    options={['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(s => ({ value: s, label: s }))}
                                     required
-                                >
-                                    <option value="">Select Section</option>
-                                    <option value="A">A</option>
-                                    <option value="B">B</option>
-                                    <option value="C">C</option>
-                                    <option value="D">D</option>
-                                    <option value="E">E</option>
-                                    <option value="F">F</option>
-                                    <option value="G">G</option>
-                                    <option value="H">H</option>
-                                </select>
+                                />
                             </div>
                         </div>
 
                         {/* Faculty Dropdown */}
                         <div className={styles.formGroup}>
-                            <label className={styles.label}>
-                                Faculty <span className={styles.required}>*</span>
-                            </label>
-                            <select
+                            <Select
+                                label="Faculty"
                                 name="facultyId"
-                                className={styles.select}
+                                placeholder="Select Faculty"
                                 value={editFormData.facultyId}
                                 onChange={handleEditInputChange}
+                                options={facultyList.map(f => ({ value: f.id, label: `${f.firstName} ${f.lastName} - ${f.role}` }))}
+                                searchable
                                 required
-                            >
-                                <option value="">Select Faculty</option>
-                                {facultyList.map(faculty => (
-                                    <option key={faculty.id} value={faculty.id}>
-                                        {faculty.firstName} {faculty.lastName} - {faculty.role}
-                                    </option>
-                                ))}
-                            </select>
+                            />
                         </div>
 
                         <div className={styles.modalActions}>

@@ -213,18 +213,7 @@ export function LoginPage() {
                     </div>
                 </div>
 
-                {/* Demo Credentials Hint */}
-                <div className={styles.demoHint}>
-                    <p className={styles.demoTitle}>🔐 Demo Credentials</p>
-                    <div className={styles.demoGrid}>
-                        <div className={styles.demoItem}>
-                            <strong>Zonal Admin:</strong> admin@faculty.edu / admin123
-                        </div>
-                        <div className={styles.demoItem}>
-                            <strong>QCE Manager:</strong> kyle@gmail.com / password123
-                        </div>
-                    </div>
-                </div>
+
 
                 <div className={styles.copyright}>
                     © 2025 Zamboanga Peninsula Polytechnic State University

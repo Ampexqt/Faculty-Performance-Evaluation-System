@@ -103,6 +103,9 @@ app.use('/api/faculty/subjects', facultySubjectsRoutes);
 const studentEvaluationsRoutes = require('./routes/Student/evaluations');
 app.use('/api/student/evaluations', studentEvaluationsRoutes);
 
+const studentDashboardRoutes = require('./routes/Student/dashboard');
+app.use('/api/student/dashboard', studentDashboardRoutes);
+
 // Start server
 const startServer = async () => {
     // Test database connection first

@@ -83,12 +83,14 @@ const qceDepartmentsRoutes = require('./routes/qce/departments');
 const qceProgramsRoutes = require('./routes/qce/programs'); // Treat programs as departments
 const qceDashboardRoutes = require('./routes/qce/dashboard');
 const qceSubjectsRoutes = require('./routes/qce/subjects');
+const qceEvaluationsRoutes = require('./routes/qce/evaluations');
 
 app.use('/api/qce/faculty', qceFacultyRoutes);
 app.use('/api/qce/departments', qceDepartmentsRoutes);
 app.use('/api/qce/programs', qceProgramsRoutes);
 app.use('/api/qce/stats', qceDashboardRoutes);
 app.use('/api/qce/subjects', qceSubjectsRoutes);
+app.use('/api/qce/faculty-evaluations', qceEvaluationsRoutes);
 
 // Faculty routes
 const facultyDashboardRoutes = require('./routes/Faculty/dashboard');

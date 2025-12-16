@@ -10,6 +10,7 @@ import { QCEDashboardPage } from './pages/QCEManager/Dashboard/QCEDashboardPage'
 import { FacultyPage } from './pages/QCEManager/Faculty/FacultyPage';
 import { ProgramsPage } from './pages/QCEManager/Programs/ProgramsPage';
 import { EvaluationsPage } from './pages/QCEManager/Evaluations/EvaluationsPage';
+import { FacultyEvaluationDetail } from './pages/QCEManager/Evaluations/FacultyEvaluationDetail';
 import { DeanOverviewPage } from './pages/Dean/Overview/DeanOverviewPage';
 import { FacultyResultsPage } from './pages/Dean/FacultyResults/FacultyResultsPage';
 import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
@@ -48,6 +49,7 @@ export function App() {
         <Route path="/qce/faculty" element={<FacultyPage />} />
         <Route path="/qce/programs" element={<ProgramsPage />} />
         <Route path="/qce/evaluations" element={<EvaluationsPage />} />
+        <Route path="/qce/evaluations/:facultyId" element={<FacultyEvaluationDetail />} />
 
         {/* Dean Routes */}
         <Route path="/dean/overview" element={<DeanOverviewPage />} />

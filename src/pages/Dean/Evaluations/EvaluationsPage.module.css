@@ -1,94 +1,272 @@
 .page {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xl);
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: var(--spacing-lg);
+    margin-bottom: 2rem;
 }
 
 .title {
-    font-size: var(--text-3xl);
-    font-weight: var(--font-bold);
-    color: var(--color-primary);
-    margin: 0 0 var(--spacing-xs) 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 0.5rem 0;
 }
 
 .subtitle {
-    font-size: var(--text-sm);
-    color: var(--color-text-secondary);
+    font-size: 1rem;
+    color: #666;
     margin: 0;
 }
 
+/* Search Container */
 .searchContainer {
-    display: flex;
-    justify-content: flex-end;
+    margin-bottom: 2rem;
 }
 
 .searchWrapper {
     position: relative;
-    width: 100%;
-    max-width: 400px;
+    max-width: 500px;
 }
 
 .searchIcon {
     position: absolute;
-    left: var(--spacing-md);
+    left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--color-text-muted);
-    pointer-events: none;
+    color: #999;
 }
 
 .searchInput {
     width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) 44px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    font-size: var(--text-sm);
-    transition: all var(--transition-fast);
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
 }
 
 .searchInput:focus {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+    border-color: #7f1d1d;
+    box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.1);
 }
 
-.tableContainer {
-    background-color: var(--color-background-white);
-    border-radius: var(--radius-lg);
+/* Cards Grid */
+.cardsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Faculty Card */
+.facultyCard {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.facultyCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(127, 29, 29, 0.15);
+    border-color: #7f1d1d;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.avatarCircle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.facultyInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.facultyName {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 0.25rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.facultyPosition {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0;
+}
+
+/* Card Stats */
+.cardStats {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.statItem {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.statIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7f1d1d;
+    flex-shrink: 0;
+}
+
+.statContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.statDivider {
+    width: 1px;
+    height: 36px;
+    background: #e5e7eb;
+}
+
+/* Card Footer - Progress */
+.cardFooter {
+    margin-bottom: 1rem;
+}
+
+.progressInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.progressLabel {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.progressPercentage {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #7f1d1d;
+}
+
+.progressBar {
+    width: 100%;
+    height: 8px;
+    background: #f3f4f6;
+    border-radius: 4px;
     overflow: hidden;
 }
 
-.evaluateButton {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
-    cursor: pointer;
-    transition: all var(--transition-fast);
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
 }
 
-.evaluateButton:hover {
-    text-decoration: underline;
+/* Card Action */
+.cardAction {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    color: #7f1d1d;
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
-/* ========== RESPONSIVE ========== */
+.cardAction svg {
+    transition: transform 0.2s;
+}
 
+.facultyCard:hover .cardAction svg {
+    transform: translateX(4px);
+}
+
+/* Loading State */
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 0;
+}
+
+/* Empty State */
+.emptyState {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+}
+
+.emptyState p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: stretch;
+    .page {
+        padding: 1rem;
     }
 
     .title {
-        font-size: var(--text-2xl);
+        font-size: 1.5rem;
+    }
+
+    .cardsGrid {
+        grid-template-columns: 1fr;
     }
 
     .searchWrapper {

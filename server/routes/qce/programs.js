@@ -18,7 +18,9 @@ router.get('/', async (req, res) => {
                 p.college_id,
                 p.chairperson_id,
                 CONCAT(f.first_name, ' ', f.last_name) as chairperson_name,
-                p.status
+                p.status,
+                (SELECT COUNT(*) FROM students s WHERE s.program_id = p.id AND s.status = 'active') as enrolled_count,
+                (SELECT COUNT(DISTINCT s.section) FROM students s WHERE s.program_id = p.id AND s.status = 'active') as section_count
             FROM programs p
             LEFT JOIN faculty f ON p.chairperson_id = f.id
             WHERE p.status = 'active'
@@ -48,11 +50,10 @@ router.get('/', async (req, res) => {
 
         const [programs] = await promisePool.query(query, params);
 
-        // TODO: Update enrolledStudents logic when students table is fully linked to programs
         const formattedPrograms = programs.map(p => ({
             ...p,
-            enrolledStudents: 0, // Default to 0 until we have student data
-            activeSections: 0    // Default to 0
+            enrolledStudents: p.enrolled_count || 0,
+            activeSections: p.section_count || 0
         }));
 
         res.json({

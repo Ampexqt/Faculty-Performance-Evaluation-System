@@ -1,118 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Users, BookOpen, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
-import { Table } from '@/components/Table/Table';
-import { Badge } from '@/components/Badge/Badge';
 import styles from './EvaluationsPage.module.css';
 
 export function EvaluationsPage() {
-    const [evaluations, setEvaluations] = useState([]);
+    const navigate = useNavigate();
+    const [facultyList, setFacultyList] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Get user info from localStorage
+    const [isLoading, setIsLoading] = useState(true);
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         collegeId: null,
+        role: ''
     });
 
     useEffect(() => {
-        const fullName = localStorage.getItem('fullName') || 'College Dean';
-        const collegeId = localStorage.getItem('collegeId');
-        setUserInfo({ fullName, collegeId });
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            setUserInfo({
+                fullName: user.full_name || 'College Dean',
+                collegeId: user.college_id,
+                role: user.role
+            });
+        }
     }, []);
 
-    // Fetch faculty data
     useEffect(() => {
         if (userInfo.collegeId) {
-            fetchFaculty();
+            fetchFacultyEvaluations();
         }
     }, [userInfo.collegeId]);
 
-    const fetchFaculty = async () => {
+    const fetchFacultyEvaluations = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/qce/faculty?college_id=${userInfo.collegeId}`);
+            const response = await fetch(`http://localhost:5000/api/qce/faculty-evaluations?college_id=${userInfo.collegeId}`);
             const data = await response.json();
 
             if (data.success) {
-                // Filter out Dean and current user
-                const filteredData = data.data.filter(faculty =>
-                    faculty.role !== 'Dean' && faculty.name !== userInfo.fullName
-                );
-
-                const mappedData = filteredData.map(faculty => ({
-                    id: faculty.id,
-                    name: faculty.name,
-                    role: faculty.role,
-                    status: 'Pending' // Default for now
-                }));
-                setEvaluations(mappedData);
+                setFacultyList(data.data);
             }
         } catch (error) {
-            console.error('Error fetching faculty for evaluation:', error);
+            console.error('Error fetching faculty evaluations:', error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const getStatusVariant = (status) => {
-        if (status === 'Completed') return 'success';
-        if (status === 'Pending') return 'warning';
-        return 'default';
-    };
-
-    const filteredEvaluations = evaluations.filter(evaluation =>
-        evaluation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        evaluation.role.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredFaculty = facultyList.filter(faculty =>
+        faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        faculty.position.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const columns = [
-        {
-            header: 'Faculty Name',
-            accessor: 'name',
-            width: '40%',
-        },
-        {
-            header: 'Role',
-            accessor: 'role',
-            width: '30%',
-        },
-        {
-            header: 'Status',
-            accessor: 'status',
-            width: '15%',
-            align: 'center',
-            render: (value) => (
-                <Badge variant={getStatusVariant(value)}>
-                    {value}
-                </Badge>
-            ),
-        },
-        {
-            header: 'Actions',
-            accessor: 'actions',
-            width: '15%',
-            align: 'center',
-            render: (_, row) => (
-                <button className={styles.evaluateButton}>
-                    {row.status === 'Completed' ? 'View' : 'Evaluate'}
-                </button>
-            ),
-        },
-    ];
+    const handleCardClick = (facultyId) => {
+        navigate(`/dean/evaluations/${facultyId}`);
+    };
 
     return (
         <DashboardLayout
-            role="College Dean"
+            role={userInfo.role}
             userName={userInfo.fullName}
             notificationCount={3}
         >
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>
-                        <h1 className={styles.title}>Faculty Evaluations</h1>
-                        <p className={styles.subtitle}>Evaluate department chairs and faculty members.</p>
+                        <h1 className={styles.title}>Faculty Evaluation Monitoring</h1>
+                        <p className={styles.subtitle}>Track evaluation progress of faculty members in your college.</p>
                     </div>
                 </div>
 
@@ -121,7 +77,7 @@ export function EvaluationsPage() {
                         <Search size={20} className={styles.searchIcon} />
                         <input
                             type="text"
-                            placeholder="Search by name or role..."
+                            placeholder="Search faculty by name or position..."
                             className={styles.searchInput}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -129,13 +85,81 @@ export function EvaluationsPage() {
                     </div>
                 </div>
 
-                <div className={styles.tableContainer}>
-                    {isLoading ? (
-                        <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
-                    ) : (
-                        <Table columns={columns} data={filteredEvaluations} />
-                    )}
-                </div>
+                {isLoading ? (
+                    <div className={styles.loadingContainer}>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+                    </div>
+                ) : (
+                    <div className={styles.cardsGrid}>
+                        {filteredFaculty.length === 0 ? (
+                            <div className={styles.emptyState}>
+                                <p>No faculty members found</p>
+                            </div>
+                        ) : (
+                            filteredFaculty.map((faculty) => (
+                                <div
+                                    key={faculty.id}
+                                    className={styles.facultyCard}
+                                    onClick={() => handleCardClick(faculty.id)}
+                                >
+                                    <div className={styles.cardHeader}>
+                                        <div className={styles.avatarCircle}>
+                                            {faculty.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                        </div>
+                                        <div className={styles.facultyInfo}>
+                                            <h3 className={styles.facultyName}>{faculty.name}</h3>
+                                            <p className={styles.facultyPosition}>{faculty.position}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.cardStats}>
+                                        <div className={styles.statItem}>
+                                            <div className={styles.statIcon}>
+                                                <Users size={18} />
+                                            </div>
+                                            <div className={styles.statContent}>
+                                                <span className={styles.statValue}>{faculty.sections_count || 0}</span>
+                                                <span className={styles.statLabel}>Sections</span>
+                                            </div>
+                                        </div>
+
+                                        <div className={styles.statDivider}></div>
+
+                                        <div className={styles.statItem}>
+                                            <div className={styles.statIcon}>
+                                                <BookOpen size={18} />
+                                            </div>
+                                            <div className={styles.statContent}>
+                                                <span className={styles.statValue}>{faculty.subjects_count || 0}</span>
+                                                <span className={styles.statLabel}>Subjects</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.cardFooter}>
+                                        <div className={styles.progressInfo}>
+                                            <span className={styles.progressLabel}>Evaluation Progress</span>
+                                            <span className={styles.progressPercentage}>
+                                                {faculty.evaluation_progress || 0}%
+                                            </span>
+                                        </div>
+                                        <div className={styles.progressBar}>
+                                            <div
+                                                className={styles.progressFill}
+                                                style={{ width: `${faculty.evaluation_progress || 0}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.cardAction}>
+                                        <span>View Details</span>
+                                        <ChevronRight size={18} />
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

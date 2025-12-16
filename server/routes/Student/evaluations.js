@@ -268,6 +268,14 @@ router.post('/submit', async (req, res) => {
             );
         }
 
+        // Also save comment to evaluation_comments table if it exists
+        if (comments && comments.trim().length > 0) {
+            await connection.query(
+                'INSERT INTO evaluation_comments (evaluation_id, comment_text) VALUES (?, ?)',
+                [evaluationId, comments]
+            );
+        }
+
         await connection.commit();
 
         res.json({

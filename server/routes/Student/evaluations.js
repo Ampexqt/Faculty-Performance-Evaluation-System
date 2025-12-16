@@ -125,6 +125,57 @@ router.get('/assignment/:assignmentId', async (req, res) => {
 });
 
 /**
+ * GET /api/student/evaluations/completed/:studentId
+ * Get completed evaluations for a student
+ */
+router.get('/completed/:studentId', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+
+        const [evaluations] = await promisePool.query(`
+            SELECT 
+                se.id,
+                se.evaluation_date,
+                se.total_score,
+                s.subject_code,
+                s.subject_name,
+                f.first_name,
+                f.last_name
+            FROM student_evaluations se
+            JOIN faculty_assignments fa ON se.faculty_assignment_id = fa.id
+            JOIN subjects s ON fa.subject_id = s.id
+            JOIN faculty f ON fa.faculty_id = f.id
+            WHERE se.student_id = ? AND se.status = 'completed'
+            ORDER BY se.evaluation_date DESC
+        `, [studentId]);
+
+        const formattedEvaluations = evaluations.map(evaluation => ({
+            id: evaluation.id,
+            subject: `${evaluation.subject_code} - ${evaluation.subject_name}`,
+            instructor: `${evaluation.first_name} ${evaluation.last_name}`,
+            completedDate: new Date(evaluation.evaluation_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }),
+            totalScore: evaluation.total_score
+        }));
+
+        res.json({
+            success: true,
+            data: formattedEvaluations
+        });
+
+    } catch (error) {
+        console.error('Error fetching completed evaluations:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching completed evaluations'
+        });
+    }
+});
+
+/**
  * POST /api/student/evaluations/submit
  * Submit completed evaluation with all details
  */
@@ -158,7 +209,15 @@ router.post('/submit', async (req, res) => {
             'SELECT id FROM evaluation_periods WHERE status = "active" ORDER BY id DESC LIMIT 1'
         );
 
-        const evaluationPeriodId = periods.length > 0 ? periods[0].id : null;
+        if (periods.length === 0) {
+            await connection.rollback();
+            return res.status(400).json({
+                success: false,
+                message: 'No active evaluation period found. Please contact the administrator.'
+            });
+        }
+
+        const evaluationPeriodId = periods[0].id;
 
         // Check if student has already evaluated this assignment
         const [existing] = await connection.query(

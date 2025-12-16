@@ -32,6 +32,26 @@ export function StudentEvaluationsPage() {
         }
     }, [pendingEvaluations, studentId]);
 
+    // Fetch completed evaluations
+    React.useEffect(() => {
+        const fetchCompletedEvaluations = async () => {
+            if (!studentId) return;
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/evaluations/completed/${studentId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    setCompletedEvaluations(result.data);
+                }
+            } catch (error) {
+                console.error('Error fetching completed evaluations:', error);
+            }
+        };
+
+        fetchCompletedEvaluations();
+    }, [studentId]);
+
     // Migrate old data: Check if any pending evaluation is missing facultyRole
     React.useEffect(() => {
         const needsMigration = pendingEvaluations.some(item => !item.facultyRole);
@@ -134,10 +154,15 @@ export function StudentEvaluationsPage() {
             width: '40%',
         },
         {
-            header: 'Completed Date',
-            accessor: 'completedDate',
+            header: 'Status',
+            accessor: 'status',
             width: '15%',
             align: 'center',
+            render: () => (
+                <Badge variant="success">
+                    Completed
+                </Badge>
+            ),
         },
     ];
 
@@ -260,9 +285,9 @@ export function StudentEvaluationsPage() {
                                         <p className={styles.cardInstructor}>
                                             <strong>Instructor:</strong> {evaluation.instructor}
                                         </p>
-                                        <p className={styles.cardDate}>
-                                            <strong>Completed:</strong> {evaluation.completedDate}
-                                        </p>
+                                        <div className={styles.cardStatus}>
+                                            <Badge variant="success">Completed</Badge>
+                                        </div>
                                     </div>
                                 </div>
                             ))

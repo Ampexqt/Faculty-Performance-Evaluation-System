@@ -144,7 +144,8 @@
 }
 
 .cardInstructor,
-.cardDate {
+.cardDate,
+.cardStatus {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
     margin: 0.25rem 0;

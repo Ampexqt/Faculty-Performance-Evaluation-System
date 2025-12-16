@@ -126,102 +126,175 @@ router.get('/assignment/:assignmentId', async (req, res) => {
 
 /**
  * POST /api/student/evaluations/submit
- * Submit completed evaluation
+ * Submit completed evaluation with all details
  */
 router.post('/submit', async (req, res) => {
-    try {
-        const { studentId, assignmentId, ratings, comments } = req.body;
+    const connection = await promisePool.getConnection();
 
+    try {
+        await connection.beginTransaction();
+
+        const { studentId, assignmentId, ratings, comments, evaluatorName, evaluationDate } = req.body;
+
+        // Validation
         if (!studentId || !assignmentId || !ratings) {
+            await connection.rollback();
             return res.status(400).json({
                 success: false,
                 message: 'Student ID, Assignment ID, and ratings are required'
             });
         }
 
-        // Get current active evaluation period (you may need to adjust this query)
-        const [periods] = await promisePool.query(
-            'SELECT id FROM evaluation_periods WHERE status = "active" LIMIT 1'
-        );
-
-        if (periods.length === 0) {
+        if (!evaluatorName || !evaluationDate) {
+            await connection.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'No active evaluation period found'
+                message: 'Evaluator name and date are required'
             });
         }
 
-        const evaluationPeriodId = periods[0].id;
+        // Get current active evaluation period
+        const [periods] = await connection.query(
+            'SELECT id FROM evaluation_periods WHERE status = "active" ORDER BY id DESC LIMIT 1'
+        );
+
+        const evaluationPeriodId = periods.length > 0 ? periods[0].id : null;
 
         // Check if student has already evaluated this assignment
-        const [existing] = await promisePool.query(
-            'SELECT id FROM student_evaluations WHERE student_id = ? AND faculty_assignment_id = ? AND evaluation_period_id = ?',
-            [studentId, assignmentId, evaluationPeriodId]
+        const [existing] = await connection.query(
+            'SELECT id FROM student_evaluations WHERE student_id = ? AND faculty_assignment_id = ?',
+            [studentId, assignmentId]
         );
 
         if (existing.length > 0) {
+            await connection.rollback();
             return res.status(400).json({
                 success: false,
                 message: 'You have already submitted an evaluation for this subject'
             });
         }
 
-        // Create student evaluation record with comments
-        const [evalResult] = await promisePool.query(
-            `INSERT INTO student_evaluations (student_id, faculty_assignment_id, evaluation_period_id, status, comments, submitted_at)
-             VALUES (?, ?, ?, 'completed', ?, NOW())`,
-            [studentId, assignmentId, evaluationPeriodId, comments || null]
+        // Calculate category scores
+        const categoryScores = {
+            'A. Commitment': 0,
+            'B. Knowledge of Subject': 0,
+            'C. Teaching for Independent Learning': 0,
+            'D. Management of Learning': 0
+        };
+
+        // Sum up ratings for each category
+        for (const [key, rating] of Object.entries(ratings)) {
+            const category = Object.keys(categoryScores).find(cat => key.startsWith(cat));
+            if (category) {
+                categoryScores[category] += parseInt(rating) || 0;
+            }
+        }
+
+        const scoreCommitment = categoryScores['A. Commitment'];
+        const scoreKnowledge = categoryScores['B. Knowledge of Subject'];
+        const scoreTeaching = categoryScores['C. Teaching for Independent Learning'];
+        const scoreManagement = categoryScores['D. Management of Learning'];
+        const totalScore = scoreCommitment + scoreKnowledge + scoreTeaching + scoreManagement;
+
+        // Insert main evaluation record with all details
+        const [evalResult] = await connection.query(
+            `INSERT INTO student_evaluations (
+                student_id, 
+                faculty_assignment_id, 
+                evaluation_period_id,
+                score_commitment,
+                score_knowledge,
+                score_teaching,
+                score_management,
+                total_score,
+                comments,
+                evaluator_name,
+                evaluator_position,
+                evaluation_date,
+                status,
+                submitted_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', NOW())`,
+            [
+                studentId,
+                assignmentId,
+                evaluationPeriodId,
+                scoreCommitment,
+                scoreKnowledge,
+                scoreTeaching,
+                scoreManagement,
+                totalScore,
+                comments || null,
+                evaluatorName,
+                'Student',
+                evaluationDate
+            ]
         );
 
         const evaluationId = evalResult.insertId;
 
-        // Get all criteria from database
-        const [criteria] = await promisePool.query(
-            'SELECT id, category, criterion_text FROM evaluation_criteria WHERE status = "active" ORDER BY order_num'
-        );
-
-        // Map ratings to criteria and insert responses
-        // The ratings object keys are in format "Category-index"
-        const responses = [];
+        // Insert detailed ratings for each criterion
+        const ratingDetails = [];
 
         for (const [key, rating] of Object.entries(ratings)) {
-            // Find matching criterion
-            const [category, indexStr] = key.split('-');
-            const index = parseInt(indexStr);
+            // Parse the key format: "A. Commitment-0", "B. Knowledge of Subject-1", etc.
+            const lastDashIndex = key.lastIndexOf('-');
+            const category = key.substring(0, lastDashIndex);
+            const criterionIndex = parseInt(key.substring(lastDashIndex + 1));
 
-            // Find the criterion that matches this category and index
-            const categoryKey = Object.keys(EVALUATION_CRITERIA).find(k => k.startsWith(category.split('.')[0]));
-            if (categoryKey) {
-                const criterionText = EVALUATION_CRITERIA[categoryKey][index];
-                const criterion = criteria.find(c => c.criterion_text === criterionText);
+            // Map category to short code
+            let categoryCode = '';
+            if (category.startsWith('A.')) categoryCode = 'A';
+            else if (category.startsWith('B.')) categoryCode = 'B';
+            else if (category.startsWith('C.')) categoryCode = 'C';
+            else if (category.startsWith('D.')) categoryCode = 'D';
 
-                if (criterion) {
-                    responses.push([evaluationId, criterion.id, rating]);
-                }
+            if (categoryCode) {
+                ratingDetails.push([
+                    evaluationId,
+                    categoryCode,
+                    criterionIndex,
+                    parseInt(rating) || 0
+                ]);
             }
         }
 
-        // Insert all responses
-        if (responses.length > 0) {
-            await promisePool.query(
-                'INSERT INTO evaluation_responses (evaluation_id, criterion_id, rating) VALUES ?',
-                [responses]
+        // Insert all rating details
+        if (ratingDetails.length > 0) {
+            await connection.query(
+                `INSERT INTO evaluation_ratings_detail 
+                (evaluation_id, category, criterion_index, rating) 
+                VALUES ?`,
+                [ratingDetails]
             );
         }
+
+        await connection.commit();
 
         res.json({
             success: true,
             message: 'Evaluation submitted successfully',
-            evaluationId
+            data: {
+                evaluationId,
+                totalScore,
+                categoryScores: {
+                    commitment: scoreCommitment,
+                    knowledge: scoreKnowledge,
+                    teaching: scoreTeaching,
+                    management: scoreManagement
+                }
+            }
         });
 
     } catch (error) {
+        await connection.rollback();
         console.error('Error submitting evaluation:', error);
         res.status(500).json({
             success: false,
             message: 'Error submitting evaluation',
             error: error.message
         });
+    } finally {
+        connection.release();
     }
 });
 

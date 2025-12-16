@@ -161,7 +161,9 @@ export function EvaluationFormPage() {
         setIsSubmitting(true);
 
         try {
-            // TODO: Implement API call to submit evaluation
+            // Format the current date as YYYY-MM-DD for database
+            const formattedDate = new Date().toISOString().split('T')[0];
+
             const response = await fetch('http://localhost:5000/api/student/evaluations/submit', {
                 method: 'POST',
                 headers: {
@@ -171,7 +173,9 @@ export function EvaluationFormPage() {
                     studentId,
                     assignmentId,
                     ratings,
-                    comments
+                    comments,
+                    evaluatorName: fullName,
+                    evaluationDate: formattedDate
                 }),
             });
 

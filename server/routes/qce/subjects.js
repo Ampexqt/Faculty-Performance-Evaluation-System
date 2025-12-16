@@ -207,6 +207,19 @@ router.post('/assignments', async (req, res) => {
             }
         }
 
+        // Check for duplicate assignment (same subject, section, and academic year)
+        const [existingAssignment] = await promisePool.query(
+            'SELECT id FROM faculty_assignments WHERE subject_id = ? AND section = ? AND academic_year_id = ? AND status = "active"',
+            [subjectId, section, yearId]
+        );
+
+        if (existingAssignment.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'This subject is already assigned to this section for the selected academic year.'
+            });
+        }
+
         // Insert assignment
         const [result] = await promisePool.query(
             'INSERT INTO faculty_assignments (faculty_id, subject_id, academic_year_id, section, status) VALUES (?, ?, ?, ?, ?)',
@@ -343,6 +356,28 @@ router.put('/assignments/:id', async (req, res) => {
                 success: false,
                 message: 'Assignment not found'
             });
+        }
+
+        // Check for duplicate assignment (same subject, section, and academic year)
+        // We need the academic_year_id of the current assignment to check conflicts
+        const [currentAssignment] = await promisePool.query(
+            'SELECT academic_year_id FROM faculty_assignments WHERE id = ?',
+            [id]
+        );
+
+        if (currentAssignment.length > 0) {
+            const yearId = currentAssignment[0].academic_year_id;
+            const [duplicateCheck] = await promisePool.query(
+                'SELECT id FROM faculty_assignments WHERE subject_id = ? AND section = ? AND academic_year_id = ? AND status = "active" AND id != ?',
+                [subjectId, section, yearId, id]
+            );
+
+            if (duplicateCheck.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'This subject is already assigned to this section for the current academic year.'
+                });
+            }
         }
 
         // Update assignment

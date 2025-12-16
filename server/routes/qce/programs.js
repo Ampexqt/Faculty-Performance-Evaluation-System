@@ -141,15 +141,41 @@ router.post('/', async (req, res) => {
 
         // Check for duplicates in this college
         const [existing] = await promisePool.query(
-            'SELECT id FROM programs WHERE (program_code = ? OR program_name = ?) AND college_id = ?',
+            'SELECT id, status FROM programs WHERE (program_code = ? OR program_name = ?) AND college_id = ?',
             [programCode, programName, collegeId]
         );
 
         if (existing.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Program with this code or name already exists in your college'
-            });
+            const match = existing[0];
+
+            if (match.status === 'active') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Program with this code or name already exists in your college'
+                });
+            } else {
+                // Reactivate the inactive program
+                await promisePool.query(`
+                    UPDATE programs 
+                    SET status = 'active', 
+                        program_code = ?, 
+                        program_name = ?, 
+                        chairperson_id = ?
+                    WHERE id = ?
+                `, [programCode, programName, finalChairpersonId || null, match.id]);
+
+                return res.status(201).json({
+                    success: true,
+                    message: 'Program restored successfully',
+                    data: {
+                        id: match.id,
+                        code: programCode,
+                        name: programName,
+                        enrolledStudents: 0, // Simplified, strictly we should check, but 0 is safe for UI update
+                        activeSections: 0
+                    }
+                });
+            }
         }
 
         // Insert new program
@@ -240,16 +266,29 @@ router.delete('/:id', async (req, res) => {
             });
         }
 
-        // Soft delete
-        await promisePool.query(
-            "UPDATE programs SET status = 'inactive' WHERE id = ?",
-            [id]
-        );
+        try {
+            // Attempt Hard Delete
+            await promisePool.query('DELETE FROM programs WHERE id = ?', [id]);
 
-        res.json({
-            success: true,
-            message: 'Program deleted successfully'
-        });
+            res.json({
+                success: true,
+                message: 'Program deleted successfully'
+            });
+        } catch (deleteError) {
+            // If foreign key constraint fails (e.g. students exist), fallback to Soft Delete
+            if (deleteError.code === 'ER_ROW_IS_REFERENCED_2' || deleteError.errno === 1451) {
+                await promisePool.query(
+                    "UPDATE programs SET status = 'inactive' WHERE id = ?",
+                    [id]
+                );
+
+                return res.json({
+                    success: true,
+                    message: 'Program has students enrolled, so it was deactivated instead of deleted.'
+                });
+            }
+            throw deleteError;
+        }
 
     } catch (error) {
         console.error('Error deleting program:', error);

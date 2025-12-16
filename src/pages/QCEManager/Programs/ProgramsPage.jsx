@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, PenSquare, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Button } from '@/components/Button/Button';
@@ -11,6 +11,9 @@ import styles from './ProgramsPage.module.css';
 export function ProgramsPage() {
     const [programs, setPrograms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedProgram, setSelectedProgram] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [toasts, setToasts] = useState([]);
     const [formData, setFormData] = useState({
@@ -106,6 +109,85 @@ export function ProgramsPage() {
         setFormData({ programCode: '', programName: '' });
     };
 
+    const handleEdit = (program) => {
+        setSelectedProgram(program);
+        setFormData({
+            programCode: program.code,
+            programName: program.name,
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/programs/${selectedProgram.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    programCode: formData.programCode,
+                    programName: formData.programName,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                addToast('Program updated successfully', 'success');
+                setIsEditModalOpen(false);
+                setSelectedProgram(null);
+                setFormData({ programCode: '', programName: '' });
+                fetchPrograms();
+            } else {
+                addToast(result.message || 'Failed to update program', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating program:', error);
+            addToast('An error occurred', 'error');
+        }
+    };
+
+    const handleEditCancel = () => {
+        setIsEditModalOpen(false);
+        setSelectedProgram(null);
+        setFormData({ programCode: '', programName: '' });
+    };
+
+    const handleDeleteClick = (program) => {
+        setSelectedProgram(program);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/programs/${selectedProgram.id}`, {
+                method: 'DELETE',
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                addToast('Program deleted successfully', 'success');
+                setIsDeleteModalOpen(false);
+                setSelectedProgram(null);
+                fetchPrograms();
+            } else {
+                addToast(result.message || 'Failed to delete program', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting program:', error);
+            addToast('An error occurred', 'error');
+        }
+    };
+
+    const handleDeleteCancel = () => {
+        setIsDeleteModalOpen(false);
+        setSelectedProgram(null);
+    };
+
     const columns = [
         {
             header: 'Program Code',
@@ -115,12 +197,12 @@ export function ProgramsPage() {
         {
             header: 'Program Name',
             accessor: 'name',
-            width: '50%',
+            width: '40%',
         },
         {
             header: 'Enrolled Students',
             accessor: 'enrolledStudents',
-            width: '20%',
+            width: '15%',
             align: 'center',
         },
         {
@@ -128,6 +210,30 @@ export function ProgramsPage() {
             accessor: 'activeSections',
             width: '15%',
             align: 'center',
+        },
+        {
+            header: 'Actions',
+            accessor: 'actions',
+            width: '15%',
+            align: 'center',
+            render: (value, row) => (
+                <div className={styles.actionButtons}>
+                    <button
+                        className={styles.actionButton}
+                        onClick={() => handleEdit(row)}
+                        aria-label="Edit program"
+                    >
+                        <PenSquare size={16} />
+                    </button>
+                    <button
+                        className={styles.actionButton}
+                        onClick={() => handleDeleteClick(row)}
+                        aria-label="Delete program"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+            ),
         },
     ];
 
@@ -200,6 +306,80 @@ export function ProgramsPage() {
                             </Button>
                         </div>
                     </form>
+                </Modal>
+
+                {/* Edit Program Modal */}
+                <Modal
+                    isOpen={isEditModalOpen}
+                    onClose={handleEditCancel}
+                    title="Edit Program"
+                >
+                    <form onSubmit={handleEditSubmit} className={styles.modalForm}>
+                        <Input
+                            label="Program Code"
+                            name="programCode"
+                            type="text"
+                            placeholder="e.g. BSCS"
+                            value={formData.programCode}
+                            onChange={handleInputChange}
+                            required
+                        />
+
+                        <Input
+                            label="Program Name"
+                            name="programName"
+                            type="text"
+                            placeholder="e.g. Bachelor of Science in Computer Science"
+                            value={formData.programName}
+                            onChange={handleInputChange}
+                            required
+                        />
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleEditCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Update Program
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* Delete Program Modal */}
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onClose={handleDeleteCancel}
+                    title="Delete Program"
+                >
+                    <div className={styles.deleteModalContent}>
+                        <p>Are you sure you want to delete <strong>{selectedProgram?.name}</strong>?</p>
+                        <p className={styles.deleteWarning}>This action cannot be undone.</p>
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleDeleteCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="danger"
+                                onClick={handleDeleteConfirm}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
                 </Modal>
 
                 <ToastContainer toasts={toasts} removeToast={removeToast} />

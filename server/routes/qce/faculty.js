@@ -169,45 +169,71 @@ router.post('/', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert into database
-        const [result] = await promisePool.query(`
-            INSERT INTO faculty (
-                employee_id, 
-                first_name, 
-                last_name, 
-                gender, 
-                email, 
-                password, 
-                position, 
-                employment_status, 
-                college_id,
-                department_id,
-                status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
-        `, [
-            employeeId,
-            firstName,
-            lastName,
-            gender || null,
-            email,
-            hashedPassword,
-            role,
-            employmentStatus,
-            collegeId,
-            departmentId || null // Allow department assignment if provided
-        ]);
+        // Refactoring to use transaction for safety
+        const connection = await promisePool.getConnection();
+        await connection.beginTransaction();
 
-        res.status(201).json({
-            success: true,
-            message: 'Faculty member added successfully',
-            data: {
-                id: result.insertId,
-                name: `${firstName} ${lastName}`,
+        try {
+            const [result] = await connection.query(`
+                INSERT INTO faculty (
+                    employee_id, 
+                    first_name, 
+                    last_name, 
+                    gender, 
+                    email, 
+                    password, 
+                    position, 
+                    employment_status, 
+                    college_id,
+                    department_id,
+                    status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+            `, [
+                employeeId,
+                firstName,
+                lastName,
+                gender || null,
                 email,
+                hashedPassword,
                 role,
-                status: employmentStatus,
-                collegeId: collegeId
+                employmentStatus,
+                collegeId,
+                departmentId || null
+            ]);
+
+            const newFacultyId = result.insertId;
+
+            // Handle Program Assignments if Program Chair
+            if (role === 'Program Chair' && Array.isArray(req.body.assignedPrograms) && req.body.assignedPrograms.length > 0) {
+                for (const code of req.body.assignedPrograms) {
+                    await connection.query(
+                        'UPDATE programs SET chairperson_id = ? WHERE program_code = ? AND college_id = ?',
+                        [newFacultyId, code, collegeId]
+                    );
+                }
             }
-        });
+
+            await connection.commit();
+
+            res.status(201).json({
+                success: true,
+                message: 'Faculty member added successfully',
+                data: {
+                    id: newFacultyId,
+                    name: `${firstName} ${lastName}`,
+                    email,
+                    role,
+                    status: employmentStatus,
+                    collegeId: collegeId
+                }
+            });
+
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
+        }
 
     } catch (error) {
         console.error('Error creating faculty:', error);

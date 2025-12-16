@@ -464,6 +464,37 @@ export function FacultyPage() {
                             </select>
                         </div>
 
+                        {formData.role === 'Program Chair' && (
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                    Assigned Programs<span className={styles.required}>*</span>
+                                </label>
+                                <div className={styles.programSelection}>
+                                    {programs.length > 0 ? (
+                                        programs.map(program => (
+                                            <label key={program.id} className={styles.programCheckbox}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.assignedPrograms?.includes(program.code)}
+                                                    onChange={() => handleProgramChange(program.code)}
+                                                />
+                                                {program.code} - {program.name}
+                                            </label>
+                                        ))
+                                    ) : (
+                                        <div style={{ padding: '0.5rem', color: '#666', fontSize: '0.875rem' }}>
+                                            No programs available in this college.
+                                        </div>
+                                    )}
+                                </div>
+                                {(!formData.assignedPrograms || formData.assignedPrograms.length === 0) && (
+                                    <span style={{ color: '#dc2626', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                                        Please select at least one program
+                                    </span>
+                                )}
+                            </div>
+                        )}
+
                         <div className={styles.formGroup}>
                             <label className={styles.label}>
                                 Employment Status<span className={styles.required}>*</span>
@@ -586,6 +617,37 @@ export function FacultyPage() {
                                 <option value="Professor">Professor</option>
                             </select>
                         </div>
+
+                        {formData.role === 'Program Chair' && (
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                    Assigned Programs<span className={styles.required}>*</span>
+                                </label>
+                                <div className={styles.programSelection}>
+                                    {programs.length > 0 ? (
+                                        programs.map(program => (
+                                            <label key={program.id} className={styles.programCheckbox}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.assignedPrograms?.includes(program.code)}
+                                                    onChange={() => handleProgramChange(program.code)}
+                                                />
+                                                {program.code} - {program.name}
+                                            </label>
+                                        ))
+                                    ) : (
+                                        <div style={{ padding: '0.5rem', color: '#666', fontSize: '0.875rem' }}>
+                                            No programs available in this college.
+                                        </div>
+                                    )}
+                                </div>
+                                {(!formData.assignedPrograms || formData.assignedPrograms.length === 0) && (
+                                    <span style={{ color: '#dc2626', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                                        Please select at least one program
+                                    </span>
+                                )}
+                            </div>
+                        )}
 
                         <div className={styles.formGroup}>
                             <label className={styles.label}>

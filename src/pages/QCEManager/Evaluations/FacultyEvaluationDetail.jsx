@@ -4,7 +4,25 @@ import { ArrowLeft, Users, BookOpen, CheckCircle, Clock } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Badge } from '@/components/Badge/Badge';
+import { Button } from '@/components/Button/Button';
+import { Modal } from '@/components/Modal/Modal';
+import { useToast } from '@/hooks/useToast';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './FacultyEvaluationDetail.module.css';
+
+// Function to generate random code
+const generateCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 3; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    code += '-';
+    for (let i = 0; i < 3; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+};
 
 export function FacultyEvaluationDetail() {
     const { facultyId } = useParams();
@@ -16,6 +34,12 @@ export function FacultyEvaluationDetail() {
         fullName: '',
         role: ''
     });
+
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedAssignment, setSelectedAssignment] = useState(null);
+    const [generatedCode, setGeneratedCode] = useState('');
+    const { toasts, removeToast, success, error: showError } = useToast();
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -48,6 +72,53 @@ export function FacultyEvaluationDetail() {
             console.error('Error fetching faculty details:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleCreateClick = (row) => {
+        setSelectedAssignment(row);
+        setGeneratedCode(generateCode());
+        setIsModalOpen(true);
+    };
+
+    const handleModalCancel = () => {
+        setIsModalOpen(false);
+        setSelectedAssignment(null);
+        setGeneratedCode('');
+    };
+
+    const handleModalSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!selectedAssignment) return;
+
+        try {
+            const response = await fetch('http://localhost:5000/api/qce/subjects/assignments/generate-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    assignmentId: selectedAssignment.assignment_id, // Ensure your query returns assignment_id as id
+                    code: generatedCode
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                success('Evaluation code generated and activated successfully!');
+                setIsModalOpen(false);
+                setSelectedAssignment(null);
+                setGeneratedCode('');
+                // Refresh data
+                fetchFacultyDetails();
+            } else {
+                showError('Failed to save code: ' + data.message);
+            }
+        } catch (err) {
+            console.error('Error saving code:', err);
+            showError('An error occurred while saving the code.');
         }
     };
 
@@ -107,14 +178,26 @@ export function FacultyEvaluationDetail() {
             accessor: 'status',
             width: '12%',
             align: 'center',
-            render: (value) => (
-                <Badge
-                    variant={value === 'Completed' ? 'success' : value === 'Not Created' ? 'neutral' : 'warning'}
-                    className={value === 'Not Created' ? styles.badgeNotCreated : ''}
-                >
-                    {value}
-                </Badge>
-            )
+            render: (value, row) => {
+                if (value === 'Not Created') {
+                    return (
+                        <button
+                            className={styles.createNowButton}
+                            onClick={() => handleCreateClick(row)}
+                        >
+                            Create Evaluation
+                        </button>
+                    );
+                }
+
+                return (
+                    <Badge
+                        variant={value === 'Completed' ? 'success' : 'warning'}
+                    >
+                        {value}
+                    </Badge>
+                );
+            }
         }
     ];
 
@@ -218,6 +301,79 @@ export function FacultyEvaluationDetail() {
                         )}
                     </div>
                 </div>
+
+                {/* Generate Code Modal using re-used logic */}
+                <Modal
+                    isOpen={isModalOpen}
+                    onClose={handleModalCancel}
+                    title="Generate Evaluation Code"
+                >
+                    <form onSubmit={handleModalSubmit} className={styles.modalForm}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Faculty Role</label>
+                            <input
+                                type="text"
+                                value={facultyData?.position || ''}
+                                disabled
+                                className={styles.inputDisabled}
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Faculty Name</label>
+                            <input
+                                type="text"
+                                value={facultyData?.name || ''}
+                                disabled
+                                className={styles.inputDisabled}
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Subject</label>
+                            <input
+                                type="text"
+                                value={selectedAssignment ? `${selectedAssignment.subject_code} - ${selectedAssignment.subject_name}` : ''}
+                                disabled
+                                className={styles.inputDisabled}
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Section</label>
+                            <input
+                                type="text"
+                                value={selectedAssignment ? selectedAssignment.section : ''}
+                                disabled
+                                className={styles.inputDisabled}
+                            />
+                        </div>
+
+                        {generatedCode && (
+                            <div className={styles.codeDisplay}>
+                                <div className={styles.codeLabel}>GENERATED CODE</div>
+                                <div className={styles.codeValue}>{generatedCode}</div>
+                            </div>
+                        )}
+
+                        <div className={styles.modalActions}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleModalCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Save & Activate
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+                <ToastContainer toasts={toasts} removeToast={removeToast} />
             </div>
         </DashboardLayout>
     );

@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Copy } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Badge } from '@/components/Badge/Badge';
+import { useToast } from '@/hooks/useToast';
+import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './MySubjectsPage.module.css';
 
 export function MySubjectsPage() {
     const [subjects, setSubjects] = useState([]);
     const [evaluators, setEvaluators] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { toasts, removeToast, success, error: showError } = useToast();
 
     useEffect(() => {
         const fetchSubjectsData = async () => {
@@ -47,6 +50,19 @@ export function MySubjectsPage() {
         if (percentage >= 70) return styles.progressHigh;
         if (percentage >= 40) return styles.progressMedium;
         return styles.progressLow;
+    };
+
+    const handleCopyCode = (code) => {
+        if (!code) return;
+
+        navigator.clipboard.writeText(code)
+            .then(() => {
+                success(`Code ${code} copied to clipboard!`);
+            })
+            .catch((err) => {
+                console.error('Failed to copy: ', err);
+                showError('Failed to copy code to clipboard');
+            });
     };
 
     return (
@@ -100,7 +116,11 @@ export function MySubjectsPage() {
                                                         {subject.evalCode ? (
                                                             <>
                                                                 {subject.evalCode}
-                                                                <button className={styles.copyButton}>
+                                                                <button
+                                                                    className={styles.copyButton}
+                                                                    onClick={() => handleCopyCode(subject.evalCode)}
+                                                                    aria-label="Copy code"
+                                                                >
                                                                     <Copy size={16} />
                                                                 </button>
                                                             </>
@@ -151,6 +171,7 @@ export function MySubjectsPage() {
                         </div>
                     </div>
                 </div>
+                <ToastContainer toasts={toasts} removeToast={removeToast} />
             </div>
         </DashboardLayout>
     );

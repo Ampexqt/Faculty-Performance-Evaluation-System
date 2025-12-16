@@ -25,8 +25,11 @@ router.get('/list', async (req, res) => {
                 s.subject_name,
                 fa.section,
                 fa.eval_code,
-                fa.student_count as total_students,
                 (SELECT COUNT(*) 
+                 FROM students st 
+                 WHERE (st.section = fa.section OR CONCAT(st.year_level, '-', st.section) = fa.section) 
+                 AND st.status = 'active') as total_students,
+                (SELECT COUNT(DISTINCT student_id) 
                  FROM student_evaluations se 
                  WHERE se.faculty_assignment_id = fa.id) as students_evaluated
             FROM faculty_assignments fa

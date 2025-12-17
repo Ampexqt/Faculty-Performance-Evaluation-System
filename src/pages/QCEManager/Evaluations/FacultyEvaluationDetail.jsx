@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, BookOpen, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Users, BookOpen, CheckCircle, Clock, Copy, Check } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Badge } from '@/components/Badge/Badge';
@@ -49,7 +49,15 @@ export function FacultyEvaluationDetail() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
     const [generatedCode, setGeneratedCode] = useState('');
+    const [copied, setCopied] = useState(false);
     const { toasts, removeToast, success, error: showError } = useToast();
+
+    const handleCopy = (code) => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        success('Code copied to clipboard!');
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     useEffect(() => {
         // State initialized above
@@ -394,7 +402,16 @@ export function FacultyEvaluationDetail() {
                                     {generatedCode && generatedCode.startsWith('SUP') ? (
                                         <div className={styles.activeCodeDisplay}>
                                             <div className={styles.activeCodeLabel}>ACTIVE SUPERVISOR CODE</div>
-                                            <div className={styles.activeCodeValue}>{generatedCode}</div>
+                                            <div className={styles.activeCodeValue}>
+                                                {generatedCode}
+                                                <button
+                                                    onClick={() => handleCopy(generatedCode)}
+                                                    className={styles.copyButton}
+                                                    title="Copy Code"
+                                                >
+                                                    {copied ? <Check size={18} /> : <Copy size={18} />}
+                                                </button>
+                                            </div>
                                             <p className={styles.codeInstruction}>Share this code with the Dean to enable evaluation.</p>
                                         </div>
                                     ) : (

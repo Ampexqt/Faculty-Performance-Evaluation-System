@@ -202,32 +202,29 @@ router.post('/validate', async (req, res) => {
 
 /**
  * GET /api/dean/evaluations/completed/:userId
- * Get completed evaluations for a dean
+ * Get completed evaluations for a dean (supervisor)
  */
 router.get('/completed/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
+        // Fetch from supervisor_evaluations
         const [evaluations] = await promisePool.query(`
             SELECT 
-                ae.id,
-                ae.evaluation_date,
-                ae.total_score,
-                s.subject_code,
-                s.subject_name,
+                se.id,
+                se.evaluation_date,
+                se.total_score,
                 f.first_name,
                 f.last_name
-            FROM admin_evaluations ae
-            JOIN faculty_assignments fa ON ae.faculty_assignment_id = fa.id
-            JOIN subjects s ON fa.subject_id = s.id
-            JOIN faculty f ON fa.faculty_id = f.id
-            WHERE ae.evaluator_id = ? AND ae.status = 'completed'
-            ORDER BY ae.evaluation_date DESC
+            FROM supervisor_evaluations se
+            JOIN faculty f ON se.evaluatee_id = f.id
+            WHERE se.evaluator_id = ? AND se.status = 'completed'
+            ORDER BY se.evaluation_date DESC
         `, [userId]);
 
         const formattedEvaluations = evaluations.map(evaluation => ({
             id: evaluation.id,
-            subject: `${evaluation.subject_code} - ${evaluation.subject_name}`,
+            subject: 'Faculty Supervision', // Static for now as per design
             evaluatee: `${evaluation.first_name} ${evaluation.last_name}`,
             completedDate: new Date(evaluation.evaluation_date).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -253,7 +250,7 @@ router.get('/completed/:userId', async (req, res) => {
 
 /**
  * POST /api/dean/evaluations/submit
- * Submit completed evaluation for Dean
+ * Submit completed evaluation for Dean (Supervisor)
  */
 router.post('/submit', async (req, res) => {
     const connection = await promisePool.getConnection();
@@ -272,150 +269,86 @@ router.post('/submit', async (req, res) => {
             });
         }
 
-        // Get current active evaluation period
-        const [periods] = await connection.query(
+        // Get current active evaluation period (Reuse robust logic)
+        let [periods] = await connection.query(
             'SELECT id FROM evaluation_periods WHERE status = "active" ORDER BY id DESC LIMIT 1'
         );
 
-        if (periods.length === 0) {
-            await connection.rollback();
-            return res.status(400).json({
-                success: false,
-                message: 'No active evaluation period found. Please contact the administrator.'
-            });
-        }
+        let evaluationPeriodId;
 
-        const evaluationPeriodId = periods[0].id;
-
-        // HANDLE SUPERVISOR EVALUATION (No Assignment ID)
-        if (evaluationType === 'Supervisor') {
-            const evaluateeId = assignmentId; // In Supervisor flow, ID is evaluatee ID.
-
-            // Check existing
-            const [existing] = await connection.query(
-                `SELECT id FROM admin_evaluations 
-                 WHERE evaluator_id = ? AND evaluatee_id = ? AND evaluation_period_id = ?`,
-                [evaluatorId, evaluateeId, evaluationPeriodId]
+        if (periods.length > 0) {
+            evaluationPeriodId = periods[0].id;
+        } else {
+            const [activeYears] = await connection.query(
+                'SELECT id, year_label, semester, start_date, end_date FROM academic_years WHERE status = "active" LIMIT 1'
             );
 
-            if (existing.length > 0) {
+            if (activeYears.length === 0) {
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
-                    message: 'You have already evaluated this faculty member.'
+                    message: 'No active academic year found. Please contact the administrator.'
                 });
             }
 
-            // Dynamic table update for evaluatee_id
-            try {
-                // We use Promise.all to try both ALTERs without waiting (non-blocking if error) but sequentially is safer
-                await connection.query("ALTER TABLE admin_evaluations ADD COLUMN evaluatee_id INT NULL AFTER evaluator_id").catch(() => { });
-                await connection.query("ALTER TABLE admin_evaluations MODIFY COLUMN faculty_assignment_id INT NULL").catch(() => { });
-            } catch (e) {
-                // Ignore
-            }
+            const activeYear = activeYears[0];
+            const periodName = `Evaluation Period ${activeYear.year_label} ${activeYear.semester}`;
 
-            // Calculate scores
-            const categoryScores = {
-                'A. Commitment': 0,
-                'B. Knowledge of Subject': 0,
-                'C. Teaching for Independent Learning': 0,
-                'D. Management of Learning': 0
-            };
-
-            for (const [key, rating] of Object.entries(ratings)) {
-                const category = Object.keys(categoryScores).find(cat => key.startsWith(cat));
-                if (category) {
-                    categoryScores[category] += parseInt(rating) || 0;
-                }
-            }
-
-            const scoreCommitment = categoryScores['A. Commitment'];
-            const scoreKnowledge = categoryScores['B. Knowledge of Subject'];
-            const scoreTeaching = categoryScores['C. Teaching for Independent Learning'];
-            const scoreManagement = categoryScores['D. Management of Learning'];
-            const totalScore = scoreCommitment + scoreKnowledge + scoreTeaching + scoreManagement;
-
-            const [evalResult] = await connection.query(
-                `INSERT INTO admin_evaluations (
-                    evaluator_id, 
-                    evaluatee_id,
-                    faculty_assignment_id, 
-                    evaluation_period_id,
-                    score_commitment,
-                    score_knowledge,
-                    score_teaching,
-                    score_management,
-                    total_score,
-                    comments,
-                    evaluator_name,
-                    evaluator_position,
-                    evaluation_date,
-                    status,
-                    submitted_at
-                ) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', NOW())`,
-                [
-                    evaluatorId,
-                    evaluateeId,
-                    evaluationPeriodId,
-                    scoreCommitment,
-                    scoreKnowledge,
-                    scoreTeaching,
-                    scoreManagement,
-                    totalScore,
-                    comments || null,
-                    evaluatorName,
-                    'Supervisor',
-                    evaluationDate
-                ]
+            const [existingPeriods] = await connection.query(
+                'SELECT id FROM evaluation_periods WHERE academic_year_id = ? LIMIT 1',
+                [activeYear.id]
             );
 
-            const evaluationId = evalResult.insertId;
-
-            // Insert ratings details
-            const ratingDetails = [];
-            for (const [key, rating] of Object.entries(ratings)) {
-                const lastDashIndex = key.lastIndexOf('-');
-                const category = key.substring(0, lastDashIndex);
-                const criterionIndex = parseInt(key.substring(lastDashIndex + 1));
-
-                ratingDetails.push([
-                    evaluationId,
-                    category,
-                    criterionIndex,
-                    parseInt(rating) || 0
-                ]);
-            }
-
-            if (ratingDetails.length > 0) {
+            if (existingPeriods.length > 0) {
+                evaluationPeriodId = existingPeriods[0].id;
                 await connection.query(
-                    `INSERT INTO admin_evaluation_ratings 
-                     (evaluation_id, category, criterion_index, rating) 
-                     VALUES ?`,
-                    [ratingDetails]
+                    'UPDATE evaluation_periods SET status = "active", is_active = TRUE WHERE id = ?',
+                    [evaluationPeriodId]
                 );
+            } else {
+                const [insResult] = await connection.query(
+                    `INSERT INTO evaluation_periods 
+                    (academic_year_id, period_name, start_date, end_date, is_active, status)
+                    VALUES (?, ?, ?, ?, TRUE, 'active')`,
+                    [activeYear.id, periodName, activeYear.start_date, activeYear.end_date]
+                );
+                evaluationPeriodId = insResult.insertId;
             }
-
-            await connection.commit();
-            return res.json({ success: true, message: 'Evaluation submitted successfully', data: { evaluationId } });
-
         }
 
-        // Check if already evaluated (Standard)
+        // Check for existing evaluation in supervisor_evaluations
+        // Determine evaluateeId:
+        // If type is Supervisor, assignmentId IS the evaluateeId.
+        // If type is Assignment, we need to fetch faculty_id from faculty_assignments.
+
+        let evaluateeId = assignmentId;
+
+        if (evaluationType !== 'Supervisor') {
+            // Fetch faculty_id from assignment
+            const [assignData] = await connection.query(
+                'SELECT faculty_id FROM faculty_assignments WHERE id = ?',
+                [assignmentId]
+            );
+            if (assignData.length > 0) {
+                evaluateeId = assignData[0].faculty_id;
+            }
+        }
+
         const [existing] = await connection.query(
-            'SELECT id FROM admin_evaluations WHERE evaluator_id = ? AND faculty_assignment_id = ?',
-            [evaluatorId, assignmentId]
+            `SELECT id FROM supervisor_evaluations 
+             WHERE evaluator_id = ? AND evaluatee_id = ? AND evaluation_period_id = ?`,
+            [evaluatorId, evaluateeId, evaluationPeriodId]
         );
 
         if (existing.length > 0) {
             await connection.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'You have already submitted an evaluation for this subject'
+                message: 'You have already evaluated this faculty member.'
             });
         }
 
-        // Calculate category scores
+        // Calculate scores
         const categoryScores = {
             'A. Commitment': 0,
             'B. Knowledge of Subject': 0,
@@ -436,10 +369,11 @@ router.post('/submit', async (req, res) => {
         const scoreManagement = categoryScores['D. Management of Learning'];
         const totalScore = scoreCommitment + scoreKnowledge + scoreTeaching + scoreManagement;
 
+        // Insert into supervisor_evaluations
         const [evalResult] = await connection.query(
-            `INSERT INTO admin_evaluations (
+            `INSERT INTO supervisor_evaluations (
                 evaluator_id, 
-                faculty_assignment_id, 
+                evaluatee_id,
                 evaluation_period_id,
                 score_commitment,
                 score_knowledge,
@@ -455,7 +389,7 @@ router.post('/submit', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', NOW())`,
             [
                 evaluatorId,
-                assignmentId,
+                evaluateeId,
                 evaluationPeriodId,
                 scoreCommitment,
                 scoreKnowledge,
@@ -464,7 +398,7 @@ router.post('/submit', async (req, res) => {
                 totalScore,
                 comments || null,
                 evaluatorName,
-                'Supervisor', // Deans act as Supervisors
+                'Supervisor',
                 evaluationDate
             ]
         );
@@ -478,27 +412,19 @@ router.post('/submit', async (req, res) => {
             const category = key.substring(0, lastDashIndex);
             const criterionIndex = parseInt(key.substring(lastDashIndex + 1));
 
-            let categoryCode = '';
-            if (category.startsWith('A.')) categoryCode = 'A';
-            else if (category.startsWith('B.')) categoryCode = 'B';
-            else if (category.startsWith('C.')) categoryCode = 'C';
-            else if (category.startsWith('D.')) categoryCode = 'D';
-
-            if (categoryCode) {
-                ratingDetails.push([
-                    evaluationId,
-                    category, // Keeping full category name for clarity in new table, or use Code
-                    criterionIndex,
-                    parseInt(rating) || 0
-                ]);
-            }
+            ratingDetails.push([
+                evaluationId,
+                category,
+                criterionIndex,
+                parseInt(rating) || 0
+            ]);
         }
 
         if (ratingDetails.length > 0) {
             await connection.query(
-                `INSERT INTO admin_evaluation_ratings 
-                (evaluation_id, category, criterion_index, rating) 
-                VALUES ?`,
+                `INSERT INTO supervisor_evaluation_ratings 
+                 (evaluation_id, category, criterion_index, rating) 
+                 VALUES ?`,
                 [ratingDetails]
             );
         }

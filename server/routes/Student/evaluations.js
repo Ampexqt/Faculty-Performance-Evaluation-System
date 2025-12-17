@@ -205,19 +205,57 @@ router.post('/submit', async (req, res) => {
         }
 
         // Get current active evaluation period
-        const [periods] = await connection.query(
+        let [periods] = await connection.query(
             'SELECT id FROM evaluation_periods WHERE status = "active" ORDER BY id DESC LIMIT 1'
         );
 
-        if (periods.length === 0) {
-            await connection.rollback();
-            return res.status(400).json({
-                success: false,
-                message: 'No active evaluation period found. Please contact the administrator.'
-            });
-        }
+        let evaluationPeriodId;
 
-        const evaluationPeriodId = periods[0].id;
+        if (periods.length > 0) {
+            evaluationPeriodId = periods[0].id;
+        } else {
+            // Fallback: Check for active Academic Year and auto-create evaluation period if missing
+            // This handles cases where Zonal Admin activates a year but doesn't explicitly create an eval period
+            const [activeYears] = await connection.query(
+                'SELECT id, year_label, semester, start_date, end_date FROM academic_years WHERE status = "active" LIMIT 1'
+            );
+
+            if (activeYears.length === 0) {
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: 'No active academic year found. Please contact the administrator.'
+                });
+            }
+
+            const activeYear = activeYears[0];
+            const periodName = `Evaluation Period ${activeYear.year_label} ${activeYear.semester}`;
+
+            // Check if one exists but maybe inactive? If so, reactivate it? 
+            // For now, just create new if not found active. To avoid duplicates, check by academic_year_id first.
+            const [existingPeriods] = await connection.query(
+                'SELECT id FROM evaluation_periods WHERE academic_year_id = ? LIMIT 1',
+                [activeYear.id]
+            );
+
+            if (existingPeriods.length > 0) {
+                // Reactivate it
+                evaluationPeriodId = existingPeriods[0].id;
+                await connection.query(
+                    'UPDATE evaluation_periods SET status = "active", is_active = TRUE WHERE id = ?',
+                    [evaluationPeriodId]
+                );
+            } else {
+                // Create new
+                const [insResult] = await connection.query(
+                    `INSERT INTO evaluation_periods 
+                    (academic_year_id, period_name, start_date, end_date, is_active, status)
+                    VALUES (?, ?, ?, ?, TRUE, 'active')`,
+                    [activeYear.id, periodName, activeYear.start_date, activeYear.end_date]
+                );
+                evaluationPeriodId = insResult.insertId;
+            }
+        }
 
         // Check if student has already evaluated this assignment
         const [existing] = await connection.query(

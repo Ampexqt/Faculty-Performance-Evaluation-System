@@ -58,6 +58,7 @@ export function EvaluationFormPage() {
     // Handle both property naming conventions (Student vs Dean flow)
     const {
         id: assignmentId,
+        evaluateeId: rawEvaluateeId, // Capture evaluateeId directly
         subject,
         evaluatorType
     } = evaluationData;
@@ -188,252 +189,262 @@ export function EvaluationFormPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
+                const payload = {
                     studentId, // This will be evaluatorId for Dean
                     assignmentId,
                     ratings,
                     comments,
                     evaluatorName: fullName,
-                    evaluationDate: formattedDate
-                }),
-            });
+                    evaluationDate: formattedDate,
+                    evaluationType: isDean ? 'Supervisor' : 'Assignment',
+                    evaluateeId: rawEvaluateeId // Pass the explicit ID
+                };
 
-            const data = await response.json();
+                console.log('Submitting payload:', payload);
+                const response = await fetch(submitUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
 
-            if (data.success) {
-                success('Evaluation submitted successfully!');
+                const data = await response.json();
 
-                // Remove from pending evaluations in localStorage
-                const saved = localStorage.getItem(`pendingEvaluations_${studentId}`);
-                if (saved) {
-                    const pending = JSON.parse(saved);
-                    const updated = pending.filter(item => item.id !== assignmentId);
-                    localStorage.setItem(`pendingEvaluations_${studentId}`, JSON.stringify(updated));
-                }
+                if(data.success) {
+                    success('Evaluation submitted successfully!');
 
-                // Navigate back to evaluations page
-                setTimeout(() => {
-                    navigate(isDean ? '/dean/evaluations' : '/student/evaluations');
-                }, 1500);
-            } else {
-                showError(data.message || 'Failed to submit evaluation');
+            // Remove from pending evaluations in localStorage
+            const saved = localStorage.getItem(`pendingEvaluations_${studentId}`);
+            if (saved) {
+                const pending = JSON.parse(saved);
+                const updated = pending.filter(item => item.id !== assignmentId);
+                localStorage.setItem(`pendingEvaluations_${studentId}`, JSON.stringify(updated));
             }
-        } catch (error) {
-            console.error('Submission error:', error);
-            showError('An error occurred while submitting the evaluation');
-        } finally {
-            setIsSubmitting(false);
+
+            // Navigate back to evaluations page
+            setTimeout(() => {
+                navigate(isDean ? '/dean/evaluations' : '/student/evaluations');
+            }, 1500);
+        } else {
+            showError(data.message || 'Failed to submit evaluation');
         }
-    };
-
-    const handleCancel = () => {
-        navigate(isDean ? '/dean/evaluations' : '/student/evaluations');
-    };
-
-    if (!assignmentId) {
-        return (
-            <DashboardLayout role={isDean ? "College Dean" : "Student"} userName={fullName} notificationCount={2}>
-                <div className={styles.error}>
-                    <h2>No evaluation data found</h2>
-                    <Button onClick={() => navigate(isDean ? '/dean/evaluations' : '/student/evaluations')}>
-                        Back to Evaluations
-                    </Button>
-                </div>
-            </DashboardLayout>
-        );
+    } catch (error) {
+        console.error('Submission error:', error);
+        showError('An error occurred while submitting the evaluation');
+    } finally {
+        setIsSubmitting(false);
     }
+};
 
+const handleCancel = () => {
+    navigate(isDean ? '/dean/evaluations' : '/student/evaluations');
+};
+
+if (!assignmentId) {
     return (
         <DashboardLayout role={isDean ? "College Dean" : "Student"} userName={fullName} notificationCount={2}>
-            <ToastContainer toasts={toasts} removeToast={removeToast} />
-            <div className={styles.page}>
-                <div className={styles.formContainer}>
-                    {/* Form Header */}
-                    <div className={styles.formHeader}>
-                        <h1 className={styles.formTitle}>
-                            Instrument for the Instruction/Teaching Effectiveness
-                        </h1>
+            <div className={styles.error}>
+                <h2>No evaluation data found</h2>
+                <Button onClick={() => navigate(isDean ? '/dean/evaluations' : '/student/evaluations')}>
+                    Back to Evaluations
+                </Button>
+            </div>
+        </DashboardLayout>
+    );
+}
 
-                        <div className={styles.headerInfo}>
-                            <p className={styles.qceInfo}>The QCE of the NBC No. 461</p>
-                            <p className={styles.ratingPeriod}>
-                                <strong>Rating Period:</strong> {formatRatingPeriod()}
-                            </p>
+return (
+    <DashboardLayout role={isDean ? "College Dean" : "Student"} userName={fullName} notificationCount={2}>
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+        <div className={styles.page}>
+            <div className={styles.formContainer}>
+                {/* Form Header */}
+                <div className={styles.formHeader}>
+                    <h1 className={styles.formTitle}>
+                        Instrument for the Instruction/Teaching Effectiveness
+                    </h1>
+
+                    <div className={styles.headerInfo}>
+                        <p className={styles.qceInfo}>The QCE of the NBC No. 461</p>
+                        <p className={styles.ratingPeriod}>
+                            <strong>Rating Period:</strong> {formatRatingPeriod()}
+                        </p>
+                    </div>
+
+                    <div className={styles.facultyInfo}>
+                        <div className={styles.infoRow}>
+                            <label className={styles.infoLabel}>Name of Faculty:</label>
+                            <div className={styles.infoValue}>{instructor}</div>
                         </div>
-
-                        <div className={styles.facultyInfo}>
-                            <div className={styles.infoRow}>
-                                <label className={styles.infoLabel}>Name of Faculty:</label>
-                                <div className={styles.infoValue}>{instructor}</div>
-                            </div>
-                            <div className={styles.infoRow}>
-                                <label className={styles.infoLabel}>Academic Rank:</label>
-                                <div className={styles.infoValue}>{displayRole}</div>
-                            </div>
-                        </div>
-
-                        <div className={styles.evaluatorType}>
-                            <label className={styles.evaluatorLabel}>Evaluators:</label>
-                            <div className={styles.checkboxGroup}>
-                                <label className={styles.checkbox}>
-                                    <input type="checkbox" disabled />
-                                    <span>Self</span>
-                                </label>
-                                <label className={styles.checkbox}>
-                                    <input type="checkbox" checked={!isDean} disabled />
-                                    <span>Student</span>
-                                </label>
-                                <label className={styles.checkbox}>
-                                    <input type="checkbox" disabled />
-                                    <span>Peer</span>
-                                </label>
-                                <label className={styles.checkbox}>
-                                    <input type="checkbox" checked={isDean} disabled />
-                                    <span>Supervisor</span>
-                                </label>
-                            </div>
+                        <div className={styles.infoRow}>
+                            <label className={styles.infoLabel}>Academic Rank:</label>
+                            <div className={styles.infoValue}>{displayRole}</div>
                         </div>
                     </div>
 
-                    {/* Subject Info Bar */}
-                    <div className={styles.subjectBar}>
-                        <strong>Subject:</strong> {subject}
+                    <div className={styles.evaluatorType}>
+                        <label className={styles.evaluatorLabel}>Evaluators:</label>
+                        <div className={styles.checkboxGroup}>
+                            <label className={styles.checkbox}>
+                                <input type="checkbox" disabled />
+                                <span>Self</span>
+                            </label>
+                            <label className={styles.checkbox}>
+                                <input type="checkbox" checked={!isDean} disabled />
+                                <span>Student</span>
+                            </label>
+                            <label className={styles.checkbox}>
+                                <input type="checkbox" disabled />
+                                <span>Peer</span>
+                            </label>
+                            <label className={styles.checkbox}>
+                                <input type="checkbox" checked={isDean} disabled />
+                                <span>Supervisor</span>
+                            </label>
+                        </div>
                     </div>
+                </div>
 
-                    <div className={styles.instructions}>
-                        <h3>Instructions</h3>
-                        <p>Please evaluate the faculty using the scale below. Encircle your rating.</p>
+                {/* Subject Info Bar */}
+                <div className={styles.subjectBar}>
+                    <strong>Subject:</strong> {subject}
+                </div>
 
-                        <div className={styles.ratingScale}>
-                            <h4>Rating Scale</h4>
-                            <table className={styles.scaleTable}>
+                <div className={styles.instructions}>
+                    <h3>Instructions</h3>
+                    <p>Please evaluate the faculty using the scale below. Encircle your rating.</p>
+
+                    <div className={styles.ratingScale}>
+                        <h4>Rating Scale</h4>
+                        <table className={styles.scaleTable}>
+                            <thead>
+                                <tr>
+                                    <th>Scale</th>
+                                    <th>Descriptive Rating</th>
+                                    <th>Qualitative Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {RATING_SCALE.map(scale => (
+                                    <tr key={scale.value}>
+                                        <td>{scale.value}</td>
+                                        <td>{scale.label}</td>
+                                        <td>{scale.description}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className={styles.evaluationForm}>
+                    {Object.entries(EVALUATION_CRITERIA).map(([category, criteria]) => (
+                        <div key={category} className={styles.categorySection}>
+                            <h3 className={styles.categoryTitle}>{category}</h3>
+
+                            <table className={styles.criteriaTable}>
                                 <thead>
                                     <tr>
-                                        <th>Scale</th>
-                                        <th>Descriptive Rating</th>
-                                        <th>Qualitative Description</th>
+                                        <th className={styles.numberCol}>#</th>
+                                        <th className={styles.indicatorCol}>Indicators</th>
+                                        <th className={styles.ratingCol}>5</th>
+                                        <th className={styles.ratingCol}>4</th>
+                                        <th className={styles.ratingCol}>3</th>
+                                        <th className={styles.ratingCol}>2</th>
+                                        <th className={styles.ratingCol}>1</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {RATING_SCALE.map(scale => (
-                                        <tr key={scale.value}>
-                                            <td>{scale.value}</td>
-                                            <td>{scale.label}</td>
-                                            <td>{scale.description}</td>
+                                    {criteria.map((criterion, index) => (
+                                        <tr key={index}>
+                                            <td className={styles.numberCell}>{index + 1}</td>
+                                            <td className={styles.indicatorCell}>{criterion}</td>
+                                            {[5, 4, 3, 2, 1].map(value => (
+                                                <td key={value} className={styles.ratingCell}>
+                                                    <label className={styles.radioLabel}>
+                                                        <input
+                                                            type="radio"
+                                                            name={`${category}-${index}`}
+                                                            value={value}
+                                                            checked={ratings[`${category}-${index}`] === value}
+                                                            onChange={() => handleRatingChange(category, index, value)}
+                                                            className={styles.radioInput}
+                                                        />
+                                                        <span className={styles.radioCustom}></span>
+                                                    </label>
+                                                </td>
+                                            ))}
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+
+                            <div className={styles.totalScore}>
+                                <strong>Total Score ({category.split('.')[0]}):</strong> {calculateTotalScore(category)}
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* Comments Section */}
+                    <div className={styles.commentsSection}>
+                        <h3 className={styles.commentsTitle}>Additional Comments/Feedback (Optional)</h3>
+                        <p className={styles.commentsSubtitle}>
+                            Please share any additional feedback, suggestions, or comments about the faculty member's teaching performance.
+                        </p>
+                        <textarea
+                            className={styles.commentsTextarea}
+                            placeholder="Write your comments here..."
+                            value={comments}
+                            onChange={(e) => setComments(e.target.value)}
+                            rows={6}
+                            maxLength={1000}
+                        />
+                        <div className={styles.characterCount}>
+                            {comments.length}/1000 characters
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className={styles.evaluationForm}>
-                        {Object.entries(EVALUATION_CRITERIA).map(([category, criteria]) => (
-                            <div key={category} className={styles.categorySection}>
-                                <h3 className={styles.categoryTitle}>{category}</h3>
-
-                                <table className={styles.criteriaTable}>
-                                    <thead>
-                                        <tr>
-                                            <th className={styles.numberCol}>#</th>
-                                            <th className={styles.indicatorCol}>Indicators</th>
-                                            <th className={styles.ratingCol}>5</th>
-                                            <th className={styles.ratingCol}>4</th>
-                                            <th className={styles.ratingCol}>3</th>
-                                            <th className={styles.ratingCol}>2</th>
-                                            <th className={styles.ratingCol}>1</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {criteria.map((criterion, index) => (
-                                            <tr key={index}>
-                                                <td className={styles.numberCell}>{index + 1}</td>
-                                                <td className={styles.indicatorCell}>{criterion}</td>
-                                                {[5, 4, 3, 2, 1].map(value => (
-                                                    <td key={value} className={styles.ratingCell}>
-                                                        <label className={styles.radioLabel}>
-                                                            <input
-                                                                type="radio"
-                                                                name={`${category}-${index}`}
-                                                                value={value}
-                                                                checked={ratings[`${category}-${index}`] === value}
-                                                                onChange={() => handleRatingChange(category, index, value)}
-                                                                className={styles.radioInput}
-                                                            />
-                                                            <span className={styles.radioCustom}></span>
-                                                        </label>
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-
-                                <div className={styles.totalScore}>
-                                    <strong>Total Score ({category.split('.')[0]}):</strong> {calculateTotalScore(category)}
-                                </div>
+                    {/* Evaluator Information Section */}
+                    <div className={styles.evaluatorSection}>
+                        <h3 className={styles.evaluatorSectionTitle}>Evaluator Information</h3>
+                        <div className={styles.evaluatorFields}>
+                            <div className={styles.evaluatorField}>
+                                <label className={styles.evaluatorLabel}>Signature of Evaluator:</label>
+                                <div className={styles.signatureLine}></div>
                             </div>
-                        ))}
-
-                        {/* Comments Section */}
-                        <div className={styles.commentsSection}>
-                            <h3 className={styles.commentsTitle}>Additional Comments/Feedback (Optional)</h3>
-                            <p className={styles.commentsSubtitle}>
-                                Please share any additional feedback, suggestions, or comments about the faculty member's teaching performance.
-                            </p>
-                            <textarea
-                                className={styles.commentsTextarea}
-                                placeholder="Write your comments here..."
-                                value={comments}
-                                onChange={(e) => setComments(e.target.value)}
-                                rows={6}
-                                maxLength={1000}
-                            />
-                            <div className={styles.characterCount}>
-                                {comments.length}/1000 characters
+                            <div className={styles.evaluatorField}>
+                                <label className={styles.evaluatorLabel}>Name of Evaluator:</label>
+                                <div className={styles.evaluatorValue}>{fullName}</div>
                             </div>
-                        </div>
-
-                        {/* Evaluator Information Section */}
-                        <div className={styles.evaluatorSection}>
-                            <h3 className={styles.evaluatorSectionTitle}>Evaluator Information</h3>
-                            <div className={styles.evaluatorFields}>
-                                <div className={styles.evaluatorField}>
-                                    <label className={styles.evaluatorLabel}>Signature of Evaluator:</label>
-                                    <div className={styles.signatureLine}></div>
-                                </div>
-                                <div className={styles.evaluatorField}>
-                                    <label className={styles.evaluatorLabel}>Name of Evaluator:</label>
-                                    <div className={styles.evaluatorValue}>{fullName}</div>
-                                </div>
-                                <div className={styles.evaluatorField}>
-                                    <label className={styles.evaluatorLabel}>Position of Evaluator:</label>
-                                    <div className={styles.evaluatorValue}>{evaluatorPosition}</div>
-                                </div>
-                                <div className={styles.evaluatorField}>
-                                    <label className={styles.evaluatorLabel}>Date:</label>
-                                    <div className={styles.evaluatorValue}>
-                                        {new Date().toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}
-                                    </div>
+                            <div className={styles.evaluatorField}>
+                                <label className={styles.evaluatorLabel}>Position of Evaluator:</label>
+                                <div className={styles.evaluatorValue}>{evaluatorPosition}</div>
+                            </div>
+                            <div className={styles.evaluatorField}>
+                                <label className={styles.evaluatorLabel}>Date:</label>
+                                <div className={styles.evaluatorValue}>
+                                    {new Date().toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div className={styles.formActions}>
-                            <Button type="button" variant="ghost" onClick={handleCancel}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" variant="primary" disabled={isSubmitting}>
-                                {isSubmitting ? 'Submitting...' : 'Submit Evaluation'}
-                            </Button>
-                        </div>
-                    </form>
-                </div>
+                    <div className={styles.formActions}>
+                        <Button type="button" variant="ghost" onClick={handleCancel}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" variant="primary" disabled={isSubmitting}>
+                            {isSubmitting ? 'Submitting...' : 'Submit Evaluation'}
+                        </Button>
+                    </div>
+                </form>
             </div>
-        </DashboardLayout>
-    );
+        </div>
+    </DashboardLayout>
+);
 }

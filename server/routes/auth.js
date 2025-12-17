@@ -136,6 +136,41 @@ router.post('/login', async (req, res) => {
             });
         }
 
+        // Check evaluator_accounts table for President/VPAA
+        const [evaluators] = await promisePool.query(
+            'SELECT * FROM evaluator_accounts WHERE email = ? AND status = ?',
+            [email, 'active']
+        );
+
+        if (evaluators.length > 0) {
+            const evaluator = evaluators[0];
+
+            // Compare password with hashed password
+            const isPasswordValid = await bcrypt.compare(password, evaluator.password);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid email or password'
+                });
+            }
+
+            // Login successful - return evaluator data
+            return res.json({
+                success: true,
+                message: 'Login successful',
+                user: {
+                    id: evaluator.id,
+                    email: evaluator.email,
+                    full_name: evaluator.full_name,
+                    position: evaluator.position,
+                    sex: evaluator.sex,
+                    role: evaluator.position, // 'President' or 'VPAA'
+                    status: evaluator.status
+                }
+            });
+        }
+
         // Check faculty table for Dean
         const [faculty] = await promisePool.query(
             'SELECT * FROM faculty WHERE email = ? AND status = ?',

@@ -113,6 +113,8 @@ export function LoginPage() {
                     localStorage.setItem('section', data.user.section);
                     localStorage.setItem('yearLevel', data.user.year_level);
                     localStorage.setItem('studentId', data.user.student_id);
+                } else if (data.user.role === 'President' || data.user.role === 'VPAA') {
+                    localStorage.setItem('position', data.user.position);
                 }
 
                 // Redirect based on role
@@ -128,6 +130,10 @@ export function LoginPage() {
                     navigate('/faculty/overview');
                 } else if (data.user.role === 'Student') {
                     navigate('/student/dashboard');
+                } else if (data.user.role === 'President') {
+                    navigate('/president/dashboard');
+                } else if (data.user.role === 'VPAA') {
+                    navigate('/vpaa/dashboard');
                 } else {
                     // Default fallback
                     navigate('/dashboard');

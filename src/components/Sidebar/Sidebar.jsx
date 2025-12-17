@@ -12,7 +12,8 @@ import {
     Building2,
     UserCog,
     BarChart3,
-    X
+    X,
+    ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import styles from './Sidebar.module.css';
@@ -22,6 +23,7 @@ const zonalAdminMenuItems = [
     { icon: Building2, label: 'Colleges', path: '/zonal/colleges' },
     { icon: Calendar, label: 'Academic Years', path: '/zonal/academic-years' },
     { icon: UserCog, label: 'QCE Accounts', path: '/zonal/qce-management' },
+    { icon: ShieldCheck, label: 'Evaluator Accounts', path: '/zonal/evaluator-accounts' },
 ];
 
 const qceMenuItems = [
@@ -59,6 +61,14 @@ const studentMenuItems = [
     { icon: ClipboardList, label: 'My Evaluations', path: '/student/evaluations' },
 ];
 
+const presidentMenuItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/president/dashboard' },
+];
+
+const vpaaMenuItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/vpaa/dashboard' },
+];
+
 export function Sidebar({
     role = 'Zonal Admin',
     isMobileOpen = false,
@@ -78,6 +88,10 @@ export function Sidebar({
         menuItems = facultyMenuItems;
     } else if (role === 'Student') {
         menuItems = studentMenuItems;
+    } else if (role === 'President') {
+        menuItems = presidentMenuItems;
+    } else if (role === 'VPAA') {
+        menuItems = vpaaMenuItems;
     }
 
     return (

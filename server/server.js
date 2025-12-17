@@ -77,6 +77,9 @@ app.use('/api/zonal/dashboard', zonalDashboardRoutes);
 app.use('/api/zonal/qce', zonalQCERoutes);
 app.use('/api/zonal/academic-years', zonalAcademicYearsRoutes);
 
+const zonalEvaluatorsRoutes = require('./routes/zonal/evaluators');
+app.use('/api/zonal/evaluators', zonalEvaluatorsRoutes);
+
 // QCE Manager routes
 const qceFacultyRoutes = require('./routes/qce/faculty');
 const qceDepartmentsRoutes = require('./routes/qce/departments');
@@ -119,6 +122,14 @@ app.use('/api/dean/evaluations', deanEvaluationsRoutes);
 // Dept Chair Evaluations routes
 const deptChairEvaluationsRoutes = require('./routes/DeptChair/evaluations');
 app.use('/api/dept-chair/evaluations', deptChairEvaluationsRoutes);
+
+// President routes
+const presidentEvaluationsRoutes = require('./routes/President/evaluations');
+app.use('/api/president', presidentEvaluationsRoutes);
+
+// VPAA routes
+const vpaaEvaluationsRoutes = require('./routes/VPAA/evaluations');
+app.use('/api/vpaa', vpaaEvaluationsRoutes);
 
 // Start server
 const startServer = async () => {

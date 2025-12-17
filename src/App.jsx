@@ -5,7 +5,9 @@ import { RegisterPage } from './pages/Auth/RegisterPage/RegisterPage';
 import { ZonalDashboardPage } from './pages/ZonalAdmin/Dashboard/ZonalDashboardPage';
 import { CollegesPage } from './pages/ZonalAdmin/Colleges/CollegesPage';
 import { QCEManagementPage } from './pages/ZonalAdmin/QCEManagement/QCEManagementPage';
+import { EvaluatorAccountsPage } from './pages/ZonalAdmin/Evaluators/EvaluatorAccountsPage';
 import { AcademicYearsPage } from './pages/ZonalAdmin/AcademicYears/AcademicYearsPage';
+
 import { QCEDashboardPage } from './pages/QCEManager/Dashboard/QCEDashboardPage';
 import { FacultyPage } from './pages/QCEManager/Faculty/FacultyPage';
 import { ProgramsPage } from './pages/QCEManager/Programs/ProgramsPage';
@@ -29,6 +31,8 @@ import { EvaluationResultsPage as FacultyEvaluationResultsPage } from './pages/F
 import { StudentOverviewPage } from './pages/Student/Overview/StudentOverviewPage';
 import { StudentEvaluationsPage } from './pages/Student/Evaluations/StudentEvaluationsPage';
 import { EvaluationFormPage } from './pages/Student/EvaluationForm/EvaluationFormPage';
+import { PresidentDashboardPage } from './pages/President/Dashboard/PresidentDashboardPage';
+import { VPAADashboardPage } from './pages/VPAA/Dashboard/VPAADashboardPage';
 import './styles/globals.css';
 
 export function App() {
@@ -45,6 +49,7 @@ export function App() {
         <Route path="/zonal/colleges" element={<CollegesPage />} />
         <Route path="/zonal/qce-management" element={<QCEManagementPage />} />
         <Route path="/zonal/academic-years" element={<AcademicYearsPage />} />
+        <Route path="/zonal/evaluator-accounts" element={<EvaluatorAccountsPage />} />
 
         {/* QCE Manager Routes */}
         <Route path="/qce/dashboard" element={<QCEDashboardPage />} />
@@ -82,6 +87,12 @@ export function App() {
         <Route path="/student/dashboard" element={<StudentOverviewPage />} />
         <Route path="/student/evaluations" element={<StudentEvaluationsPage />} />
         <Route path="/student/evaluation-form" element={<EvaluationFormPage />} />
+
+        {/* President Routes */}
+        <Route path="/president/dashboard" element={<PresidentDashboardPage />} />
+
+        {/* VPAA Routes */}
+        <Route path="/vpaa/dashboard" element={<VPAADashboardPage />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />

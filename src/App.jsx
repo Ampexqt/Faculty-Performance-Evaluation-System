@@ -16,6 +16,7 @@ import { DeanOverviewPage } from './pages/Dean/Overview/DeanOverviewPage';
 import { FacultyResultsPage } from './pages/Dean/FacultyResults/FacultyResultsPage';
 import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
 import { DeanEvaluatePage as DeanEvaluationsPage } from './pages/Dean/Evaluations/DeanEvaluatePage';
+import { ProgramsPage as DeanProgramsPage } from './pages/Dean/Programs/ProgramsPage';
 import { DeptChairDashboardPage } from './pages/DeptChair/Dashboard/DeptChairDashboardPage';
 import { FacultyAccountsPage } from './pages/DeptChair/FacultyAccounts/FacultyAccountsPage';
 import { ProgramsPage as DeptChairProgramsPage } from './pages/DeptChair/Programs/ProgramsPage';
@@ -53,10 +54,13 @@ export function App() {
         <Route path="/qce/evaluations/:facultyId" element={<FacultyEvaluationDetail />} />
         <Route path="/qce/results" element={<QCEEvaluationResultsPage />} />
 
+
+
         {/* Dean Routes */}
         <Route path="/dean/overview" element={<DeanOverviewPage />} />
         <Route path="/dean/faculty-results" element={<FacultyResultsPage />} />
         <Route path="/dean/dept-chairs" element={<DeptChairsPage />} />
+        <Route path="/dean/programs" element={<DeanProgramsPage />} />
         <Route path="/dean/evaluations" element={<DeanEvaluationsPage />} />
         <Route path="/dean/evaluation-form" element={<EvaluationFormPage />} />
 

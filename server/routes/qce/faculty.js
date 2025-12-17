@@ -336,8 +336,9 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Hard delete faculty member
         const [result] = await promisePool.query(
-            "UPDATE faculty SET status = 'inactive' WHERE id = ?",
+            "DELETE FROM faculty WHERE id = ?",
             [id]
         );
 
@@ -350,7 +351,7 @@ router.delete('/:id', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Faculty deleted successfully'
+            message: 'Faculty permanently deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting faculty:', error);

@@ -175,8 +175,17 @@ export function DeanEvaluatePage() {
         {
             header: 'Date Completed',
             accessor: 'completedDate',
-            width: '30%',
+            width: '20%',
         },
+        {
+            header: 'Status',
+            accessor: 'status',
+            width: '15%',
+            align: 'center',
+            render: () => (
+                <Badge variant="success">Completed</Badge>
+            ),
+        }
     ];
 
     return (

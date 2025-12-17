@@ -2,14 +2,16 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
-    Building2,
     Users,
-    Calendar,
     BookOpen,
-    Settings,
     ClipboardList,
-    Briefcase,
+    Calendar,
+    Settings,
+    FileText,
     GraduationCap,
+    Building2,
+    UserCog,
+    BarChart3,
     X
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -18,22 +20,23 @@ import styles from './Sidebar.module.css';
 const zonalAdminMenuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/zonal/dashboard' },
     { icon: Building2, label: 'Colleges', path: '/zonal/colleges' },
-    { icon: Users, label: 'QCE Management', path: '/zonal/qce-management' },
     { icon: Calendar, label: 'Academic Years', path: '/zonal/academic-years' },
+    { icon: UserCog, label: 'QCE Accounts', path: '/zonal/qce-management' },
 ];
 
 const qceMenuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/qce/dashboard' },
     { icon: Users, label: 'Faculty', path: '/qce/faculty' },
     { icon: BookOpen, label: 'Programs', path: '/qce/programs' },
-    { icon: Calendar, label: 'Evaluations', path: '/qce/evaluations' },
+    { icon: ClipboardList, label: 'Evaluations', path: '/qce/evaluations' },
+    { icon: BarChart3, label: 'Evaluation Results', path: '/qce/results' },
 ];
 
 const deanMenuItems = [
     { icon: LayoutDashboard, label: 'Overview', path: '/dean/overview' },
     { icon: ClipboardList, label: 'Faculty Results', path: '/dean/faculty-results' },
-    { icon: BookOpen, label: 'Programs', path: '/dean/dept-chairs' },
-    { icon: Calendar, label: 'Evaluations', path: '/dean/evaluations' },
+    { icon: BookOpen, label: 'Programs', path: '/dean/programs' },
+    { icon: ClipboardList, label: 'Evaluations', path: '/dean/evaluations' },
 ];
 
 const deptChairMenuItems = [

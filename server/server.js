@@ -95,6 +95,9 @@ app.use('/api/qce/faculty-evaluations', qceEvaluationsRoutes);
 const qceCodesRoutes = require('./routes/qce/codes');
 app.use('/api/qce/code', qceCodesRoutes);
 
+const qceResultsRoutes = require('./routes/qce/results');
+app.use('/api/qce', qceResultsRoutes);
+
 // Faculty routes
 const facultyDashboardRoutes = require('./routes/Faculty/dashboard');
 const facultySubjectsRoutes = require('./routes/Faculty/subjects');
@@ -112,6 +115,10 @@ app.use('/api/student/dashboard', studentDashboardRoutes);
 // Dean Evaluations routes
 const deanEvaluationsRoutes = require('./routes/Dean/evaluations');
 app.use('/api/dean/evaluations', deanEvaluationsRoutes);
+
+// Dept Chair Evaluations routes
+const deptChairEvaluationsRoutes = require('./routes/DeptChair/evaluations');
+app.use('/api/dept-chair/evaluations', deptChairEvaluationsRoutes);
 
 // Start server
 const startServer = async () => {

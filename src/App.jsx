@@ -11,6 +11,7 @@ import { FacultyPage } from './pages/QCEManager/Faculty/FacultyPage';
 import { ProgramsPage } from './pages/QCEManager/Programs/ProgramsPage';
 import { EvaluationsPage } from './pages/QCEManager/Evaluations/EvaluationsPage';
 import { FacultyEvaluationDetail } from './pages/QCEManager/Evaluations/FacultyEvaluationDetail';
+import { EvaluationResultsPage as QCEEvaluationResultsPage } from './pages/QCEManager/Results/EvaluationResultsPage';
 import { DeanOverviewPage } from './pages/Dean/Overview/DeanOverviewPage';
 import { FacultyResultsPage } from './pages/Dean/FacultyResults/FacultyResultsPage';
 import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
@@ -23,7 +24,7 @@ import { SchedulesPage as DeptChairSchedulesPage } from './pages/DeptChair/Sched
 import { EvaluationsPage as DeptChairEvaluationsPage } from './pages/DeptChair/Evaluations/EvaluationsPage';
 import { FacultyOverviewPage } from './pages/Faculty/Overview/FacultyOverviewPage';
 import { MySubjectsPage } from './pages/Faculty/MySubjects/MySubjectsPage';
-import { EvaluationResultsPage } from './pages/Faculty/EvaluationResults/EvaluationResultsPage';
+import { EvaluationResultsPage as FacultyEvaluationResultsPage } from './pages/Faculty/EvaluationResults/EvaluationResultsPage';
 import { StudentOverviewPage } from './pages/Student/Overview/StudentOverviewPage';
 import { StudentEvaluationsPage } from './pages/Student/Evaluations/StudentEvaluationsPage';
 import { EvaluationFormPage } from './pages/Student/EvaluationForm/EvaluationFormPage';
@@ -50,6 +51,7 @@ export function App() {
         <Route path="/qce/programs" element={<ProgramsPage />} />
         <Route path="/qce/evaluations" element={<EvaluationsPage />} />
         <Route path="/qce/evaluations/:facultyId" element={<FacultyEvaluationDetail />} />
+        <Route path="/qce/results" element={<QCEEvaluationResultsPage />} />
 
         {/* Dean Routes */}
         <Route path="/dean/overview" element={<DeanOverviewPage />} />
@@ -65,11 +67,12 @@ export function App() {
         <Route path="/dept-chair/subjects" element={<DeptChairSubjectsPage />} />
         <Route path="/dept-chair/schedules" element={<DeptChairSchedulesPage />} />
         <Route path="/dept-chair/evaluations" element={<DeptChairEvaluationsPage />} />
+        <Route path="/dept-chair/evaluation-form" element={<EvaluationFormPage />} />
 
         {/* Faculty Routes */}
         <Route path="/faculty/overview" element={<FacultyOverviewPage />} />
         <Route path="/faculty/subjects" element={<MySubjectsPage />} />
-        <Route path="/faculty/results" element={<EvaluationResultsPage />} />
+        <Route path="/faculty/results" element={<FacultyEvaluationResultsPage />} />
 
         {/* Student Routes */}
         <Route path="/student/dashboard" element={<StudentOverviewPage />} />

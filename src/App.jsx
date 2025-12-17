@@ -32,7 +32,9 @@ import { StudentOverviewPage } from './pages/Student/Overview/StudentOverviewPag
 import { StudentEvaluationsPage } from './pages/Student/Evaluations/StudentEvaluationsPage';
 import { EvaluationFormPage } from './pages/Student/EvaluationForm/EvaluationFormPage';
 import { PresidentDashboardPage } from './pages/President/Dashboard/PresidentDashboardPage';
+import { PresidentEvaluationFormPage } from './pages/President/EvaluationForm/PresidentEvaluationFormPage';
 import { VPAADashboardPage } from './pages/VPAA/Dashboard/VPAADashboardPage';
+import { VPAAEvaluationFormPage } from './pages/VPAA/EvaluationForm/VPAAEvaluationFormPage';
 import './styles/globals.css';
 
 export function App() {
@@ -90,9 +92,11 @@ export function App() {
 
         {/* President Routes */}
         <Route path="/president/dashboard" element={<PresidentDashboardPage />} />
+        <Route path="/president/evaluate" element={<PresidentEvaluationFormPage />} />
 
         {/* VPAA Routes */}
         <Route path="/vpaa/dashboard" element={<VPAADashboardPage />} />
+        <Route path="/vpaa/evaluate" element={<VPAAEvaluationFormPage />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />

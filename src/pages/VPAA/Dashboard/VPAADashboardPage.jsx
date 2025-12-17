@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Card } from '@/components/Card/Card';
 import { Button } from '@/components/Button/Button';
 import { Input } from '@/components/Input/Input';
 import { Table } from '@/components/Table/Table';
-import { Modal } from '@/components/Modal/Modal';
 import { ClipboardList, Clock, CheckCircle } from 'lucide-react';
 import styles from './VPAADashboardPage.module.css';
 
 export function VPAADashboardPage() {
+    const navigate = useNavigate();
     const [evaluations, setEvaluations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [evaluationCode, setEvaluationCode] = useState('');
-    const [isEvaluateModalOpen, setIsEvaluateModalOpen] = useState(false);
-    const [selectedEvaluation, setSelectedEvaluation] = useState(null);
-    const [evaluationData, setEvaluationData] = useState({
-        rating: '',
-        comments: ''
-    });
 
     // Get user data from localStorage
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -75,40 +70,13 @@ export function VPAADashboardPage() {
     };
 
     const handleEvaluate = (evaluation) => {
-        setSelectedEvaluation(evaluation);
-        setIsEvaluateModalOpen(true);
-    };
-
-    const handleSubmitEvaluation = async (e) => {
-        e.preventDefault();
-
-        try {
-            const response = await fetch('http://localhost:5000/api/vpaa/submit-evaluation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    evaluation_id: selectedEvaluation.id,
-                    rating: evaluationData.rating,
-                    comments: evaluationData.comments
-                }),
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                alert('Evaluation submitted successfully!');
-                setIsEvaluateModalOpen(false);
-                setEvaluationData({ rating: '', comments: '' });
-                fetchData();
-            } else {
-                alert(data.message || 'Error submitting evaluation');
+        // Navigate to evaluation form with dean data
+        navigate('/vpaa/evaluate', {
+            state: {
+                evaluation: evaluation,
+                vpaaId: vpaaId
             }
-        } catch (error) {
-            console.error('Error submitting evaluation:', error);
-            alert('Server error');
-        }
+        });
     };
 
     const pendingEvaluations = evaluations.filter(e => e.status === 'pending');
@@ -232,52 +200,6 @@ export function VPAADashboardPage() {
                     <h2 className={styles.sectionTitle}>My Evaluations</h2>
                     <Table columns={evaluationColumns} data={evaluations} />
                 </div>
-
-                {/* Evaluate Modal */}
-                <Modal
-                    isOpen={isEvaluateModalOpen}
-                    onClose={() => setIsEvaluateModalOpen(false)}
-                    title={`Evaluate ${selectedEvaluation?.dean_name}`}
-                >
-                    <form onSubmit={handleSubmitEvaluation} className={styles.modalForm}>
-                        <Input
-                            label="Rating (0-5)"
-                            name="rating"
-                            type="number"
-                            min="0"
-                            max="5"
-                            step="0.1"
-                            placeholder="e.g. 4.5"
-                            value={evaluationData.rating}
-                            onChange={(e) => setEvaluationData({ ...evaluationData, rating: e.target.value })}
-                            required
-                        />
-
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Comments</label>
-                            <textarea
-                                className={styles.textarea}
-                                rows="4"
-                                placeholder="Enter your evaluation comments..."
-                                value={evaluationData.comments}
-                                onChange={(e) => setEvaluationData({ ...evaluationData, comments: e.target.value })}
-                            />
-                        </div>
-
-                        <div className={styles.modalActions}>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => setIsEvaluateModalOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button type="submit" variant="primary">
-                                Submit Evaluation
-                            </Button>
-                        </div>
-                    </form>
-                </Modal>
             </div>
         </DashboardLayout>
     );

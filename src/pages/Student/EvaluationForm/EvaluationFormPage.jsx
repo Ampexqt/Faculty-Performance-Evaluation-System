@@ -55,7 +55,26 @@ export function EvaluationFormPage() {
 
     // Get evaluation details from location state
     const evaluationData = location.state?.evaluation || {};
-    const { id: assignmentId, subject, instructor, facultyRole } = evaluationData;
+    // Handle both property naming conventions (Student vs Dean flow)
+    const {
+        id: assignmentId,
+        subject,
+        evaluatorType
+    } = evaluationData;
+
+    // Resolve instructor name: 'instructor' (Student) or 'evaluatee' (Dean)
+    const instructor = evaluationData.instructor || evaluationData.evaluatee;
+
+    // Resolve faculty role: 'facultyRole' (Student) or 'evaluateeRole' (Dean)
+    const facultyRole = evaluationData.facultyRole || evaluationData.evaluateeRole;
+
+    // Determine API endpoint and role based on evaluatorType
+    const isDean = evaluatorType === 'Dean';
+    const submitUrl = isDean
+        ? 'http://localhost:5000/api/dean/evaluations/submit'
+        : 'http://localhost:5000/api/student/evaluations/submit';
+
+    const evaluatorPosition = isDean ? 'Supervisor' : 'Student';
 
     const [ratings, setRatings] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -164,13 +183,13 @@ export function EvaluationFormPage() {
             // Format the current date as YYYY-MM-DD for database
             const formattedDate = new Date().toISOString().split('T')[0];
 
-            const response = await fetch('http://localhost:5000/api/student/evaluations/submit', {
+            const response = await fetch(submitUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    studentId,
+                    studentId, // This will be evaluatorId for Dean
                     assignmentId,
                     ratings,
                     comments,
@@ -194,7 +213,7 @@ export function EvaluationFormPage() {
 
                 // Navigate back to evaluations page
                 setTimeout(() => {
-                    navigate('/student/evaluations');
+                    navigate(isDean ? '/dean/evaluations' : '/student/evaluations');
                 }, 1500);
             } else {
                 showError(data.message || 'Failed to submit evaluation');
@@ -208,15 +227,15 @@ export function EvaluationFormPage() {
     };
 
     const handleCancel = () => {
-        navigate('/student/evaluations');
+        navigate(isDean ? '/dean/evaluations' : '/student/evaluations');
     };
 
     if (!assignmentId) {
         return (
-            <DashboardLayout role="Student" userName={fullName} notificationCount={2}>
+            <DashboardLayout role={isDean ? "College Dean" : "Student"} userName={fullName} notificationCount={2}>
                 <div className={styles.error}>
                     <h2>No evaluation data found</h2>
-                    <Button onClick={() => navigate('/student/evaluations')}>
+                    <Button onClick={() => navigate(isDean ? '/dean/evaluations' : '/student/evaluations')}>
                         Back to Evaluations
                     </Button>
                 </div>
@@ -225,7 +244,7 @@ export function EvaluationFormPage() {
     }
 
     return (
-        <DashboardLayout role="Student" userName={fullName} notificationCount={2}>
+        <DashboardLayout role={isDean ? "College Dean" : "Student"} userName={fullName} notificationCount={2}>
             <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className={styles.page}>
                 <div className={styles.formContainer}>
@@ -261,7 +280,7 @@ export function EvaluationFormPage() {
                                     <span>Self</span>
                                 </label>
                                 <label className={styles.checkbox}>
-                                    <input type="checkbox" checked disabled />
+                                    <input type="checkbox" checked={!isDean} disabled />
                                     <span>Student</span>
                                 </label>
                                 <label className={styles.checkbox}>
@@ -269,7 +288,7 @@ export function EvaluationFormPage() {
                                     <span>Peer</span>
                                 </label>
                                 <label className={styles.checkbox}>
-                                    <input type="checkbox" disabled />
+                                    <input type="checkbox" checked={isDean} disabled />
                                     <span>Supervisor</span>
                                 </label>
                             </div>
@@ -389,7 +408,7 @@ export function EvaluationFormPage() {
                                 </div>
                                 <div className={styles.evaluatorField}>
                                     <label className={styles.evaluatorLabel}>Position of Evaluator:</label>
-                                    <div className={styles.evaluatorValue}>Student</div>
+                                    <div className={styles.evaluatorValue}>{evaluatorPosition}</div>
                                 </div>
                                 <div className={styles.evaluatorField}>
                                     <label className={styles.evaluatorLabel}>Date:</label>

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Users, BookOpen, ClipboardList, Clock, ChevronRight } from 'lucide-react';
+import { Users, BookOpen, ClipboardList, Clock } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
-import { Table } from '@/components/Table/Table';
+
 import { Button } from '@/components/Button/Button';
-import { Badge } from '@/components/Badge/Badge';
-import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
+
 import { Modal } from '@/components/Modal/Modal';
 import { ToastContainer } from '@/components/Toast/Toast';
 import { useToast } from '@/hooks/useToast';
@@ -26,7 +25,7 @@ const generateCode = () => {
 };
 
 export function QCEDashboardPage() {
-    const [evaluations, setEvaluations] = useState([]);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         facultyRole: '',
@@ -243,68 +242,7 @@ export function QCEDashboardPage() {
         setGeneratedCode('');
     };
 
-    const columns = [
-        {
-            header: 'Faculty Name',
-            accessor: 'facultyName',
-            width: '25%',
-            render: (value) => (
-                <div className={styles.facultyCell}>
-                    <ChevronRight size={16} className={styles.chevron} />
-                    <span>{value}</span>
-                </div>
-            ),
-        },
-        {
-            header: 'Subject & Section',
-            accessor: 'subject',
-            width: '20%',
-            render: (value, row) => (
-                <div>
-                    <div className={styles.subject}>{value}</div>
-                    <div className={styles.section}>{row.section}</div>
-                </div>
-            ),
-        },
-        {
-            header: 'Progress',
-            accessor: 'progress',
-            width: '25%',
-            render: (value, row) => (
-                <div className={styles.progressCell}>
-                    <ProgressBar
-                        value={value}
-                        max={row.total}
-                        showLabel
-                    />
-                </div>
-            ),
-        },
-        {
-            header: 'Rating',
-            accessor: 'rating',
-            width: '15%',
-            align: 'center',
-            render: (value) => (
-                value ? (
-                    <span className={styles.rating}>{value}</span>
-                ) : (
-                    <span className={styles.noRating}>-</span>
-                )
-            ),
-        },
-        {
-            header: 'Status',
-            accessor: 'status',
-            width: '15%',
-            align: 'center',
-            render: (value) => (
-                <Badge variant={value === 'Completed' ? 'completed' : 'inProgress'}>
-                    {value}
-                </Badge>
-            ),
-        },
-    ];
+
 
     return (
         <DashboardLayout
@@ -357,28 +295,7 @@ export function QCEDashboardPage() {
                     />
                 </div>
 
-                <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                        <div>
-                            <h2 className={styles.sectionTitle}>Evaluation Status</h2>
-                            <p className={styles.sectionSubtitle}>Track faculty evaluation progress and ratings</p>
-                        </div>
-                        <div className={styles.headerActions}>
-                            <input
-                                type="search"
-                                placeholder="Search faculty..."
-                                className={styles.searchInput}
-                            />
-                            <Button variant="secondary" size="small">
-                                Filter
-                            </Button>
-                        </div>
-                    </div>
 
-                    <div className={styles.tableContainer}>
-                        <Table columns={columns} data={evaluations} />
-                    </div>
-                </div>
 
                 {/* Generate Evaluation Code Modal */}
                 <Modal

@@ -9,22 +9,26 @@ export function EvaluationsPage() {
     const [facultyList, setFacultyList] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const [userInfo, setUserInfo] = useState({
-        fullName: '',
-        collegeId: null,
-        role: ''
-    });
-
-    useEffect(() => {
+    const [activeCategory, setActiveCategory] = useState('Heads'); // 'Heads' or 'Faculty'
+    const [userInfo, setUserInfo] = useState(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            setUserInfo({
+            return {
                 fullName: user.full_name || 'QCE Manager',
                 collegeId: user.college_id,
-                role: user.role
-            });
+                role: user.role === 'Dean' ? 'College Dean' : user.role
+            };
         }
+        return {
+            fullName: '',
+            collegeId: null,
+            role: ''
+        };
+    });
+
+    useEffect(() => {
+        // Keep this for any subsequent updates if needed, logic moved to initial state
     }, []);
 
     useEffect(() => {
@@ -49,10 +53,18 @@ export function EvaluationsPage() {
         }
     };
 
-    const filteredFaculty = facultyList.filter(faculty =>
-        faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        faculty.position.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredFaculty = facultyList.filter(faculty => {
+        const matchesSearch = faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            faculty.position.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const isHead = ['Dean', 'Department Chair'].some(role =>
+            faculty.position.includes(role)
+        );
+
+        const matchesCategory = activeCategory === 'Heads' ? isHead : !isHead;
+
+        return matchesSearch && matchesCategory;
+    });
 
     const handleCardClick = (facultyId) => {
         navigate(`/qce/evaluations/${facultyId}`);
@@ -85,6 +97,22 @@ export function EvaluationsPage() {
                     </div>
                 </div>
 
+
+                <div className={styles.tabsContainer}>
+                    <button
+                        className={`${styles.tab} ${activeCategory === 'Heads' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveCategory('Heads')}
+                    >
+                        Academic Heads
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeCategory === 'Faculty' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveCategory('Faculty')}
+                    >
+                        Faculty Members
+                    </button>
+                </div>
+
                 {isLoading ? (
                     <div className={styles.loadingContainer}>
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
@@ -103,52 +131,66 @@ export function EvaluationsPage() {
                                     onClick={() => handleCardClick(faculty.id)}
                                 >
                                     <div className={styles.cardHeader}>
-                                        <div className={styles.avatarCircle}>
-                                            {faculty.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                        <div className={styles.headerLeft}>
+                                            <div className={styles.avatarCircle}>
+                                                {faculty.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                            </div>
+                                            <div className={styles.facultyInfo}>
+                                                <h3 className={styles.facultyName}>{faculty.name}</h3>
+                                                <p className={styles.facultyPosition}>{faculty.position}</p>
+                                            </div>
                                         </div>
-                                        <div className={styles.facultyInfo}>
-                                            <h3 className={styles.facultyName}>{faculty.name}</h3>
-                                            <p className={styles.facultyPosition}>{faculty.position}</p>
+                                        <div className={styles.statusBadge}>
+                                            {(() => {
+                                                const started = faculty.started_count || 0;
+                                                const total = faculty.total_evaluations || 0;
+                                                const pending = total - started;
+
+                                                if (total === 0) return <span className={styles.statusNone}>No Assignments</span>;
+                                                if (pending === 0) return <span className={styles.statusComplete}>Completed</span>;
+                                                if (started === 0) return <span className={styles.statusNotStarted}>{total} Not Started</span>;
+                                                return <span className={styles.statusProgress}>{pending} Pending</span>;
+                                            })()}
                                         </div>
                                     </div>
 
                                     <div className={styles.cardStats}>
-                                        <div className={styles.statItem}>
-                                            <div className={styles.statIcon}>
-                                                <Users size={18} />
+                                        {['Dean', 'Department Chair'].some(r => faculty.position.includes(r)) ? (
+                                            <div className={styles.adminStatItem}>
+                                                <span className={styles.adminStatLabel}>Evaluator</span>
+                                                <span className={styles.adminStatValue}>
+                                                    {faculty.position.includes('Dean') ? 'VPAA' : 'College Dean'}
+                                                </span>
                                             </div>
-                                            <div className={styles.statContent}>
-                                                <span className={styles.statValue}>{faculty.sections_count || 0}</span>
-                                                <span className={styles.statLabel}>Sections</span>
-                                            </div>
-                                        </div>
+                                        ) : (
+                                            <>
+                                                <div className={styles.statItem}>
+                                                    <div className={styles.statIcon}>
+                                                        <Users size={18} />
+                                                    </div>
+                                                    <div className={styles.statContent}>
+                                                        <span className={styles.statValue}>{faculty.sections_count || 0}</span>
+                                                        <span className={styles.statLabel}>Sections</span>
+                                                    </div>
+                                                </div>
 
-                                        <div className={styles.statDivider}></div>
+                                                <div className={styles.statDivider}></div>
 
-                                        <div className={styles.statItem}>
-                                            <div className={styles.statIcon}>
-                                                <BookOpen size={18} />
-                                            </div>
-                                            <div className={styles.statContent}>
-                                                <span className={styles.statValue}>{faculty.subjects_count || 0}</span>
-                                                <span className={styles.statLabel}>Subjects</span>
-                                            </div>
-                                        </div>
+                                                <div className={styles.statItem}>
+                                                    <div className={styles.statIcon}>
+                                                        <BookOpen size={18} />
+                                                    </div>
+                                                    <div className={styles.statContent}>
+                                                        <span className={styles.statValue}>{faculty.subjects_count || 0}</span>
+                                                        <span className={styles.statLabel}>Subjects</span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
 
                                     <div className={styles.cardFooter}>
-                                        <div className={styles.progressInfo}>
-                                            <span className={styles.progressLabel}>Evaluation Progress</span>
-                                            <span className={styles.progressPercentage}>
-                                                {faculty.evaluation_progress || 0}%
-                                            </span>
-                                        </div>
-                                        <div className={styles.progressBar}>
-                                            <div
-                                                className={styles.progressFill}
-                                                style={{ width: `${faculty.evaluation_progress || 0}%` }}
-                                            ></div>
-                                        </div>
+
                                     </div>
 
                                     <div className={styles.cardAction}>
@@ -161,6 +203,6 @@ export function EvaluationsPage() {
                     </div>
                 )}
             </div>
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }

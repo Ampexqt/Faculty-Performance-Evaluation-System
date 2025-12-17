@@ -28,13 +28,15 @@ router.get('/', async (req, res) => {
                 d.department_name,
                 COUNT(DISTINCT fa.id) as subjects_count,
                 COUNT(DISTINCT fa.section) as sections_count,
-                0 as evaluation_progress -- Temporarily simplified for debugging
+                COUNT(DISTINCT CASE WHEN fa.eval_code IS NOT NULL AND fa.eval_code != '' THEN fa.id END) as started_count,
+                COUNT(DISTINCT fa.id) as total_evaluations,
+                0 as evaluation_progress -- Still keeping this for now but UI will use status
             FROM faculty f
             LEFT JOIN departments d ON f.department_id = d.id
             LEFT JOIN faculty_assignments fa ON f.id = fa.faculty_id AND fa.status = 'active'
             WHERE f.college_id = ? 
                 AND f.status = 'active'
-                AND f.position NOT LIKE '%Dean%'
+
             GROUP BY f.id, f.first_name, f.last_name, f.position, f.email, d.department_name
             ORDER BY f.last_name ASC
         `;
@@ -133,7 +135,7 @@ router.get('/:facultyId', async (req, res) => {
 
         // Calculate summary statistics
         const totalSubjects = new Set(evaluations.map(e => e.subject_code)).size;
-        const totalSections = evaluations.length;
+        const totalSections = new Set(evaluations.map(e => e.section)).size;
         const totalStudents = evaluations.reduce((sum, e) => sum + parseInt(e.total_students), 0);
         const evaluatedStudents = evaluations.reduce((sum, e) => sum + parseInt(e.evaluated_count), 0);
         const pendingStudents = totalStudents - evaluatedStudents;

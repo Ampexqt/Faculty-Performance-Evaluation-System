@@ -70,9 +70,46 @@
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Category Tabs */
+.tabsContainer {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    background: none;
+    border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: #1a1a1a;
+}
+
+.activeTab {
+    color: #7f1d1d;
+    font-weight: 600;
+}
+
+.activeTab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #7f1d1d;
 }
 
 .facultyCard:hover {
@@ -83,9 +120,53 @@
 
 .cardHeader {
     display: flex;
-    align-items: center;
+    justify-content: space-between;
+    align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1.5rem;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.statusBadge {
+    flex-shrink: 0;
+}
+
+.statusNone,
+.statusComplete,
+.statusNotStarted,
+.statusProgress {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+.statusNone {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+.statusComplete {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.statusNotStarted {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+.statusProgress {
+    background-color: #fff7ed;
+    color: #ea580c;
 }
 
 .avatarCircle {
@@ -177,43 +258,31 @@
     background: #e5e7eb;
 }
 
-/* Card Footer - Progress */
-.cardFooter {
-    margin-bottom: 1rem;
-}
-
-.progressInfo {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.progressLabel {
-    font-size: 0.875rem;
-    color: #666;
-}
-
-.progressPercentage {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #7f1d1d;
-}
-
-.progressBar {
+/* Admin Stat Item */
+.adminStatItem {
     width: 100%;
-    height: 8px;
-    background: #f3f4f6;
-    border-radius: 4px;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 0.5rem;
 }
 
-.progressFill {
-    height: 100%;
-    background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 100%);
-    border-radius: 4px;
-    transition: width 0.3s ease;
+.adminStatLabel {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
+
+.adminStatValue {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+/* Card Footer - Progress */
+
 
 /* Card Action */
 .cardAction {

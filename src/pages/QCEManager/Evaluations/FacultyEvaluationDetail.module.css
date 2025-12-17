@@ -228,6 +228,80 @@
     .tableSection {
         padding: 1rem;
     }
+
+    .tableSection {
+        padding: 1rem;
+    }
+}
+
+/* Admin Evaluation Section */
+.adminEvaluationSection {
+    margin-top: 2rem;
+}
+
+.adminCard {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.sectionSubtitle {
+    color: #666;
+    margin-top: -1rem;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+.highlightRole {
+    color: #7f1d1d;
+    font-weight: 600;
+}
+
+.evaluationInfo {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.infoRow:last-child {
+    border-bottom: none;
+}
+
+.infoRow .label {
+    font-weight: 500;
+    color: #666;
+}
+
+.infoRow .value {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.actionArea {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.instruction {
+    color: #666;
+    font-size: 0.95rem;
+    max-width: 400px;
+    margin: 0;
 }
 
 /* CSS for Create Now Button and Modal elements */

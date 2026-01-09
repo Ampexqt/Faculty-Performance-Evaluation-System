@@ -28,15 +28,20 @@ router.get('/stats', async (req, res) => {
                  FROM faculty_assignments 
                  WHERE faculty_id = ? AND status = 'active') as assigned_subjects,
                 
-                (SELECT COALESCE(SUM(student_count), 0) 
-                 FROM faculty_assignments 
-                 WHERE faculty_id = ? AND status = 'active') as total_students_handled,
+                (SELECT COUNT(*) 
+                 FROM students s
+                 JOIN faculty_assignments fa ON (s.section = fa.section OR CONCAT(s.year_level, '-', s.section) = fa.section)
+                 WHERE fa.faculty_id = ? AND fa.status = 'active' AND s.status = 'active') as total_students_handled,
 
                 (SELECT COUNT(*)
                  FROM student_evaluations se
                  JOIN faculty_assignments fa ON se.faculty_assignment_id = fa.id
-                 WHERE fa.faculty_id = ?) as students_evaluated
-        `, [faculty_id, faculty_id, faculty_id]);
+                 WHERE fa.faculty_id = ?) as students_evaluated,
+
+                (SELECT COUNT(*) 
+                 FROM supervisor_evaluations 
+                 WHERE evaluatee_id = ?) as supervisors_evaluated
+        `, [faculty_id, faculty_id, faculty_id, faculty_id]);
 
         const stats = results[0];
 
@@ -45,7 +50,8 @@ router.get('/stats', async (req, res) => {
             data: {
                 assignedSubjects: stats.assigned_subjects,
                 totalStudentsHandled: stats.total_students_handled,
-                studentsEvaluated: stats.students_evaluated
+                studentsEvaluated: stats.students_evaluated,
+                supervisorsEvaluated: stats.supervisors_evaluated
             }
         });
 

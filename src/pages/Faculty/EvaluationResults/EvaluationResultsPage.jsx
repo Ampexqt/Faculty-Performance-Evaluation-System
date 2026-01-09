@@ -1,28 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import styles from './EvaluationResultsPage.module.css';
 
-// Mock data - Evaluation results
-const evaluationData = {
-    overallRating: 4.82,
-    maxRating: 5.00,
-    ratingLabel: 'Outstanding',
-    scoreBreakdown: [
-        { category: 'Commitment', score: 4.8 },
-        { category: 'Knowledge of Subject', score: 4.9 },
-        { category: 'Teaching for Independent Learning', score: 4.7 },
-        { category: 'Management of Learning', score: 4.8 },
-    ],
-    studentComments: [
-        '"Prof. Turing explains complex concepts very clearly. I learned a lot in this class."',
-        '"Very approachable and always willing to help students."',
-        '"Excellent teaching methods and engaging lectures."',
-    ]
-};
-
 export function EvaluationResultsPage() {
-    const { overallRating, maxRating, ratingLabel, scoreBreakdown, studentComments } = evaluationData;
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [data, setData] = useState({
+        overallRating: 0,
+        maxRating: 5.00,
+        ratingLabel: 'N/A',
+        scoreBreakdown: [],
+        studentComments: []
+    });
+
+    useEffect(() => {
+        const fetchResults = async () => {
+            try {
+                const userId = localStorage.getItem('userId');
+                if (!userId) {
+                    throw new Error('User ID not found');
+                }
+
+                const response = await fetch(`http://localhost:5000/api/faculty/evaluation-results/my-results?faculty_id=${userId}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to fetch results');
+                }
+
+                setData(result.data);
+            } catch (err) {
+                console.error('Error fetching evaluation results:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchResults();
+    }, []);
 
     const renderStars = (rating) => {
         const stars = [];
@@ -45,10 +62,28 @@ export function EvaluationResultsPage() {
         return (score / 5) * 100;
     };
 
+    if (loading) {
+        return (
+            <DashboardLayout role="Faculty" userName="Faculty Member">
+                <div className={styles.loading}>Loading results...</div>
+            </DashboardLayout>
+        );
+    }
+
+    if (error) {
+        return (
+            <DashboardLayout role="Faculty" userName="Faculty Member">
+                <div className={styles.error}>Error: {error}</div>
+            </DashboardLayout>
+        );
+    }
+
+    const { overallRating, maxRating, ratingLabel, scoreBreakdown, studentComments } = data;
+
     return (
         <DashboardLayout
             role="Faculty"
-            userName="Faculty Member"
+            userName={localStorage.getItem('fullName') || 'Faculty Member'}
             notificationCount={3}
         >
             <div className={styles.page}>
@@ -65,11 +100,11 @@ export function EvaluationResultsPage() {
                         <h2 className={styles.cardTitle}>Overall Rating</h2>
                         <div className={styles.ratingDisplay}>
                             <div className={styles.ratingNumber}>
-                                {overallRating.toFixed(2)}
-                                <span className={styles.maxRating}>/ {maxRating.toFixed(2)}</span>
+                                {typeof overallRating === 'number' ? overallRating.toFixed(2) : '0.00'}
+                                <span className={styles.maxRating}>/ {typeof maxRating === 'number' ? maxRating.toFixed(2) : '5.00'}</span>
                             </div>
                             <div className={styles.stars}>
-                                {renderStars(overallRating)}
+                                {renderStars(overallRating || 0)}
                             </div>
                             <div className={styles.ratingLabel}>{ratingLabel}</div>
                         </div>
@@ -83,12 +118,12 @@ export function EvaluationResultsPage() {
                                 <div key={index} className={styles.scoreItem}>
                                     <div className={styles.scoreHeader}>
                                         <span className={styles.scoreCategory}>{item.category}</span>
-                                        <span className={styles.scoreValue}>{item.score.toFixed(1)}</span>
+                                        <span className={styles.scoreValue}>{typeof item.score === 'number' ? item.score.toFixed(1) : '0.0'}</span>
                                     </div>
                                     <div className={styles.scoreBar}>
                                         <div
                                             className={styles.scoreBarFill}
-                                            style={{ width: `${getScorePercentage(item.score)}%` }}
+                                            style={{ width: `${getScorePercentage(item.score || 0)}%` }}
                                         ></div>
                                     </div>
                                 </div>
@@ -97,15 +132,19 @@ export function EvaluationResultsPage() {
                     </div>
                 </div>
 
-                {/* Student Comments Section */}
+                {/* Student & Supervisor Comments Section */}
                 <div className={styles.commentsSection}>
-                    <h2 className={styles.sectionTitle}>Student Comments</h2>
+                    <h2 className={styles.sectionTitle}>Comments & Feedback</h2>
                     <div className={styles.commentsList}>
-                        {studentComments.map((comment, index) => (
-                            <div key={index} className={styles.commentCard}>
-                                <p className={styles.commentText}>{comment}</p>
-                            </div>
-                        ))}
+                        {studentComments.length > 0 ? (
+                            studentComments.map((comment, index) => (
+                                <div key={index} className={styles.commentCard}>
+                                    <p className={styles.commentText}>{comment}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <div className={styles.noComments}>No comments available yet.</div>
+                        )}
                     </div>
                 </div>
             </div>

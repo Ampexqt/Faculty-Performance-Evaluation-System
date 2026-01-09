@@ -45,7 +45,8 @@ export function EvaluationsPage() {
     // Initialize pending evaluations from localStorage (scoped to user)
     const [pendingEvaluations, setPendingEvaluations] = useState(() => {
         const saved = localStorage.getItem(`deptChairPendingEvaluations_${userInfo.userId}`);
-        return saved ? JSON.parse(saved) : [];
+        const parsed = saved ? JSON.parse(saved) : [];
+        return parsed.filter(item => Number(item.evaluateeId) !== Number(userInfo.userId));
     });
 
     const [completedEvaluations, setCompletedEvaluations] = useState([]);

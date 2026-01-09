@@ -23,8 +23,10 @@ router.post('/validate', async (req, res) => {
                 fa.id as assignment_id,
                 fa.subject_id,
                 fa.faculty_id,
+                fa.section as assignment_section,
                 s.subject_code,
                 s.subject_name,
+                s.department_id as subject_department_id,
                 f.first_name,
                 f.last_name,
                 f.position as faculty_role
@@ -43,11 +45,57 @@ router.post('/validate', async (req, res) => {
 
         const assignment = assignments[0];
 
-        // 2. Check if student has already evaluated this assignment
-        // Assuming studentId is provided. If not, we might skipped this check or require it.
-        // For now, we'll proceed pending logic. 
-        // Ideally, we should check the 'student_evaluations' table.
+        // 2. Validate Student Year Level, Section, and Department/Program
+        if (studentId) {
+            // Fetch student details with program code
+            const [students] = await promisePool.query(`
+                SELECT s.year_level, s.section, s.department_id, p.program_code 
+                FROM students s
+                LEFT JOIN programs p ON s.program_id = p.id
+                WHERE s.id = ?
+            `, [studentId]);
 
+            if (students.length > 0) {
+                const student = students[0];
+                const studentYearLevel = student.year_level;
+                const studentSection = student.section;
+                const programCode = student.program_code;
+                const assignmentSection = assignment.assignment_section;
+
+                // Construction of signatures
+                const studentYearSection = `${studentYearLevel}-${studentSection}`;
+                const normalizedAssignmentSection = assignmentSection.replace(/\s+/g, '').toUpperCase();
+                const normalizedLegacySig = studentYearSection.replace(/\s+/g, '').toUpperCase(); // "2-B"
+
+                let allowed = false;
+
+                // Check 1: Strict Program Match (e.g. "BSIT2-B")
+                // This allows cross-department evaluation if explicitly assigned (e.g. Gen Ed assigns to BSIT 2-B)
+                if (programCode) {
+                    const strictSig = `${programCode}${studentYearSection}`.replace(/\s+/g, '').toUpperCase();
+                    if (normalizedAssignmentSection.includes(strictSig)) {
+                        allowed = true;
+                    }
+                }
+
+                // Check 2: Same Department Fallback (Legacy "2-B")
+                // Only allow ambiguous "2-B" match if Student and Subject are from same Department
+                if (!allowed && normalizedAssignmentSection.includes(normalizedLegacySig)) {
+                    if (student.department_id === assignment.subject_department_id) {
+                        allowed = true;
+                    }
+                }
+
+                if (!allowed) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `This evaluation is not intended for your section/program. Assignment: ${assignmentSection}, You: ${programCode ? programCode + ' ' : ''}${studentYearLevel}-${studentSection}.`
+                    });
+                }
+            }
+        }
+
+        // 3. Check if student has already evaluated this assignment
         let hasEvaluated = false;
         if (studentId) {
             const [evals] = await promisePool.query(

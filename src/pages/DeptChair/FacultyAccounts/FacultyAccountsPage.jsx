@@ -68,6 +68,7 @@ export function FacultyAccountsPage() {
                     id: f.id,
                     facultyName: f.name,
                     firstName: f.firstName,
+                    middleInitial: f.middleInitial || '',
                     lastName: f.lastName,
                     email: f.email,
                     gender: f.gender,
@@ -87,6 +88,7 @@ export function FacultyAccountsPage() {
 
     const [formData, setFormData] = useState({
         firstName: '',
+        middleInitial: '',
         lastName: '',
         email: '',
         gender: '',
@@ -168,6 +170,7 @@ export function FacultyAccountsPage() {
                 setIsModalOpen(false);
                 setFormData({
                     firstName: '',
+                    middleInitial: '',
                     lastName: '',
                     email: '',
                     gender: '',
@@ -190,6 +193,7 @@ export function FacultyAccountsPage() {
         setIsModalOpen(false);
         setFormData({
             firstName: '',
+            middleInitial: '',
             lastName: '',
             email: '',
             gender: '',
@@ -213,6 +217,7 @@ export function FacultyAccountsPage() {
 
     const [editFormData, setEditFormData] = useState({
         firstName: '',
+        middleInitial: '',
         lastName: '',
         email: '',
         gender: '',
@@ -233,6 +238,7 @@ export function FacultyAccountsPage() {
         // Actually, let's rely on the split for now or update fetch to send them.
         setEditFormData({
             firstName: faculty.firstName || '',
+            middleInitial: faculty.middleInitial || '',
             lastName: faculty.lastName || '',
             email: faculty.email || '',
             gender: faculty.gender || '',
@@ -458,25 +464,40 @@ export function FacultyAccountsPage() {
                         The existing code has the "Create Faculty" modal. I should append the Edit/Delete modals AFTER it.
                     */}
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
-                        <div className={styles.formRow}>
-                            <Input
-                                label="First Name"
-                                name="firstName"
-                                type="text"
-                                placeholder="e.g. John"
-                                value={formData.firstName}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <Input
-                                label="Last Name"
-                                name="lastName"
-                                type="text"
-                                placeholder="e.g. Doe"
-                                value={formData.lastName}
-                                onChange={handleInputChange}
-                                required
-                            />
+                        <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="e.g. John"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-2">
+                                <Input
+                                    label="M.I."
+                                    name="middleInitial"
+                                    type="text"
+                                    placeholder="M"
+                                    maxLength={1}
+                                    value={formData.middleInitial}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="e.g. Doe"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <Input
@@ -610,23 +631,37 @@ export function FacultyAccountsPage() {
                     title="Edit Faculty Account"
                 >
                     <form onSubmit={handleUpdateFaculty} className={styles.modalForm}>
-                        <div className={styles.formRow}>
-                            <Input
-                                label="First Name"
-                                name="firstName"
-                                type="text"
-                                value={editFormData.firstName}
-                                onChange={handleEditInputChange}
-                                required
-                            />
-                            <Input
-                                label="Last Name"
-                                name="lastName"
-                                type="text"
-                                value={editFormData.lastName}
-                                onChange={handleEditInputChange}
-                                required
-                            />
+                        <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    type="text"
+                                    value={editFormData.firstName}
+                                    onChange={handleEditInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-2">
+                                <Input
+                                    label="M.I."
+                                    name="middleInitial"
+                                    type="text"
+                                    maxLength={1}
+                                    value={editFormData.middleInitial}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    type="text"
+                                    value={editFormData.lastName}
+                                    onChange={handleEditInputChange}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <Input

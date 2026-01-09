@@ -14,6 +14,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    caret-color: black;
 }
 
 html {
@@ -97,6 +98,7 @@ textarea,
 select {
     font-family: inherit;
     font-size: inherit;
+    caret-color: black;
 }
 
 input:focus,

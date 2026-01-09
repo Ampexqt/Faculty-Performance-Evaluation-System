@@ -20,6 +20,7 @@ export function EvaluatorAccountsPage() {
     // Form data
     const [formData, setFormData] = useState({
         firstName: '',
+        middleInitial: '',
         lastName: '',
         sex: '',
         email: '',
@@ -30,6 +31,7 @@ export function EvaluatorAccountsPage() {
     // Edit form data
     const [editFormData, setEditFormData] = useState({
         firstName: '',
+        middleInitial: '',
         lastName: '',
         sex: '',
         email: '',
@@ -88,7 +90,7 @@ export function EvaluatorAccountsPage() {
             if (data.success) {
                 await fetchData(); // Refresh list
                 setIsModalOpen(false);
-                setFormData({ firstName: '', lastName: '', sex: '', email: '', position: '', temporaryPassword: '' });
+                setFormData({ firstName: '', middleInitial: '', lastName: '', sex: '', email: '', position: '', temporaryPassword: '' });
             } else {
                 alert(data.message || 'Error creating account');
             }
@@ -102,16 +104,26 @@ export function EvaluatorAccountsPage() {
 
     const handleCancel = () => {
         setIsModalOpen(false);
-        setFormData({ firstName: '', lastName: '', sex: '', email: '', position: '', temporaryPassword: '' });
+        setFormData({ firstName: '', middleInitial: '', lastName: '', sex: '', email: '', position: '', temporaryPassword: '' });
     };
 
     const handleEdit = (account) => {
-        const [firstName, ...lastNameParts] = account.full_name.split(' ');
-        const lastName = lastNameParts.join(' ');
+        const parts = account.full_name.split(' ');
+        let firstName = parts[0];
+        let middleInitial = '';
+        let lastName = '';
+
+        if (parts.length > 2 && parts[1].endsWith('.')) {
+            middleInitial = parts[1].replace('.', '');
+            lastName = parts.slice(2).join(' ');
+        } else {
+            lastName = parts.slice(1).join(' ');
+        }
 
         setSelectedAccount(account);
         setEditFormData({
             firstName: firstName || '',
+            middleInitial: middleInitial || '',
             lastName: lastName || '',
             sex: account.sex || '',
             email: account.email,
@@ -290,25 +302,41 @@ export function EvaluatorAccountsPage() {
                     title="Create Evaluator Account"
                 >
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
-                        <Input
-                            label="First Name"
-                            name="firstName"
-                            type="text"
-                            placeholder="e.g. John"
-                            value={formData.firstName}
-                            onChange={handleInputChange}
-                            required
-                        />
-
-                        <Input
-                            label="Last Name"
-                            name="lastName"
-                            type="text"
-                            placeholder="e.g. Doe"
-                            value={formData.lastName}
-                            onChange={handleInputChange}
-                            required
-                        />
+                        <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="e.g. John"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-2">
+                                <Input
+                                    label="M.I."
+                                    name="middleInitial"
+                                    type="text"
+                                    placeholder="M"
+                                    maxLength={1}
+                                    value={formData.middleInitial}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="e.g. Doe"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                        </div>
 
                         <div className={styles.formGroup}>
                             <label className={styles.label}>
@@ -394,25 +422,41 @@ export function EvaluatorAccountsPage() {
                     title="Edit Evaluator Account"
                 >
                     <form onSubmit={handleEditSubmit} className={styles.modalForm}>
-                        <Input
-                            label="First Name"
-                            name="firstName"
-                            type="text"
-                            placeholder="e.g. John"
-                            value={editFormData.firstName}
-                            onChange={handleEditInputChange}
-                            required
-                        />
-
-                        <Input
-                            label="Last Name"
-                            name="lastName"
-                            type="text"
-                            placeholder="e.g. Doe"
-                            value={editFormData.lastName}
-                            onChange={handleEditInputChange}
-                            required
-                        />
+                        <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="e.g. John"
+                                    value={editFormData.firstName}
+                                    onChange={handleEditInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-2">
+                                <Input
+                                    label="M.I."
+                                    name="middleInitial"
+                                    type="text"
+                                    placeholder="M"
+                                    maxLength={1}
+                                    value={editFormData.middleInitial}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="e.g. Doe"
+                                    value={editFormData.lastName}
+                                    onChange={handleEditInputChange}
+                                    required
+                                />
+                            </div>
+                        </div>
 
                         <div className={styles.formGroup}>
                             <label className={styles.label}>

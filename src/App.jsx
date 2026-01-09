@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/Auth/LoginPage/LoginPage';
 import { RegisterPage } from './pages/Auth/RegisterPage/RegisterPage';
+import { ForgotPasswordPage } from './pages/Auth/ForgotPasswordPage/ForgotPasswordPage';
 import { ZonalDashboardPage } from './pages/ZonalAdmin/Dashboard/ZonalDashboardPage';
 import { CollegesPage } from './pages/ZonalAdmin/Colleges/CollegesPage';
 import { QCEManagementPage } from './pages/ZonalAdmin/QCEManagement/QCEManagementPage';
@@ -45,6 +46,7 @@ export function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* Zonal Admin Routes */}
         <Route path="/zonal/dashboard" element={<ZonalDashboardPage />} />
@@ -60,8 +62,6 @@ export function App() {
         <Route path="/qce/evaluations" element={<EvaluationsPage />} />
         <Route path="/qce/evaluations/:facultyId" element={<FacultyEvaluationDetail />} />
         <Route path="/qce/results" element={<QCEEvaluationResultsPage />} />
-
-
 
         {/* Dean Routes */}
         <Route path="/dean/overview" element={<DeanOverviewPage />} />

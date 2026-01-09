@@ -183,10 +183,9 @@ export function VPAADashboardPage() {
                     <form onSubmit={handleJoinEvaluation} className={styles.joinForm}>
                         <Input
                             label="Evaluation Code"
-                            placeholder="Enter 6-character code"
+                            placeholder="Enter evaluation code"
                             value={evaluationCode}
                             onChange={(e) => setEvaluationCode(e.target.value.toUpperCase())}
-                            maxLength={6}
                             required
                         />
                         <Button type="submit" variant="primary">

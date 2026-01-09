@@ -447,3 +447,76 @@
         padding: 0.5rem 0.25rem;
     }
 }
+
+/* Print Button */
+.printButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: auto;
+    /* Push to right */
+    margin-bottom: 1rem;
+}
+
+.printButton:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Print Media Query */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .modalContent,
+    .modalContent * {
+        visibility: visible;
+    }
+
+    .modalContent {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 0;
+        background: white;
+        max-height: none !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+    }
+
+    .printButton {
+        display: none !important;
+    }
+
+    /* Ensure specific elements look good in print */
+    .overallScoreContainer {
+        border: 1px solid #ccc;
+        /* Add border for contrast if background colors are dropped by browser settings */
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .scoreHighlight {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .computationTable th {
+        background-color: #f9fafb !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}

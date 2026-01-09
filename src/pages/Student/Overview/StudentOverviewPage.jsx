@@ -1,15 +1,22 @@
 import React from 'react';
-import { ClipboardList, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { ClipboardList, CheckCircle, Clock } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
 import styles from './StudentOverviewPage.module.css';
 
 export function StudentOverviewPage() {
-    const fullName = localStorage.getItem('fullName') || 'Student';
-    const collegeName = localStorage.getItem('collegeName') || '';
-    const programName = localStorage.getItem('programName') || '';
-    const section = localStorage.getItem('section') || '';
-    const yearLevel = localStorage.getItem('yearLevel') || '';
+    // Helper to safely get string from localStorage
+    const getSafeStorage = (key, fallback = '') => {
+        const val = localStorage.getItem(key);
+        if (!val || val === 'null' || val === 'undefined') return fallback;
+        return val;
+    };
+
+    const fullName = getSafeStorage('fullName', 'Student');
+    const collegeName = getSafeStorage('collegeName');
+    const programName = getSafeStorage('programName');
+    const section = getSafeStorage('section');
+    const yearLevel = getSafeStorage('yearLevel');
 
     const [stats, setStats] = React.useState({
         totalEvaluations: 0,

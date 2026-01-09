@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Users, CheckCircle } from 'lucide-react';
+import { BookOpen, Users, CheckCircle, UserCheck } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
 import styles from './FacultyOverviewPage.module.css';
@@ -14,7 +14,8 @@ export function FacultyOverviewPage() {
     const [stats, setStats] = useState({
         assignedSubjects: 0,
         totalStudentsHandled: 0,
-        studentsEvaluated: 0
+        studentsEvaluated: 0,
+        supervisorsEvaluated: 0
     });
 
     useEffect(() => {
@@ -73,6 +74,12 @@ export function FacultyOverviewPage() {
                         value={stats.studentsEvaluated}
                         subtitle="Total responses received"
                         icon={CheckCircle}
+                    />
+                    <StatCard
+                        title="Supervisors Evaluated"
+                        value={stats.supervisorsEvaluated}
+                        subtitle="Total peer/sup evals"
+                        icon={UserCheck}
                     />
                     <StatCard
                         title="Total Students Handled"

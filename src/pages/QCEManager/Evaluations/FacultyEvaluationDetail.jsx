@@ -31,24 +31,21 @@ export function FacultyEvaluationDetail() {
     const [evaluationDetails, setEvaluationDetails] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [userInfo, setUserInfo] = useState(() => {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            const user = JSON.parse(userStr);
-            return {
-                fullName: user.full_name || 'QCE Manager',
-                role: user.role === 'Dean' ? 'College Dean' : user.role
-            };
-        }
         return {
-            fullName: '',
-            role: ''
+            fullName: localStorage.getItem('fullName') || 'QCE Manager',
         };
     });
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
-    const [generatedCode, setGeneratedCode] = useState('');
+    const [tempCode, setTempCode] = useState(''); // Only used for modal display or temporary storage
+
+    // Active Codes State
+    const [activeDeanCode, setActiveDeanCode] = useState('');
+    const [activeChairCode, setActiveChairCode] = useState('');
+    const [activeVPAACode, setActiveVPAACode] = useState('');
+
     const [copied, setCopied] = useState(false);
     const { toasts, removeToast, success, error: showError } = useToast();
 
@@ -60,25 +57,36 @@ export function FacultyEvaluationDetail() {
     };
 
     useEffect(() => {
-        // State initialized above
-    }, []);
-
-    useEffect(() => {
         if (facultyId) {
             fetchFacultyDetails();
-            fetchActiveSupervisorCode();
+            fetchActiveSupervisorCodes();
         }
     }, [facultyId]);
 
-    const fetchActiveSupervisorCode = async () => {
+    const fetchActiveSupervisorCodes = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/qce/code/supervisor/active/${facultyId}`);
-            const data = await response.json();
-            if (data.success) {
-                setGeneratedCode(data.data.code);
+            // Fetch Dean Code
+            const deanRes = await fetch(`http://localhost:5000/api/qce/code/supervisor/active/${facultyId}?type=Dean`);
+            const deanData = await deanRes.json();
+            if (deanData.success) {
+                setActiveDeanCode(deanData.data.code);
+            }
+
+            // Fetch Chair Code
+            const chairRes = await fetch(`http://localhost:5000/api/qce/code/supervisor/active/${facultyId}?type=Chair`);
+            const chairData = await chairRes.json();
+            if (chairData.success) {
+                setActiveChairCode(chairData.data.code);
+            }
+
+            // Fetch VPAA Code
+            const vpaaRes = await fetch(`http://localhost:5000/api/qce/code/supervisor/active/${facultyId}?type=VPAA`);
+            const vpaaData = await vpaaRes.json();
+            if (vpaaData.success) {
+                setActiveVPAACode(vpaaData.data.code);
             }
         } catch (error) {
-            console.error('Error fetching active code:', error);
+            console.error('Error fetching active codes:', error);
         }
     };
 
@@ -101,14 +109,14 @@ export function FacultyEvaluationDetail() {
 
     const handleCreateClick = (row) => {
         setSelectedAssignment(row);
-        setGeneratedCode(generateCode());
+        setTempCode(generateCode());
         setIsModalOpen(true);
     };
 
     const handleModalCancel = () => {
         setIsModalOpen(false);
         setSelectedAssignment(null);
-        setGeneratedCode('');
+        setTempCode('');
     };
 
     const handleModalSubmit = async (e) => {
@@ -117,15 +125,26 @@ export function FacultyEvaluationDetail() {
         if (!selectedAssignment) return;
 
         try {
-            // Determine Endpoint based on evaluation type
-            const isSupervisorEval = selectedAssignment.assignment_id === 'supervisor_eval';
-            const endpoint = isSupervisorEval
-                ? 'http://localhost:5000/api/qce/code/generate-supervisor'
-                : 'http://localhost:5000/api/qce/subjects/assignments/generate-code';
+            // Determine behavior based on assignment type
+            const isDeanEval = selectedAssignment.assignment_id === 'supervisor_eval_dean';
+            const isChairEval = selectedAssignment.assignment_id === 'supervisor_eval_chair';
+            const isVPAAEval = selectedAssignment.assignment_id === 'supervisor_eval_vpaa';
 
-            const payload = isSupervisorEval
-                ? { evaluateeId: facultyId, creatorId: 1 } // TODO: Use real creator ID from context
-                : { assignmentId: selectedAssignment.assignment_id, code: generatedCode };
+            let endpoint = 'http://localhost:5000/api/qce/subjects/assignments/generate-code';
+            let payload = { assignmentId: selectedAssignment.assignment_id, code: tempCode };
+
+            if (isDeanEval || isChairEval || isVPAAEval) {
+                endpoint = 'http://localhost:5000/api/qce/code/generate-supervisor';
+                let type = 'Dean';
+                if (isChairEval) type = 'Chair';
+                if (isVPAAEval) type = 'VPAA';
+
+                payload = {
+                    evaluateeId: facultyId,
+                    creatorId: 1, // TODO: Use real creator ID from context
+                    type: type
+                };
+            }
 
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -138,18 +157,15 @@ export function FacultyEvaluationDetail() {
             const data = await response.json();
 
             if (data.success) {
-                // If returning from supervisor generation, it enters here too
                 success('Evaluation code generated and activated successfully!');
                 setIsModalOpen(false);
                 setSelectedAssignment(null);
+                setTempCode('');
 
-                // If it was a supervisor code, keep it displayed or refresh?
-                // Actually, for supervisor code, we want to set it in state to show persistently
-                if (selectedAssignment.assignment_id === 'supervisor_eval') {
-                    setGeneratedCode(data.data.code);
-                    fetchActiveSupervisorCode(); // Refresh persistence
+                // Refresh respective data
+                if (isDeanEval || isChairEval || isVPAAEval) {
+                    fetchActiveSupervisorCodes();
                 } else {
-                    setGeneratedCode('');
                     fetchFacultyDetails();
                 }
 
@@ -243,7 +259,7 @@ export function FacultyEvaluationDetail() {
 
     if (isLoading) {
         return (
-            <DashboardLayout role={userInfo.role} userName={userInfo.fullName}>
+            <DashboardLayout role="QCE Manager" userName={userInfo.fullName}>
                 <div className={styles.loadingContainer}>
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
                 </div>
@@ -253,7 +269,7 @@ export function FacultyEvaluationDetail() {
 
     if (!facultyData) {
         return (
-            <DashboardLayout role={userInfo.role} userName={userInfo.fullName}>
+            <DashboardLayout role="QCE Manager" userName={userInfo.fullName}>
                 <div className={styles.errorContainer}>
                     <p>Faculty not found</p>
                 </div>
@@ -261,9 +277,12 @@ export function FacultyEvaluationDetail() {
         );
     }
 
+    const isDean = facultyData.position.includes('Dean');
+    const isChair = facultyData.position.includes('Chair');
+
     return (
         <DashboardLayout
-            role={userInfo.role}
+            role="QCE Manager"
             userName={userInfo.fullName}
             notificationCount={5}
         >
@@ -285,177 +304,236 @@ export function FacultyEvaluationDetail() {
                     </div>
                 </div>
 
-
-
-                {/* Conditional Rendering for Administrative Heads vs Faculty */}
-                {['Dean', 'Department Chair'].some(r => facultyData.position.includes(r)) ? (
-                    <div className={styles.adminEvaluationSection}>
-                        <div className={styles.adminCard}>
-                            <h2 className={styles.sectionTitle}>Administrative Performance Evaluation</h2>
-                            <p className={styles.sectionSubtitle}>
-                                Evaluation for{' '}
-                                <span className={styles.highlightRole}>{facultyData.position}</span>
-                            </p>
-
-                            <div className={styles.evaluationInfo}>
-                                <div className={styles.infoRow}>
-                                    <span className={styles.label}>Evaluatee:</span>
-                                    <span className={styles.value}>{facultyData.name}</span>
-                                </div>
-                                <div className={styles.infoRow}>
-                                    <span className={styles.label}>Evaluator:</span>
-                                    <span className={styles.value}>
-                                        {facultyData.position.includes('Dean') ? 'Vice President for Academic Affairs (VPAA)' : 'College Dean'}
-                                    </span>
-                                </div>
-                                <div className={styles.infoRow}>
-                                    <span className={styles.label}>Status:</span>
-                                    <Badge variant="warning">Pending Evaluator Code</Badge>
-                                </div>
-                            </div>
-
-                            <div className={styles.actionArea}>
-                                <p className={styles.instruction}>
-                                    Generate an evaluation code for the evaluator to access the form.
-                                </p>
-                                <Button
-                                    variant="primary"
-                                    onClick={() => {
-                                        // Placeholder for generating admin code
-                                        setGeneratedCode(generateCode());
-                                        setIsModalOpen(true);
-                                        // Mocking selected assignment to avoid null checks
-                                        setSelectedAssignment({
-                                            subject_name: 'Administrative Evaluation',
-                                            subject_code: 'ADMIN-EVAL',
-                                            section: 'N/A',
-                                            assignment_id: 'admin_placeholder'
-                                        });
-                                    }}
-                                >
-                                    Generate Code
-                                </Button>
-                            </div>
+                {/* Stats Cards - Show for everyone, even Deans/Chairs if they have data. 
+                    If they don't teach, counts might be 0, which is fine. */}
+                <div className={styles.statsGrid}>
+                    <div className={styles.statCard}>
+                        <div className={styles.statCardIcon} style={{ background: '#dbeafe' }}>
+                            <BookOpen size={24} color="#1e40af" />
+                        </div>
+                        <div className={styles.statCardContent}>
+                            <span className={styles.statCardValue}>{facultyData.subjects_count || 0}</span>
+                            <span className={styles.statCardLabel}>Subjects Handled</span>
                         </div>
                     </div>
-                ) : (
-                    <>
-                        {/* Stats Cards */}
-                        <div className={styles.statsGrid}>
-                            <div className={styles.statCard}>
-                                <div className={styles.statCardIcon} style={{ background: '#dbeafe' }}>
-                                    <BookOpen size={24} color="#1e40af" />
-                                </div>
-                                <div className={styles.statCardContent}>
-                                    <span className={styles.statCardValue}>{facultyData.subjects_count || 0}</span>
-                                    <span className={styles.statCardLabel}>Subjects Handled</span>
-                                </div>
-                            </div>
 
-                            <div className={styles.statCard}>
-                                <div className={styles.statCardIcon} style={{ background: '#fef3c7' }}>
-                                    <Users size={24} color="#92400e" />
-                                </div>
-                                <div className={styles.statCardContent}>
-                                    <span className={styles.statCardValue}>{facultyData.sections_count || 0}</span>
-                                    <span className={styles.statCardLabel}>Sections Handled</span>
-                                </div>
-                            </div>
-
-                            <div className={styles.statCard}>
-                                <div className={styles.statCardIcon} style={{ background: '#d1fae5' }}>
-                                    <CheckCircle size={24} color="#065f46" />
-                                </div>
-                                <div className={styles.statCardContent}>
-                                    <span className={styles.statCardValue}>{facultyData.evaluated_count || 0}</span>
-                                    <span className={styles.statCardLabel}>Evaluations Received</span>
-                                </div>
-                            </div>
-
-                            <div className={styles.statCard}>
-                                <div className={styles.statCardIcon} style={{ background: '#fee2e2' }}>
-                                    <Clock size={24} color="#991b1b" />
-                                </div>
-                                <div className={styles.statCardContent}>
-                                    <span className={styles.statCardValue}>{facultyData.pending_count || 0}</span>
-                                    <span className={styles.statCardLabel}>Pending Evaluations</span>
-                                </div>
-                            </div>
+                    <div className={styles.statCard}>
+                        <div className={styles.statCardIcon} style={{ background: '#fef3c7' }}>
+                            <Users size={24} color="#92400e" />
                         </div>
+                        <div className={styles.statCardContent}>
+                            <span className={styles.statCardValue}>{facultyData.sections_count || 0}</span>
+                            <span className={styles.statCardLabel}>Sections Handled</span>
+                        </div>
+                    </div>
 
-                        {/* SUPERVISOR EVALUATION SECTION - Visible for everyone */}
-                        <div className={styles.adminEvaluationSection} style={{ marginTop: '2rem' }}>
-                            <div className={styles.adminCard}>
-                                <div className={styles.cardHeaderWithIcon}>
-                                    <div>
-                                        <h2 className={styles.sectionTitle}>Supervisor Evaluation (Dean)</h2>
-                                        <p className={styles.sectionSubtitle}>
-                                            Generate a code for the <strong>Dean</strong> to evaluate this faculty member.
-                                        </p>
-                                    </div>
-                                    <Badge variant={generatedCode && generatedCode.startsWith('SUP') ? 'success' : 'warning'}>
-                                        {generatedCode && generatedCode.startsWith('SUP') ? 'Active Code Available' : 'No Active Code'}
-                                    </Badge>
+                    <div className={styles.statCard}>
+                        <div className={styles.statCardIcon} style={{ background: '#d1fae5' }}>
+                            <CheckCircle size={24} color="#065f46" />
+                        </div>
+                        <div className={styles.statCardContent}>
+                            <span className={styles.statCardValue}>{facultyData.evaluated_count || 0}</span>
+                            <span className={styles.statCardLabel}>Evaluations Received</span>
+                        </div>
+                    </div>
+
+                    <div className={styles.statCard}>
+                        <div className={styles.statCardIcon} style={{ background: '#fee2e2' }}>
+                            <Clock size={24} color="#991b1b" />
+                        </div>
+                        <div className={styles.statCardContent}>
+                            <span className={styles.statCardValue}>{facultyData.pending_count || 0}</span>
+                            <span className={styles.statCardLabel}>Pending Evaluations</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* EVALUATION SECTIONS */}
+
+                {/* For Deans: VPAA Evaluation */}
+                {isDean && (
+                    <div className={styles.adminEvaluationSection} style={{ marginTop: '2rem' }}>
+                        <div className={styles.adminCard}>
+                            <div className={styles.cardHeaderWithIcon}>
+                                <div>
+                                    <h2 className={styles.sectionTitle}>Supervisor Evaluation (VPAA)</h2>
+                                    <p className={styles.sectionSubtitle}>
+                                        Generate a code for the <strong>VPAA</strong> to evaluate this Dean.
+                                    </p>
                                 </div>
+                                <Badge variant={activeVPAACode ? 'success' : 'warning'}>
+                                    {activeVPAACode ? 'Active Code Available' : 'No Active Code'}
+                                </Badge>
+                            </div>
 
-                                <div className={styles.codeGenerationArea}>
-                                    {generatedCode && generatedCode.startsWith('SUP') ? (
-                                        <div className={styles.activeCodeDisplay}>
-                                            <div className={styles.activeCodeLabel}>ACTIVE SUPERVISOR CODE</div>
-                                            <div className={styles.activeCodeValue}>
-                                                {generatedCode}
-                                                <button
-                                                    onClick={() => handleCopy(generatedCode)}
-                                                    className={styles.copyButton}
-                                                    title="Copy Code"
-                                                >
-                                                    {copied ? <Check size={18} /> : <Copy size={18} />}
-                                                </button>
-                                            </div>
-                                            <p className={styles.codeInstruction}>Share this code with the Dean to enable evaluation.</p>
-                                        </div>
-                                    ) : (
-                                        <div className={styles.actionArea}>
-                                            <Button
-                                                variant="primary"
-                                                onClick={() => {
-                                                    // Trigger Supervisor Modal Flow
-                                                    // We don't pre-generate code here, logic is in submit
-                                                    setSelectedAssignment({
-                                                        subject_name: 'Supervisor Evaluation',
-                                                        subject_code: 'SUP-EVAL',
-                                                        section: 'N/A',
-                                                        assignment_id: 'supervisor_eval'
-                                                    });
-                                                    setGeneratedCode(''); // Clear any old temp
-                                                    setIsModalOpen(true);
-                                                }}
+                            <div className={styles.codeGenerationArea}>
+                                {activeVPAACode ? (
+                                    <div className={styles.activeCodeDisplay}>
+                                        <div className={styles.activeCodeLabel}>ACTIVE VPAA CODE</div>
+                                        <div className={styles.activeCodeValue}>
+                                            {activeVPAACode}
+                                            <button
+                                                onClick={() => handleCopy(activeVPAACode)}
+                                                className={styles.copyButton}
+                                                title="Copy Code"
                                             >
-                                                Generate Supervisor Code
-                                            </Button>
+                                                {copied ? <Check size={18} /> : <Copy size={18} />}
+                                            </button>
                                         </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Evaluation Details Table */}
-                        <div className={styles.tableSection}>
-                            <h2 className={styles.sectionTitle}>Evaluation Details by Subject & Section</h2>
-                            <div className={styles.tableContainer}>
-                                {evaluationDetails.length === 0 ? (
-                                    <div className={styles.emptyState}>
-                                        <p>No evaluation data available</p>
+                                        <p className={styles.codeInstruction}>Share this code with the VPAA to enable evaluation.</p>
                                     </div>
                                 ) : (
-                                    <Table columns={columns} data={evaluationDetails} />
+                                    <div className={styles.actionArea}>
+                                        <Button
+                                            variant="primary"
+                                            onClick={() => {
+                                                setSelectedAssignment({
+                                                    subject_name: 'Supervisor Evaluation (VPAA)',
+                                                    subject_code: 'SUP-EVAL-VPAA',
+                                                    section: 'N/A',
+                                                    assignment_id: 'supervisor_eval_vpaa'
+                                                });
+                                                setTempCode('');
+                                                setIsModalOpen(true);
+                                            }}
+                                        >
+                                            Generate VPAA Code
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
                         </div>
-                    </>
+                    </div>
                 )}
 
-                {/* Generate Code Modal using re-used logic */}
+
+                {/* For Chairs or Regular Faculty: Dean Evaluation */}
+                {(isChair || !isDean) && (
+                    <div className={styles.adminEvaluationSection} style={{ marginTop: '2rem' }}>
+                        <div className={styles.adminCard}>
+                            <div className={styles.cardHeaderWithIcon}>
+                                <div>
+                                    <h2 className={styles.sectionTitle}>Supervisor Evaluation (Dean)</h2>
+                                    <p className={styles.sectionSubtitle}>
+                                        Generate a code for the <strong>Dean</strong> to evaluate this {isChair ? 'Chair' : 'Faculty Member'}.
+                                    </p>
+                                </div>
+                                <Badge variant={activeDeanCode ? 'success' : 'warning'}>
+                                    {activeDeanCode ? 'Active Code Available' : 'No Active Code'}
+                                </Badge>
+                            </div>
+
+                            <div className={styles.codeGenerationArea}>
+                                {activeDeanCode ? (
+                                    <div className={styles.activeCodeDisplay}>
+                                        <div className={styles.activeCodeLabel}>ACTIVE DEAN CODE</div>
+                                        <div className={styles.activeCodeValue}>
+                                            {activeDeanCode}
+                                            <button
+                                                onClick={() => handleCopy(activeDeanCode)}
+                                                className={styles.copyButton}
+                                                title="Copy Code"
+                                            >
+                                                {copied ? <Check size={18} /> : <Copy size={18} />}
+                                            </button>
+                                        </div>
+                                        <p className={styles.codeInstruction}>Share this code with the Dean to enable evaluation.</p>
+                                    </div>
+                                ) : (
+                                    <div className={styles.actionArea}>
+                                        <Button
+                                            variant="primary"
+                                            onClick={() => {
+                                                setSelectedAssignment({
+                                                    subject_name: 'Supervisor Evaluation (Dean)',
+                                                    subject_code: 'SUP-EVAL',
+                                                    section: 'N/A',
+                                                    assignment_id: 'supervisor_eval_dean'
+                                                });
+                                                setTempCode('');
+                                                setIsModalOpen(true);
+                                            }}
+                                        >
+                                            Generate Dean Code
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* For Regular Faculty: Chair Evaluation (Peer) */}
+                {!isDean && !isChair && (
+                    <div className={styles.adminEvaluationSection} style={{ marginTop: '2rem' }}>
+                        <div className={styles.adminCard}>
+                            <div className={styles.cardHeaderWithIcon}>
+                                <div>
+                                    <h2 className={styles.sectionTitle}>Peer Evaluation (Department Chair)</h2>
+                                    <p className={styles.sectionSubtitle}>
+                                        Generate a code for the <strong>Department Chair</strong> to evaluate this faculty member.
+                                    </p>
+                                </div>
+                                <Badge variant={activeChairCode ? 'success' : 'warning'}>
+                                    {activeChairCode ? 'Active Code Available' : 'No Active Code'}
+                                </Badge>
+                            </div>
+
+                            <div className={styles.codeGenerationArea}>
+                                {activeChairCode ? (
+                                    <div className={styles.activeCodeDisplay}>
+                                        <div className={styles.activeCodeLabel}>ACTIVE CHAIR CODE</div>
+                                        <div className={styles.activeCodeValue}>
+                                            {activeChairCode}
+                                            <button
+                                                onClick={() => handleCopy(activeChairCode)}
+                                                className={styles.copyButton}
+                                                title="Copy Code"
+                                            >
+                                                {copied ? <Check size={18} /> : <Copy size={18} />}
+                                            </button>
+                                        </div>
+                                        <p className={styles.codeInstruction}>Share this code with the Department Chair to enable evaluation.</p>
+                                    </div>
+                                ) : (
+                                    <div className={styles.actionArea}>
+                                        <Button
+                                            variant="primary"
+                                            onClick={() => {
+                                                setSelectedAssignment({
+                                                    subject_name: 'Peer Evaluation (Dept. Chair)',
+                                                    subject_code: 'CHR-EVAL',
+                                                    section: 'N/A',
+                                                    assignment_id: 'supervisor_eval_chair'
+                                                });
+                                                setTempCode('');
+                                                setIsModalOpen(true);
+                                            }}
+                                        >
+                                            Generate Chair Code
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Evaluation Details Table (For student evaluations) */}
+                <div className={styles.tableSection}>
+                    <h2 className={styles.sectionTitle}>Evaluation Details by Subject & Section</h2>
+                    <div className={styles.tableContainer}>
+                        {evaluationDetails.length === 0 ? (
+                            <div className={styles.emptyState}>
+                                <p>No evaluation data available</p>
+                            </div>
+                        ) : (
+                            <Table columns={columns} data={evaluationDetails} />
+                        )}
+                    </div>
+                </div>
+
+                {/* Generate Code Modal */}
                 <Modal
                     isOpen={isModalOpen}
                     onClose={handleModalCancel}
@@ -502,10 +580,10 @@ export function FacultyEvaluationDetail() {
                             />
                         </div>
 
-                        {generatedCode && (
+                        {tempCode && (
                             <div className={styles.codeDisplay}>
                                 <div className={styles.codeLabel}>GENERATED CODE</div>
-                                <div className={styles.codeValue}>{generatedCode}</div>
+                                <div className={styles.codeValue}>{tempCode}</div>
                             </div>
                         )}
 

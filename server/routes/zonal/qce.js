@@ -47,9 +47,9 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { firstName, lastName, email, collegeId, departmentId, temporaryPassword } = req.body;
+        const { firstName, middleInitial, lastName, email, collegeId, departmentId, password } = req.body;
 
-        if (!email || !temporaryPassword || !firstName || !lastName || !collegeId) {
+        if (!email || !password || !firstName || !lastName || !collegeId) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required'
@@ -66,8 +66,8 @@ router.post('/', async (req, res) => {
         }
 
         // Hash password
-        const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
-        const fullName = `${firstName} ${lastName}`;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const fullName = `${firstName} ${middleInitial ? middleInitial + '. ' : ''}${lastName}`;
 
         // Insert user
         const [result] = await promisePool.query(`
@@ -104,7 +104,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, email, collegeId, departmentId } = req.body;
+        const { firstName, middleInitial, lastName, email, collegeId, departmentId } = req.body;
 
         if (!email || !firstName || !lastName || !collegeId) {
             return res.status(400).json({
@@ -125,7 +125,7 @@ router.put('/:id', async (req, res) => {
             });
         }
 
-        const fullName = `${firstName} ${lastName}`;
+        const fullName = `${firstName} ${middleInitial ? middleInitial + '. ' : ''}${lastName}`;
 
         // Update account
         await promisePool.query(`

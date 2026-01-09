@@ -124,6 +124,18 @@ export function VPAAEvaluationFormPage() {
         setIsSubmitting(true);
 
         try {
+            // Helper to get average for a category
+            const getCategoryAverage = (categoryName) => {
+                const total = calculateTotalScore(categoryName);
+                const max = EVALUATION_CRITERIA[categoryName].length * 5;
+                return (total / max) * 5; // Normalize to 5
+            };
+
+            const managementScore = getCategoryAverage('A. Leadership and Management');
+            const teachingScore = getCategoryAverage('B. Academic Program Development');
+            const commitmentScore = getCategoryAverage('C. Communication and Collaboration');
+            const knowledgeScore = getCategoryAverage('D. Innovation and Problem-Solving');
+
             const totalScore = calculateOverallTotal();
             const maxScore = calculateMaxScore();
             const averageRating = (totalScore / maxScore) * 5;
@@ -135,7 +147,13 @@ export function VPAAEvaluationFormPage() {
                 },
                 body: JSON.stringify({
                     evaluation_id: evaluation.id,
-                    rating: averageRating.toFixed(2),
+                    scores: {
+                        management: managementScore.toFixed(2),
+                        teaching: teachingScore.toFixed(2),
+                        commitment: commitmentScore.toFixed(2),
+                        knowledge: knowledgeScore.toFixed(2),
+                        total: averageRating.toFixed(2)
+                    },
                     comments: JSON.stringify(ratings)
                 }),
             });
@@ -169,108 +187,140 @@ export function VPAAEvaluationFormPage() {
     return (
         <DashboardLayout role="VPAA" userName={userData.full_name}>
             <div className={styles.page}>
-                <div className={styles.header}>
-                    <Button
-                        variant="ghost"
-                        onClick={handleCancel}
-                        className={styles.backButton}
-                    >
-                        <ArrowLeft size={18} />
-                        Back to Dashboard
-                    </Button>
-                </div>
-
                 <div className={styles.formContainer}>
                     <div className={styles.formHeader}>
-                        <h1 className={styles.title}>Dean Performance Evaluation</h1>
-                        <div className={styles.evaluationInfo}>
+                        <h1 className={styles.formTitle}>Dean Performance Evaluation</h1>
+                        <div className={styles.headerInfo}>
+                            <p className={styles.qceInfo}>The QCE of the NBC No. 461</p>
+                            <p className={styles.ratingPeriod}>
+                                <strong>Academic Year:</strong> {academicYear?.year_label || 'N/A'} - {evaluation.semester || 'N/A'}
+                            </p>
+                        </div>
+
+                        <div className={styles.facultyInfo}>
                             <div className={styles.infoRow}>
-                                <span className={styles.label}>Dean Name:</span>
-                                <span className={styles.value}>{evaluation.dean_name}</span>
+                                <span className={styles.infoLabel}>Dean Name:</span>
+                                <span className={styles.infoValue}>{evaluation.dean_name}</span>
                             </div>
                             <div className={styles.infoRow}>
-                                <span className={styles.label}>College:</span>
-                                <span className={styles.value}>{evaluation.college_name}</span>
+                                <span className={styles.infoLabel}>College:</span>
+                                <span className={styles.infoValue}>{evaluation.college_name}</span>
                             </div>
-                            <div className={styles.infoRow}>
-                                <span className={styles.label}>Academic Year:</span>
-                                <span className={styles.value}>{academicYear?.year_label || 'N/A'}</span>
-                            </div>
-                            <div className={styles.infoRow}>
-                                <span className={styles.label}>Semester:</span>
-                                <span className={styles.value}>{evaluation.semester || 'N/A'}</span>
+                        </div>
+
+                        <div className={styles.evaluatorType}>
+                            <label className={styles.evaluatorLabel}>Evaluators:</label>
+                            <div className={styles.checkboxGroup}>
+                                <label className={styles.checkbox}>
+                                    <input type="checkbox" disabled />
+                                    <span>Self</span>
+                                </label>
+                                <label className={styles.checkbox}>
+                                    <input type="checkbox" disabled />
+                                    <span>Student</span>
+                                </label>
+                                <label className={styles.checkbox}>
+                                    <input type="checkbox" disabled />
+                                    <span>Peer</span>
+                                </label>
+                                <label className={styles.checkbox}>
+                                    <input type="checkbox" checked={true} readOnly />
+                                    <span>Supervisor (VPAA)</span>
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <div className={styles.ratingScale}>
-                        <h3>Rating Scale:</h3>
-                        <div className={styles.scaleItems}>
-                            {RATING_SCALE.map(scale => (
-                                <div key={scale.value} className={styles.scaleItem}>
-                                    <span className={styles.scaleValue}>{scale.value}</span>
-                                    <span className={styles.scaleLabel}>{scale.label}</span>
-                                    <span className={styles.scaleDescription}>{scale.description}</span>
-                                </div>
-                            ))}
-                        </div>
+                    <div className={styles.subjectBar}>
+                        <strong>Position:</strong> College Dean
                     </div>
 
-                    <form onSubmit={handleSubmit} className={styles.form}>
-                        {Object.entries(EVALUATION_CRITERIA).map(([category, criteria]) => (
-                            <div key={category} className={styles.category}>
-                                <div className={styles.categoryHeader}>
-                                    <h2 className={styles.categoryTitle}>{category}</h2>
-                                    <div className={styles.categoryScore}>
-                                        Total: {calculateTotalScore(category)} / {criteria.length * 5}
-                                    </div>
-                                </div>
+                    <div className={styles.instructions}>
+                        <h3>Instructions</h3>
+                        <p>Please evaluate the Dean using the scale below. Encircle your rating.</p>
 
-                                <div className={styles.criteriaList}>
-                                    {criteria.map((criterion, index) => (
-                                        <div key={index} className={styles.criterionRow}>
-                                            <div className={styles.criterionText}>
-                                                {index + 1}. {criterion}
-                                            </div>
-                                            <div className={styles.ratingButtons}>
-                                                {[1, 2, 3, 4, 5].map(value => (
-                                                    <label
-                                                        key={value}
-                                                        className={`${styles.ratingButton} ${ratings[category]?.[index] === value ? styles.selected : ''
-                                                            }`}
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            name={`${category}-${index}`}
-                                                            value={value}
-                                                            checked={ratings[category]?.[index] === value}
-                                                            onChange={() => handleRatingChange(category, index, value)}
-                                                            required
-                                                        />
-                                                        <span>{value}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
+                        <div className={styles.ratingScale}>
+                            <h4>Rating Scale</h4>
+                            <table className={styles.scaleTable}>
+                                <thead>
+                                    <tr>
+                                        <th>Scale</th>
+                                        <th>Descriptive Rating</th>
+                                        <th>Qualitative Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {RATING_SCALE.map(scale => (
+                                        <tr key={scale.value}>
+                                            <td>{scale.value}</td>
+                                            <td>{scale.label}</td>
+                                            <td>{scale.description}</td>
+                                        </tr>
                                     ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className={styles.evaluationForm}>
+                        {Object.entries(EVALUATION_CRITERIA).map(([category, criteria]) => (
+                            <div key={category} className={styles.categorySection}>
+                                <h3 className={styles.categoryTitle}>{category}</h3>
+
+                                <table className={styles.criteriaTable}>
+                                    <thead>
+                                        <tr>
+                                            <th className={styles.numberCol}>#</th>
+                                            <th className={styles.indicatorCol}>Indicators</th>
+                                            <th className={styles.ratingCol}>5</th>
+                                            <th className={styles.ratingCol}>4</th>
+                                            <th className={styles.ratingCol}>3</th>
+                                            <th className={styles.ratingCol}>2</th>
+                                            <th className={styles.ratingCol}>1</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {criteria.map((criterion, index) => (
+                                            <tr key={index}>
+                                                <td className={styles.numberCell}>{index + 1}</td>
+                                                <td className={styles.indicatorCell}>{criterion}</td>
+                                                {[5, 4, 3, 2, 1].map(value => (
+                                                    <td key={value} className={styles.ratingCell}>
+                                                        <label className={styles.radioLabel}>
+                                                            <input
+                                                                type="radio"
+                                                                name={`${category}-${index}`}
+                                                                value={value}
+                                                                checked={ratings[category]?.[index] === value}
+                                                                onChange={() => handleRatingChange(category, index, value)}
+                                                                className={styles.radioInput}
+                                                                required
+                                                            />
+                                                            <span className={styles.radioCustom}></span>
+                                                        </label>
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div className={styles.totalScore}>
+                                    <strong>Total Score ({category.split('.')[0]}):</strong> {calculateTotalScore(category)} / {criteria.length * 5}
                                 </div>
                             </div>
                         ))}
 
                         <div className={styles.summary}>
                             <h3>Evaluation Summary</h3>
-                            <div className={styles.summaryContent}>
-                                <div className={styles.summaryRow}>
-                                    <span>Total Score:</span>
-                                    <span className={styles.summaryValue}>
-                                        {calculateOverallTotal()} / {calculateMaxScore()}
-                                    </span>
+                            <div className={styles.summaryContent} style={{ padding: '1rem', background: '#f9fafb', borderRadius: '8px', marginBottom: '2rem' }}>
+                                <div style={{ marginBottom: '0.5rem' }}>
+                                    <strong>Total Score: </strong>
+                                    {calculateOverallTotal()} / {calculateMaxScore()}
                                 </div>
-                                <div className={styles.summaryRow}>
-                                    <span>Average Rating:</span>
-                                    <span className={styles.summaryValue}>
-                                        {((calculateOverallTotal() / calculateMaxScore()) * 5).toFixed(2)} / 5.00
-                                    </span>
+                                <div>
+                                    <strong>Average Rating: </strong>
+                                    {((calculateOverallTotal() / calculateMaxScore()) * 5).toFixed(2)} / 5.00
                                 </div>
                             </div>
                         </div>

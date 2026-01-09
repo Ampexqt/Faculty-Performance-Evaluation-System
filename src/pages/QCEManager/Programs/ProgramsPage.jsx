@@ -10,6 +10,15 @@ import styles from './ProgramsPage.module.css';
 
 export function ProgramsPage() {
     const [programs, setPrograms] = useState([]);
+    const [userName, setUserName] = useState('QCE Manager');
+
+    useEffect(() => {
+        const storedName = localStorage.getItem('fullName');
+        if (storedName) {
+            setUserName(storedName);
+        }
+    }, []);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -240,7 +249,7 @@ export function ProgramsPage() {
     return (
         <DashboardLayout
             role="QCE Manager"
-            userName="QCE Manager"
+            userName={userName}
             notificationCount={5}
         >
             <div className={styles.page}>

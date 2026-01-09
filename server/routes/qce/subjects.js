@@ -19,9 +19,13 @@ router.get('/', async (req, res) => {
         `;
         const params = [];
 
-        if (department_id) {
+        if (department_id && department_id !== 'null' && department_id !== 'undefined') {
             query += ` AND s.department_id = ?`;
             params.push(department_id);
+        } else if (req.query.hasOwnProperty('department_id')) {
+            // If department_id param EXISTS but is null/undefined/empty, intentionally return nothing (or filter by NULL if that was the intent, but likely it's an error).
+            // Prevent returning ALL subjects when a filter was attempted but failed.
+            query += ` AND 1=0`;
         }
 
         query += ` ORDER BY s.subject_code ASC`;
@@ -66,15 +70,38 @@ router.post('/', async (req, res) => {
 
         // Check duplicates
         const [existing] = await promisePool.query(
-            'SELECT id FROM subjects WHERE subject_code = ?',
+            'SELECT id, status FROM subjects WHERE subject_code = ?',
             [subjectCode]
         );
 
         if (existing.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Subject code already exists'
-            });
+            const subject = existing[0];
+
+            if (subject.status === 'active') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Subject code already exists'
+                });
+            } else {
+                // Reactivate the subject
+                await promisePool.query(
+                    'UPDATE subjects SET status = "active", subject_name = ?, units = ?, department_id = ? WHERE id = ?',
+                    [subjectName, units || 3, departmentId, subject.id]
+                );
+
+                return res.status(200).json({
+                    success: true,
+                    message: 'Subject restored successfully',
+                    data: {
+                        id: subject.id,
+                        code: subjectCode,
+                        name: subjectName,
+                        units: units || 3,
+                        departmentId,
+                        activeSections: 0 // Need to recalculate? assumed 0 for now as it was inactive
+                    }
+                });
+            }
         }
 
         const [result] = await promisePool.query(

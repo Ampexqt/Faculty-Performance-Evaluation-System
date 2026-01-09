@@ -13,6 +13,7 @@ export function SchedulesPage() {
     const [schedules, setSchedules] = useState([]);
     const [subjectsList, setSubjectsList] = useState([]);
     const [facultyList, setFacultyList] = useState([]);
+    const [programsList, setProgramsList] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -25,6 +26,7 @@ export function SchedulesPage() {
 
     const [formData, setFormData] = useState({
         subjectId: '',
+        programCode: '',
         yearLevel: '',
         section: '',
         facultyId: '',
@@ -81,11 +83,11 @@ export function SchedulesPage() {
         const fullName = localStorage.getItem('fullName') || 'Department Chair';
         const userId = localStorage.getItem('userId');
 
-        // Fetch the department chair's college_id
         if (userId) {
             fetchUserCollege(userId, departmentId, fullName);
         } else {
             setUserInfo({ departmentId, collegeId: null, fullName });
+            if (departmentId) fetchPrograms(departmentId);
         }
     }, []);
 
@@ -94,19 +96,36 @@ export function SchedulesPage() {
             const response = await fetch(`http://localhost:5000/api/qce/faculty`);
             const data = await response.json();
             if (data.success) {
-                // Try to find by ID first, then by name/role if needed
                 let currentUser = data.data.find(f => f.id === parseInt(userId));
 
-                if (!currentUser && fullName) {
-                    currentUser = data.data.find(f => f.name === fullName && f.role === 'Department Chair');
+                if (currentUser) {
+                    setUserInfo({
+                        departmentId: currentUser.department_id,
+                        collegeId: currentUser.college_id,
+                        fullName: currentUser.name || fullName
+                    });
+                    if (currentUser.department_id) {
+                        fetchPrograms(currentUser.department_id);
+                    }
+                } else {
+                    setUserInfo({ departmentId, collegeId: null, fullName });
                 }
-
-                const collegeId = currentUser?.college_id || null;
-                setUserInfo({ departmentId, collegeId, fullName });
             }
         } catch (error) {
-            console.error('Error fetching user college:', error);
+            console.error('Error fetching user info:', error);
             setUserInfo({ departmentId, collegeId: null, fullName });
+        }
+    };
+
+    const fetchPrograms = async (deptId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/qce/programs?department_id=${deptId}`);
+            const data = await response.json();
+            if (data.success) {
+                setProgramsList(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching programs:', error);
         }
     };
 
@@ -183,10 +202,27 @@ export function SchedulesPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Construct section name (e.g., "1-A")
-        const sectionName = `${formData.yearLevel}-${formData.section}`;
+        if (!formData.programCode || !formData.yearLevel || !formData.section) {
+            addToast('Program, Year Level, and Section are required', 'error');
+            return;
+        }
+
+        // Construct strict section name: Program Code + Year + Section
+        // e.g. "BSIT 2-B"
+        const sectionName = `${formData.programCode} ${formData.yearLevel}-${formData.section}`;
 
         try {
+            // Check for duplicates first (frontend check only for UX, backend usually validates too)
+            const exists = schedules.some(s =>
+                s.subjectId === parseInt(formData.subjectId) &&
+                s.section === sectionName
+            );
+
+            if (exists) {
+                addToast('This subject is already assigned to this section', 'error');
+                return;
+            }
+
             const response = await fetch('http://localhost:5000/api/qce/subjects/assignments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -200,7 +236,7 @@ export function SchedulesPage() {
             if (result.success) {
                 addToast('Subject assigned successfully', 'success');
                 setIsModalOpen(false);
-                setFormData({ subjectId: '', yearLevel: '', section: '', facultyId: '' });
+                setFormData({ subjectId: '', programCode: '', yearLevel: '', section: '', facultyId: '' });
                 fetchAssignments();
             } else {
                 addToast(result.message, 'error');
@@ -215,6 +251,7 @@ export function SchedulesPage() {
         setIsModalOpen(false);
         setFormData({
             subjectId: '',
+            programCode: '',
             yearLevel: '',
             section: '',
             facultyId: '',
@@ -441,6 +478,20 @@ export function SchedulesPage() {
                                 value={formData.subjectId}
                                 onChange={handleInputChange}
                                 options={subjectsList.map(s => ({ value: s.id, label: `${s.code} - ${s.name}` }))}
+                                searchable
+                                required
+                            />
+                        </div>
+
+                        {/* Program Dropdown */}
+                        <div className={styles.formGroup}>
+                            <Select
+                                label="Program"
+                                name="programCode"
+                                placeholder="Select Program"
+                                value={formData.programCode}
+                                onChange={handleInputChange}
+                                options={programsList.map(p => ({ value: p.code, label: p.name ? `${p.code} - ${p.name}` : p.code }))}
                                 searchable
                                 required
                             />

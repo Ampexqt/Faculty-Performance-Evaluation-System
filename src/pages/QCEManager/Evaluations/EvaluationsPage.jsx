@@ -11,19 +11,9 @@ export function EvaluationsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('Heads'); // 'Heads' or 'Faculty'
     const [userInfo, setUserInfo] = useState(() => {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            const user = JSON.parse(userStr);
-            return {
-                fullName: user.full_name || 'QCE Manager',
-                collegeId: user.college_id,
-                role: user.role === 'Dean' ? 'College Dean' : user.role
-            };
-        }
         return {
-            fullName: '',
-            collegeId: null,
-            role: ''
+            fullName: localStorage.getItem('fullName') || 'QCE Manager',
+            collegeId: localStorage.getItem('collegeId'),
         };
     });
 
@@ -72,7 +62,7 @@ export function EvaluationsPage() {
 
     return (
         <DashboardLayout
-            role={userInfo.role}
+            role="QCE Manager"
             userName={userInfo.fullName}
             notificationCount={5}
         >

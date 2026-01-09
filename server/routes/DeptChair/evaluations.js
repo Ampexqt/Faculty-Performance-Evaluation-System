@@ -8,7 +8,7 @@ const { promisePool } = require('../../config/db');
  */
 router.post('/validate', async (req, res) => {
     try {
-        const { code, evaluatorId, departmentId } = req.body;
+        const { code, evaluatorId } = req.body;
 
         if (!code) {
             return res.status(400).json({
@@ -17,8 +17,23 @@ router.post('/validate', async (req, res) => {
             });
         }
 
-        // 1. Check if it's a Supervisor Evaluation Code (starts with SUP)
-        if (code.startsWith('SUP')) {
+        // 1. Get Evaluator's Department
+        const [evaluatorData] = await promisePool.query(
+            'SELECT department_id, college_id FROM faculty WHERE id = ?',
+            [evaluatorId]
+        );
+
+        if (evaluatorData.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Evaluator not found'
+            });
+        }
+
+        const evaluator = evaluatorData[0];
+
+        // 2. Check if it's a Supervisor or Chair Evaluation Code (starts with SUP or CHR)
+        if (code.startsWith('SUP') || code.startsWith('CHR')) {
             const [supCodes] = await promisePool.query(`
                 SELECT 
                     sec.id as code_id,
@@ -26,7 +41,9 @@ router.post('/validate', async (req, res) => {
                     f.first_name,
                     f.last_name,
                     f.position as faculty_role,
-                    f.department_id
+                    f.department_id,
+                    f.college_id,
+                    sec.evaluator_type
                 FROM supervisor_evaluation_codes sec
                 JOIN faculty f ON sec.evaluatee_id = f.id
                 WHERE sec.code = ? AND sec.status = 'active'
@@ -35,17 +52,34 @@ router.post('/validate', async (req, res) => {
             if (supCodes.length === 0) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Invalid or expired supervisor code'
+                    message: 'Invalid or expired evaluation code'
                 });
             }
 
             const supData = supCodes[0];
 
-            // Check Department Constraint
-            if (departmentId && supData.department_id != departmentId) {
+            // Check Department/College Constraint
+            // Allow if in same department OR same college? 
+            // User said: "they can only evaluate is they are in the same colleges"
+            // But context is Dept Chair. Dept Chair manages a Department. 
+            // Usually Dept Chair evaluates Faculty in their Department.
+            // But if the user insists on "same colleges", I should probably check college_id.
+            // However, sticking to Department for Dept Chair seems safer for "Peer Evaluation (Dept Chair)".
+            // Let's enforce Department match effectively.
+
+            // Allow evaluation if in same department OR same college (to handle cases where specific dept assignment is missing but college is correct)
+            if (evaluator.department_id !== supData.department_id && evaluator.college_id !== supData.college_id) {
                 return res.status(403).json({
                     success: false,
-                    message: 'This faculty member is not within your assigned department.'
+                    message: 'You can only evaluate faculty members within your own department or college.'
+                });
+            }
+
+            // Check Self-Evaluation Constraint
+            if (evaluatorId && parseInt(evaluatorId) === supData.evaluatee_id) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You cannot evaluate yourself.'
                 });
             }
 
@@ -53,21 +87,22 @@ router.post('/validate', async (req, res) => {
             return res.json({
                 success: true,
                 data: {
-                    id: `SUP-${supData.code_id}`, // Unique ID for key
-                    evaluateeId: supData.evaluatee_id, // Important for submission
-                    subject: 'Faculty Supervision', // Context for Dept Chair
+                    id: `${code.startsWith('SUP') ? 'SUP' : 'CHR'}-${supData.code_id}`,
+                    evaluateeId: supData.evaluatee_id,
+                    subject: code.startsWith('SUP') ? 'Faculty Supervision (Dean)' : 'Peer Evaluation (Dept. Chair)',
                     evaluatee: `${supData.first_name} ${supData.last_name}`,
                     evaluateeRole: supData.faculty_role,
                     status: 'Pending',
-                    type: 'Supervisor' // Flag for frontend submission logic
+                    type: 'Supervisor',
+                    evaluatorType: supData.evaluator_type || (code.startsWith('SUP') ? 'Dean' : 'Chair')
                 }
             });
         }
 
-        // 2. Reject non-SUP codes
+        // 3. Reject invalid codes
         return res.status(404).json({
             success: false,
-            message: 'Invalid evaluation code. Only Supervisor (SUP) codes are accepted.'
+            message: 'Invalid evaluation code. accepted formats: SUP-XXX or CHR-XXX'
         });
 
     } catch (error) {

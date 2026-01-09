@@ -97,12 +97,13 @@ router.get('/:facultyId', async (req, res) => {
         const [evaluations] = await promisePool.query(`
             SELECT 
                 fa.id as assignment_id,
-                fa.section,
+                SUBSTRING_INDEX(fa.section, '-', -1) as section,
+                fa.section as full_section,
                 s.subject_code,
                 s.subject_name,
                 CASE 
                     WHEN fa.section REGEXP '^[0-9]+-' THEN SUBSTRING_INDEX(fa.section, '-', 1)
-                    ELSE SUBSTRING(fa.section, LOCATE('-', fa.section) + 1, 1)
+                    ELSE SUBSTRING_INDEX(TRIM(SUBSTRING_INDEX(fa.section, '-', 1)), ' ', -1)
                 END as year_level,
                 fa.eval_code,
                 COUNT(DISTINCT st.id) as total_students,
@@ -135,7 +136,7 @@ router.get('/:facultyId', async (req, res) => {
 
         // Calculate summary statistics
         const totalSubjects = new Set(evaluations.map(e => e.subject_code)).size;
-        const totalSections = new Set(evaluations.map(e => e.section)).size;
+        const totalSections = new Set(evaluations.map(e => e.full_section)).size;
         const totalStudents = evaluations.reduce((sum, e) => sum + parseInt(e.total_students), 0);
         const evaluatedStudents = evaluations.reduce((sum, e) => sum + parseInt(e.evaluated_count), 0);
         const pendingStudents = totalStudents - evaluatedStudents;

@@ -41,7 +41,14 @@ router.get('/vpaa-list', async (req, res) => {
  */
 router.post('/evaluate-vpaa', async (req, res) => {
     try {
-        const { president_id, vpaa_id, academic_year_id, semester, rating, comments } = req.body;
+        let { president_id, vpaa_id, academic_year_id, semester, rating, comments } = req.body;
+
+        // Normalize semester to match enum('1st', '2nd')
+        if (semester && semester.toString().toLowerCase().includes('1st')) {
+            semester = '1st';
+        } else if (semester && semester.toString().toLowerCase().includes('2nd')) {
+            semester = '2nd';
+        }
 
         if (!president_id || !vpaa_id || !academic_year_id || !semester) {
             return res.status(400).json({

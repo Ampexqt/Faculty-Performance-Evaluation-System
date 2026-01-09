@@ -8,7 +8,8 @@ import styles from './MySubjectsPage.module.css';
 
 export function MySubjectsPage() {
     const [subjects, setSubjects] = useState([]);
-    const [evaluators, setEvaluators] = useState([]);
+    const [allEvaluators, setAllEvaluators] = useState([]);
+    const [counts, setCounts] = useState({ student: 0, supervisor: 0 });
     const [isLoading, setIsLoading] = useState(true);
     const { toasts, removeToast, success, error: showError } = useToast();
 
@@ -32,7 +33,17 @@ export function MySubjectsPage() {
                 const evaluatorsData = await evaluatorsRes.json();
 
                 if (evaluatorsData.success) {
-                    setEvaluators(evaluatorsData.data);
+                    setCounts(evaluatorsData.counts || { student: 0, supervisor: 0 });
+
+                    // Combine and sort evaluators
+                    const students = evaluatorsData.data || [];
+                    const supervisors = evaluatorsData.supervisorData || [];
+
+                    const combined = [...supervisors, ...students].sort((a, b) =>
+                        new Date(b.date) - new Date(a.date)
+                    ).slice(0, 5); // Limit to top 5 recent
+
+                    setAllEvaluators(combined);
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -89,15 +100,16 @@ export function MySubjectsPage() {
                                 <thead>
                                     <tr>
                                         <th>Subject</th>
-                                        <th>Section</th>
+                                        <th>Course Year Level and Section</th>
                                         <th>Eval Code</th>
                                         <th>Student Evaluate</th>
+                                        <th>Supervisor Evaluate</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {subjects.length === 0 ? (
                                         <tr>
-                                            <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
+                                            <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
                                                 No subjects assigned yet.
                                             </td>
                                         </tr>
@@ -142,6 +154,19 @@ export function MySubjectsPage() {
                                                         </span>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                    <div className={styles.supervisorEvalStatus}>
+                                                        {subject.supervisor_evaluated > 0 ? (
+                                                            <Badge variant="success">
+                                                                {subject.supervisor_evaluated} Submitted
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge variant="warning">
+                                                                Not Evaluated
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))
                                     )}
@@ -152,17 +177,35 @@ export function MySubjectsPage() {
 
                     {/* Recent Evaluators */}
                     <div className={styles.sidebar}>
-                        <h2 className={styles.sectionTitle}>Recent Evaluators</h2>
+                        <h2 className={styles.sectionTitle}>Evaluations Overview</h2>
+
+                        {/* Summary Cards */}
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <div style={{ flex: 1, padding: '1rem', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+                                <div style={{ fontSize: '0.875rem', color: '#166534', marginBottom: '0.25rem' }}>Student</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>{counts.student}</div>
+                            </div>
+                            <div style={{ flex: 1, padding: '1rem', background: '#fff7ed', borderRadius: '8px', border: '1px solid #ffedd5' }}>
+                                <div style={{ fontSize: '0.875rem', color: '#9a3412', marginBottom: '0.25rem' }}>Supervisor</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#c2410c' }}>{counts.supervisor}</div>
+                            </div>
+                        </div>
+
+                        <h3 className={styles.sectionTitle} style={{ fontSize: '1rem', marginTop: '0' }}>Recent Evaluators</h3>
 
                         <div className={styles.evaluatorsList}>
-                            {evaluators.length === 0 ? (
+                            {allEvaluators.length === 0 ? (
                                 <p style={{ color: '#6b7280', textAlign: 'center' }}>No evaluations yet.</p>
                             ) : (
-                                evaluators.map((evaluator) => (
-                                    <div key={evaluator.id} className={styles.evaluatorCard}>
+                                allEvaluators.map((evaluator) => (
+                                    <div key={`${evaluator.type}-${evaluator.id}`} className={styles.evaluatorCard}>
                                         <div className={styles.evaluatorInfo}>
-                                            <span className={styles.evaluatorName}>{evaluator.studentName}</span>
-                                            <span className={styles.evaluatorSection}>{evaluator.section}</span>
+                                            <span className={styles.evaluatorName}>
+                                                {evaluator.type === 'supervisor' ? "Supervisor Name Hidden" : evaluator.studentName}
+                                            </span>
+                                            <span className={styles.evaluatorSection}>
+                                                {evaluator.type === 'supervisor' ? 'Supervisor' : evaluator.section}
+                                            </span>
                                         </div>
                                         <Badge variant="success">{evaluator.status}</Badge>
                                     </div>

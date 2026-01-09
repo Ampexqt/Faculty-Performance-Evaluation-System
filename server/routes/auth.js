@@ -516,4 +516,75 @@ router.post('/register', async (req, res) => {
     }
 });
 
+
+/**
+ * POST /api/auth/reset-password
+ * Reset password for a user
+ */
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+
+        if (!email || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and new password are required'
+            });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(newPassword, salt);
+
+        // Define checks for each table
+        // 1. Check Admins
+        const [admins] = await promisePool.query('SELECT id FROM admins WHERE email = ?', [email]);
+        if (admins.length > 0) {
+            await promisePool.query('UPDATE admins SET password = ? WHERE id = ?', [passwordHash, admins[0].id]);
+            return res.json({ success: true, message: 'Password has been successfully updated.' });
+        }
+
+        // 2. Check QCE Accounts
+        const [qce] = await promisePool.query('SELECT id FROM qce_accounts WHERE email = ?', [email]);
+        if (qce.length > 0) {
+            await promisePool.query('UPDATE qce_accounts SET password = ? WHERE id = ?', [passwordHash, qce[0].id]);
+            return res.json({ success: true, message: 'Password has been successfully updated.' });
+        }
+
+        // 3. Check Evaluator Accounts
+        const [evaluators] = await promisePool.query('SELECT id FROM evaluator_accounts WHERE email = ?', [email]);
+        if (evaluators.length > 0) {
+            await promisePool.query('UPDATE evaluator_accounts SET password = ? WHERE id = ?', [passwordHash, evaluators[0].id]);
+            return res.json({ success: true, message: 'Password has been successfully updated.' });
+        }
+
+        // 4. Check Faculty
+        const [faculty] = await promisePool.query('SELECT id FROM faculty WHERE email = ?', [email]);
+        if (faculty.length > 0) {
+            await promisePool.query('UPDATE faculty SET password = ? WHERE id = ?', [passwordHash, faculty[0].id]);
+            return res.json({ success: true, message: 'Password has been successfully updated.' });
+        }
+
+        // 5. Check Students
+        const [students] = await promisePool.query('SELECT id FROM students WHERE email = ?', [email]);
+        if (students.length > 0) {
+            await promisePool.query('UPDATE students SET password = ? WHERE id = ?', [passwordHash, students[0].id]);
+            return res.json({ success: true, message: 'Password has been successfully updated.' });
+        }
+
+        // If email not found in any table
+        return res.status(404).json({
+            success: false,
+            message: 'No account found with this email address'
+        });
+
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error resetting password',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

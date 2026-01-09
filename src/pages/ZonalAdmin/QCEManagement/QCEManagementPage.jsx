@@ -21,15 +21,19 @@ export function QCEManagementPage() {
     // Form data
     const [formData, setFormData] = useState({
         firstName: '',
+        middleInitial: '',
         lastName: '',
         email: '',
         collegeId: '',
-        temporaryPassword: '',
+        collegeId: '',
+        password: '',
+        confirmPassword: '',
     });
 
     // Edit form data
     const [editFormData, setEditFormData] = useState({
         firstName: '',
+        middleInitial: '',
         lastName: '',
         email: '',
         collegeId: '',
@@ -79,6 +83,12 @@ export function QCEManagementPage() {
         e.preventDefault();
         setIsSubmitting(true);
 
+        if (formData.password !== formData.confirmPassword) {
+            alert('Passwords do not match');
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
             const response = await fetch('http://localhost:5000/api/zonal/qce', {
                 method: 'POST',
@@ -93,7 +103,7 @@ export function QCEManagementPage() {
             if (data.success) {
                 await fetchData(); // Refresh list
                 setIsModalOpen(false);
-                setFormData({ firstName: '', lastName: '', email: '', collegeId: '', temporaryPassword: '' });
+                setFormData({ firstName: '', middleInitial: '', lastName: '', email: '', collegeId: '', password: '', confirmPassword: '' });
             } else {
                 alert(data.message || 'Error creating account');
             }
@@ -107,16 +117,28 @@ export function QCEManagementPage() {
 
     const handleCancel = () => {
         setIsModalOpen(false);
-        setFormData({ firstName: '', lastName: '', email: '', collegeId: '', temporaryPassword: '' });
+        setFormData({ firstName: '', middleInitial: '', lastName: '', email: '', collegeId: '', password: '', confirmPassword: '' });
     };
 
     const handleEdit = (account) => {
-        const [firstName, ...lastNameParts] = account.full_name.split(' ');
-        const lastName = lastNameParts.join(' ');
+        const parts = account.full_name.split(' ');
+        let firstName = parts[0];
+        let middleInitial = '';
+        let lastName = '';
+
+        if (parts.length > 2 && parts[1].endsWith('.')) {
+            // Assumes "First M. Last" format
+            middleInitial = parts[1].replace('.', '');
+            lastName = parts.slice(2).join(' ');
+        } else {
+            // Assumes "First Last" or complex names without clear middle initial
+            lastName = parts.slice(1).join(' ');
+        }
 
         setSelectedAccount(account);
         setEditFormData({
             firstName: firstName || '',
+            middleInitial: middleInitial || '',
             lastName: lastName || '',
             email: account.email,
             collegeId: account.college_id || '',
@@ -215,7 +237,7 @@ export function QCEManagementPage() {
         },
         {
             header: 'Assigned College',
-            accessor: 'assigned_college', // Updated accessor
+            accessor: 'assigned_college',
             width: '25%',
             render: (value) => value || <span className="text-gray-400 italic">Not Assigned</span>
         },
@@ -295,25 +317,41 @@ export function QCEManagementPage() {
                     title="Create QCE Account"
                 >
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
-                        <Input
-                            label="First Name"
-                            name="firstName"
-                            type="text"
-                            placeholder="e.g. John"
-                            value={formData.firstName}
-                            onChange={handleInputChange}
-                            required
-                        />
-
-                        <Input
-                            label="Last Name"
-                            name="lastName"
-                            type="text"
-                            placeholder="e.g. Doe"
-                            value={formData.lastName}
-                            onChange={handleInputChange}
-                            required
-                        />
+                        <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="e.g. John"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-2">
+                                <Input
+                                    label="M.I."
+                                    name="middleInitial"
+                                    type="text"
+                                    placeholder="M"
+                                    maxLength={1}
+                                    value={formData.middleInitial}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="e.g. Doe"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                        </div>
 
                         <Input
                             label="Email Address"
@@ -346,11 +384,21 @@ export function QCEManagementPage() {
                         </div>
 
                         <Input
-                            label="Temporary Password"
-                            name="temporaryPassword"
+                            label="Password"
+                            name="password"
                             type="password"
                             placeholder="••••••••"
-                            value={formData.temporaryPassword}
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            required
+                        />
+
+                        <Input
+                            label="Confirm Password"
+                            name="confirmPassword"
+                            type="password"
+                            placeholder="••••••••"
+                            value={formData.confirmPassword}
                             onChange={handleInputChange}
                             required
                         />
@@ -382,25 +430,41 @@ export function QCEManagementPage() {
                     title="Edit QCE Account"
                 >
                     <form onSubmit={handleEditSubmit} className={styles.modalForm}>
-                        <Input
-                            label="First Name"
-                            name="firstName"
-                            type="text"
-                            placeholder="e.g. John"
-                            value={editFormData.firstName}
-                            onChange={handleEditInputChange}
-                            required
-                        />
-
-                        <Input
-                            label="Last Name"
-                            name="lastName"
-                            type="text"
-                            placeholder="e.g. Doe"
-                            value={editFormData.lastName}
-                            onChange={handleEditInputChange}
-                            required
-                        />
+                        <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="e.g. John"
+                                    value={editFormData.firstName}
+                                    onChange={handleEditInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-2">
+                                <Input
+                                    label="M.I."
+                                    name="middleInitial"
+                                    type="text"
+                                    placeholder="M"
+                                    maxLength={1}
+                                    value={editFormData.middleInitial}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="e.g. Doe"
+                                    value={editFormData.lastName}
+                                    onChange={handleEditInputChange}
+                                    required
+                                />
+                            </div>
+                        </div>
 
                         <Input
                             label="Email Address"

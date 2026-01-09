@@ -17,6 +17,7 @@ router.get('/', async (req, res) => {
                 f.employee_id,
                 f.email,
                 f.first_name,
+                f.middle_initial,
                 f.last_name,
                 f.gender,
                 f.position as role,
@@ -43,10 +44,24 @@ router.get('/', async (req, res) => {
         const params = [];
 
         if (department_id) {
-            query += ` WHERE f.department_id = ? AND f.position != 'Department Chair' AND f.status = 'active'`;
-            params.push(department_id);
-            // Optional: Filter out Dept Chair if needed
-            // query += ` AND f.position != 'Department Chair'`;
+            // Dept Chair view: Only show subordinates they can manage/create
+            const allowedRoles = [
+                'Professor',
+                'Associate Professor',
+                'Assistant Professor',
+                'Instructor',
+                'Visiting Lecturer',
+                'Program Chair'
+            ];
+
+            // Construct placeholders for allowed roles
+            const rolePlaceholders = allowedRoles.map(() => '?').join(',');
+
+            query += ` WHERE f.department_id = ? 
+                       AND f.status = 'active' 
+                       AND f.position IN (${rolePlaceholders})`;
+
+            params.push(department_id, ...allowedRoles);
         } else if (college_id) {
             query += ` WHERE (f.college_id = ? OR c.id = ?) AND f.status = 'active'`;
             params.push(college_id, college_id);
@@ -69,8 +84,9 @@ router.get('/', async (req, res) => {
         const formattedFaculty = faculty.map(f => ({
             id: f.id,
             firstName: f.first_name,
+            middleInitial: f.middle_initial || '',
             lastName: f.last_name,
-            name: `${f.first_name} ${f.last_name}`,
+            name: `${f.first_name} ${f.middle_initial ? f.middle_initial + '. ' : ''}${f.last_name}`,
             role: f.role,
             status: f.status, // employment_status
             teachingLoad: `${f.teaching_load_units || 0} units`,
@@ -105,6 +121,7 @@ router.post('/', async (req, res) => {
     try {
         const {
             firstName,
+            middleInitial,
             lastName,
             gender,
             role,
@@ -187,6 +204,7 @@ router.post('/', async (req, res) => {
                 INSERT INTO faculty (
                     employee_id, 
                     first_name, 
+                    middle_initial,
                     last_name, 
                     gender, 
                     email, 
@@ -196,10 +214,11 @@ router.post('/', async (req, res) => {
                     college_id,
                     department_id,
                     status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
             `, [
                 employeeId,
                 firstName,
+                middleInitial || null,
                 lastName,
                 gender || null,
                 email,
@@ -261,7 +280,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, email, gender, employmentStatus, facultyRole, assignedPrograms } = req.body;
+        const { firstName, middleInitial, lastName, email, gender, employmentStatus, facultyRole, assignedPrograms } = req.body;
 
         console.log(`Updating faculty ${id}. Role: ${facultyRole}, Programs:`, assignedPrograms);
 
@@ -273,9 +292,9 @@ router.put('/:id', async (req, res) => {
             // Update faculty details
             await connection.query(
                 `UPDATE faculty 
-                 SET first_name = ?, last_name = ?, email = ?, gender = ?, employment_status = ?, position = ?
+                 SET first_name = ?, middle_initial = ?, last_name = ?, email = ?, gender = ?, employment_status = ?, position = ?
                  WHERE id = ?`,
-                [firstName, lastName, email, gender, employmentStatus, facultyRole, id]
+                [firstName, middleInitial || null, lastName, email, gender, employmentStatus, facultyRole, id]
             );
 
             // Handle Program Assignments if provided

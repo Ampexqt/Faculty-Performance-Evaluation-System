@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, TrendingUp, Users, Award, X } from 'lucide-react';
+import { Search, TrendingUp, Users, Award, X, Printer } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Badge } from '@/components/Badge/Badge';
@@ -9,19 +9,9 @@ import styles from './EvaluationResultsPage.module.css';
 
 export function EvaluationResultsPage() {
     const [userInfo, setUserInfo] = useState(() => {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            const user = JSON.parse(userStr);
-            return {
-                fullName: user.full_name || 'QCE Manager',
-                role: user.role === 'Dean' ? 'College Dean' : user.role,
-                collegeId: user.college_id
-            };
-        }
         return {
-            fullName: '',
-            role: '',
-            collegeId: null
+            fullName: localStorage.getItem('fullName') || 'QCE Manager',
+            collegeId: localStorage.getItem('collegeId')
         };
     });
 
@@ -182,7 +172,7 @@ export function EvaluationResultsPage() {
 
     return (
         <DashboardLayout
-            role={userInfo.role}
+            role="QCE Manager"
             userName={userInfo.fullName}
             notificationCount={5}
         >
@@ -270,6 +260,11 @@ export function EvaluationResultsPage() {
                             </div>
                         ) : facultyDetails ? (
                             <>
+                                <button className={styles.printButton} onClick={() => window.print()}>
+                                    <Printer size={16} />
+                                    Print Results
+                                </button>
+
                                 {/* Faculty Header */}
                                 <div className={styles.facultyHeader}>
                                     <h2 className={styles.facultyName}>{facultyDetails.faculty.name}</h2>

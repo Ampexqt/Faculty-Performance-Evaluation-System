@@ -108,6 +108,9 @@ const facultySubjectsRoutes = require('./routes/Faculty/subjects');
 app.use('/api/faculty/dashboard', facultyDashboardRoutes);
 app.use('/api/faculty/subjects', facultySubjectsRoutes);
 
+const facultyEvaluationResultsRoutes = require('./routes/Faculty/evaluationResults');
+app.use('/api/faculty/evaluation-results', facultyEvaluationResultsRoutes);
+
 // Student routes
 const studentEvaluationsRoutes = require('./routes/Student/evaluations');
 app.use('/api/student/evaluations', studentEvaluationsRoutes);

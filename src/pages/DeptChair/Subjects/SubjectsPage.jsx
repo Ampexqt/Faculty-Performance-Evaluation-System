@@ -71,10 +71,57 @@ export function SubjectsPage() {
     };
 
     useEffect(() => {
-        const departmentId = localStorage.getItem('departmentId');
+        const userId = localStorage.getItem('userId');
         const fullName = localStorage.getItem('fullName') || 'Department Chair';
-        setUserInfo({ departmentId, fullName });
+
+        if (userId) {
+            fetchCurrentUser(userId, fullName);
+        } else {
+            console.warn('No User ID found in localStorage');
+        }
     }, []);
+
+    const fetchCurrentUser = async (userId, fallbackName) => {
+        try {
+            // Fetch all faculty and find the current one to get the latest Department ID
+            // NOTE: Ideally we should have a /api/auth/me or /api/qce/faculty/:id endpoint.
+            // Using list endpoint for now as per available tools.
+            const response = await fetch(`http://localhost:5000/api/qce/faculty`);
+            const result = await response.json();
+
+            if (result.success) {
+                const currentUser = result.data.find(f => f.id == userId);
+
+                if (currentUser) {
+                    setUserInfo({
+                        departmentId: currentUser.department_id,
+                        collegeId: currentUser.college_id,
+                        fullName: currentUser.name || fallbackName
+                    });
+
+                    // Update localStorage with fresh data
+                    localStorage.setItem('departmentId', currentUser.department_id || '');
+                    localStorage.setItem('collegeId', currentUser.college_id || '');
+                } else {
+                    console.error('Current user not found in faculty list');
+                    // Fallback to localStorage if server search fails (though unlikely if logged in)
+                    setUserInfo({
+                        departmentId: localStorage.getItem('departmentId'),
+                        collegeId: localStorage.getItem('collegeId'),
+                        fullName: fallbackName
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching current user details:', error);
+            // Fallback
+            setUserInfo({
+                departmentId: localStorage.getItem('departmentId'),
+                collegeId: localStorage.getItem('collegeId'),
+                fullName: fallbackName
+            });
+        }
+    };
 
     useEffect(() => {
         if (userInfo.departmentId) {
@@ -83,6 +130,12 @@ export function SubjectsPage() {
     }, [userInfo.departmentId]);
 
     const fetchSubjects = async () => {
+        // Only block if explicitly the string "null" or "undefined" or falsy
+        if (!userInfo.departmentId || userInfo.departmentId === 'null' || userInfo.departmentId === 'undefined') {
+            // Note: We don't log warning here because this might happen during initial render before useEffect sets info
+            return;
+        }
+
         try {
             const response = await fetch(`http://localhost:5000/api/qce/subjects?department_id=${userInfo.departmentId}`);
             const data = await response.json();
@@ -110,6 +163,12 @@ export function SubjectsPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Extra validation to prevent backend error
+        if (!userInfo.departmentId) {
+            addToast('Error: You are not assigned to a department. Please contact administrator.', 'error');
+            return;
+        }
         try {
             const response = await fetch('http://localhost:5000/api/qce/subjects', {
                 method: 'POST',

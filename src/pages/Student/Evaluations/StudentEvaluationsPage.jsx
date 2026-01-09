@@ -18,8 +18,14 @@ export function StudentEvaluationsPage() {
 
     // Initialize pending evaluations from localStorage
     const [pendingEvaluations, setPendingEvaluations] = useState(() => {
-        const saved = localStorage.getItem(`pendingEvaluations_${studentId}`);
-        return saved ? JSON.parse(saved) : [];
+        try {
+            const saved = localStorage.getItem(`pendingEvaluations_${studentId}`);
+            const parsed = saved ? JSON.parse(saved) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            console.error('Error parsing pending evaluations:', error);
+            return [];
+        }
     });
 
     const [completedEvaluations, setCompletedEvaluations] = useState([]);
@@ -42,7 +48,7 @@ export function StudentEvaluationsPage() {
                 const result = await response.json();
 
                 if (result.success) {
-                    setCompletedEvaluations(result.data);
+                    setCompletedEvaluations(Array.isArray(result.data) ? result.data : []);
                 }
             } catch (error) {
                 console.error('Error fetching completed evaluations:', error);

@@ -25,6 +25,7 @@ export function FacultyPage() {
 
     const [formData, setFormData] = useState({
         firstName: '',
+        middleInitial: '',
         lastName: '',
         gender: '',
         role: '',
@@ -32,6 +33,7 @@ export function FacultyPage() {
         email: '',
         email: '',
         password: '',
+        confirmPassword: '',
         assignedPrograms: [],
     });
     const [programs, setPrograms] = useState([]);
@@ -126,6 +128,11 @@ export function FacultyPage() {
             return;
         }
 
+        if (formData.password !== formData.confirmPassword) {
+            addToast('Passwords do not match', 'error');
+            return;
+        }
+
         try {
             // Get QCE user ID from localStorage
             const userStr = localStorage.getItem('user');
@@ -155,12 +162,14 @@ export function FacultyPage() {
                 setIsModalOpen(false);
                 setFormData({
                     firstName: '',
+                    middleInitial: '',
                     lastName: '',
                     gender: '',
                     role: '',
                     employmentStatus: '',
                     email: '',
                     password: '',
+                    confirmPassword: '',
                     assignedPrograms: [],
                 });
                 // Refresh list
@@ -179,12 +188,14 @@ export function FacultyPage() {
         setIsModalOpen(false);
         setFormData({
             firstName: '',
+            middleInitial: '',
             lastName: '',
             gender: '',
             role: '',
             employmentStatus: '',
             email: '',
             password: '',
+            confirmPassword: '',
             assignedPrograms: [],
         });
     };
@@ -193,6 +204,7 @@ export function FacultyPage() {
         setSelectedFaculty(facultyMember);
         setFormData({
             firstName: facultyMember.firstName,
+            middleInitial: facultyMember.middleInitial || '',
             lastName: facultyMember.lastName,
             gender: facultyMember.gender,
             role: facultyMember.role,
@@ -221,6 +233,7 @@ export function FacultyPage() {
                 },
                 body: JSON.stringify({
                     firstName: formData.firstName,
+                    middleInitial: formData.middleInitial,
                     lastName: formData.lastName,
                     email: formData.email,
                     gender: formData.gender,
@@ -237,6 +250,7 @@ export function FacultyPage() {
                 setSelectedFaculty(null);
                 setFormData({
                     firstName: '',
+                    middleInitial: '',
                     lastName: '',
                     gender: '',
                     role: '',
@@ -261,6 +275,7 @@ export function FacultyPage() {
         setSelectedFaculty(null);
         setFormData({
             firstName: '',
+            middleInitial: '',
             lastName: '',
             gender: '',
             role: '',
@@ -384,10 +399,19 @@ export function FacultyPage() {
         }
     };
 
+    const [userName, setUserName] = useState('QCE Manager');
+
+    useEffect(() => {
+        const storedName = localStorage.getItem('fullName');
+        if (storedName) {
+            setUserName(storedName);
+        }
+    }, []);
+
     return (
         <DashboardLayout
             role="QCE Manager"
-            userName="QCE Manager"
+            userName={userName}
             notificationCount={5}
         >
             <div className={styles.page}>
@@ -479,25 +503,40 @@ export function FacultyPage() {
                     title="Add Faculty Member"
                 >
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
-                        <div className={styles.formRow}>
-                            <Input
-                                label="First Name"
-                                name="firstName"
-                                type="text"
-                                placeholder="e.g. John"
-                                value={formData.firstName}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <Input
-                                label="Last Name"
-                                name="lastName"
-                                type="text"
-                                placeholder="e.g. Doe"
-                                value={formData.lastName}
-                                onChange={handleInputChange}
-                                required
-                            />
+                        <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="e.g. John"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-2">
+                                <Input
+                                    label="M.I."
+                                    name="middleInitial"
+                                    type="text"
+                                    placeholder="M"
+                                    maxLength={1}
+                                    value={formData.middleInitial}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="e.g. Doe"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div className={styles.formGroup}>
@@ -608,6 +647,16 @@ export function FacultyPage() {
                             required
                         />
 
+                        <Input
+                            label="Confirm Password"
+                            name="confirmPassword"
+                            type="password"
+                            placeholder="••••••••"
+                            value={formData.confirmPassword}
+                            onChange={handleInputChange}
+                            required
+                        />
+
                         <div className={styles.modalActions}>
                             <Button
                                 type="button"
@@ -633,25 +682,40 @@ export function FacultyPage() {
                     title="Edit Faculty Member"
                 >
                     <form onSubmit={handleEditSubmit} className={styles.modalForm}>
-                        <div className={styles.formRow}>
-                            <Input
-                                label="First Name"
-                                name="firstName"
-                                type="text"
-                                placeholder="e.g. John"
-                                value={formData.firstName}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <Input
-                                label="Last Name"
-                                name="lastName"
-                                type="text"
-                                placeholder="e.g. Doe"
-                                value={formData.lastName}
-                                onChange={handleInputChange}
-                                required
-                            />
+                        <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="e.g. John"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-2">
+                                <Input
+                                    label="M.I."
+                                    name="middleInitial"
+                                    type="text"
+                                    placeholder="M"
+                                    maxLength={1}
+                                    value={formData.middleInitial}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div className="col-span-12 sm:col-span-5">
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="e.g. Doe"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div className={styles.formGroup}>

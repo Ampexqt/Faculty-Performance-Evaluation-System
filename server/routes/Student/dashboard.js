@@ -20,7 +20,7 @@ router.get('/stats', async (req, res) => {
             });
         }
 
-        // 1. Get current active academic year
+        // 1. Get current active academic year AND student's year level
         const [activeYear] = await promisePool.query(
             'SELECT id FROM academic_years WHERE is_current = 1 LIMIT 1'
         );
@@ -39,10 +39,26 @@ router.get('/stats', async (req, res) => {
 
         const academicYearId = activeYear[0].id;
 
-        // 2. Get Total Assignments (Subjects assigned to this student's section)
-        // We match faculty_assignments by section AND current academic year
-        // We do NOT filter by subject's department because Gen Ed subjects (from other depts)
-        // can be assigned to this section.
+        // Fetch student details to get year_level
+        const [studentResult] = await promisePool.query(
+            'SELECT year_level FROM students WHERE id = ?',
+            [studentId]
+        );
+
+        if (studentResult.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Student not found'
+            });
+        }
+
+        const studentYear = studentResult[0].year_level;
+        // Construct the section string to look for (e.g., "2-B")
+        // We use LIKE to match "2-B", "BSIT 2-B", etc.
+        const searchSection = `%${studentYear}-${section}`;
+
+        // 2. Get Total Assignments
+        // Filter by active status, academic year, and section match
         const [totalResult] = await promisePool.query(`
             SELECT COUNT(*) as total
             FROM faculty_assignments fa
@@ -50,13 +66,12 @@ router.get('/stats', async (req, res) => {
             WHERE 
                 fa.status = 'active'
                 AND fa.academic_year_id = ?
-                AND fa.section = ?
-        `, [academicYearId, section]);
+                AND fa.section LIKE ?
+        `, [academicYearId, searchSection]);
 
         const totalEvaluations = totalResult[0].total || 0;
 
-        // 3. Get Completed Evaluations by this student for the current assignments
-        // We count entries in student_evaluations that match the filtered assignments
+        // 3. Get Completed Evaluations
         const [completedResult] = await promisePool.query(`
             SELECT COUNT(*) as completed
             FROM student_evaluations se
@@ -66,8 +81,8 @@ router.get('/stats', async (req, res) => {
                 AND se.status = 'completed'
                 AND fa.status = 'active'
                 AND fa.academic_year_id = ?
-                AND fa.section = ?
-        `, [studentId, academicYearId, section]);
+                AND fa.section LIKE ?
+        `, [studentId, academicYearId, searchSection]);
 
         const completedEvaluations = completedResult[0].completed || 0;
 

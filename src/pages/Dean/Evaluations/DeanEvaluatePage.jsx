@@ -41,7 +41,9 @@ export function DeanEvaluatePage() {
     // Initialize pending evaluations from localStorage (scoped to user)
     const [pendingEvaluations, setPendingEvaluations] = useState(() => {
         const saved = localStorage.getItem(`deanPendingEvaluations_${userInfo.userId}`);
-        return saved ? JSON.parse(saved) : [];
+        const parsed = saved ? JSON.parse(saved) : [];
+        // Filter out any self-evaluations that might have been saved locally
+        return parsed.filter(item => Number(item.evaluateeId) !== Number(userInfo.userId));
     });
 
     const [completedEvaluations, setCompletedEvaluations] = useState([]);

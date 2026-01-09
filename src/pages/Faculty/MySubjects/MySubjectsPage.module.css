@@ -165,14 +165,6 @@
     min-width: 60px;
 }
 
-/* ========== SUPERVISOR EVALUATION STATUS ========== */
-
-.supervisorEvalStatus {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 /* ========== EVALUATORS LIST ========== */
 
 .evaluatorsList {

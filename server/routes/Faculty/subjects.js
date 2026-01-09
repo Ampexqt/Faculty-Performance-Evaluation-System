@@ -27,19 +27,21 @@ router.get('/list', async (req, res) => {
                 fa.eval_code,
                 (SELECT COUNT(*) 
                  FROM students st 
-                 WHERE (st.section = fa.section OR CONCAT(st.year_level, '-', st.section) = fa.section) 
+                 LEFT JOIN programs p ON st.program_id = p.id
+                 WHERE (
+                    st.section = fa.section 
+                    OR CONCAT(st.year_level, '-', st.section) = fa.section
+                    OR CONCAT(p.program_code, ' ', st.year_level, '-', st.section) = fa.section
+                 ) 
                  AND st.status = 'active') as total_students,
                 (SELECT COUNT(DISTINCT student_id) 
                  FROM student_evaluations se 
-                 WHERE se.faculty_assignment_id = fa.id) as students_evaluated,
-                (SELECT COUNT(*) 
-                 FROM supervisor_evaluations se 
-                 WHERE se.evaluatee_id = ?) as supervisor_evaluated
+                 WHERE se.faculty_assignment_id = fa.id) as students_evaluated
             FROM faculty_assignments fa
             JOIN subjects s ON fa.subject_id = s.id
             WHERE fa.faculty_id = ? AND fa.status = 'active'
             ORDER BY s.subject_code ASC
-        `, [faculty_id, faculty_id]);
+        `, [faculty_id]);
 
         // Eval code is currently not generated here, controlled by QCE
         const processedSubjects = subjects.map(sub => ({

@@ -103,13 +103,12 @@ export function MySubjectsPage() {
                                         <th>Course Year Level and Section</th>
                                         <th>Eval Code</th>
                                         <th>Student Evaluate</th>
-                                        <th>Supervisor Evaluate</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {subjects.length === 0 ? (
                                         <tr>
-                                            <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                                            <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
                                                 No subjects assigned yet.
                                             </td>
                                         </tr>
@@ -152,19 +151,6 @@ export function MySubjectsPage() {
                                                         <span className={styles.progressText}>
                                                             {subject.students_evaluated}/{subject.total_students}
                                                         </span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className={styles.supervisorEvalStatus}>
-                                                        {subject.supervisor_evaluated > 0 ? (
-                                                            <Badge variant="success">
-                                                                {subject.supervisor_evaluated} Submitted
-                                                            </Badge>
-                                                        ) : (
-                                                            <Badge variant="warning">
-                                                                Not Evaluated
-                                                            </Badge>
-                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>

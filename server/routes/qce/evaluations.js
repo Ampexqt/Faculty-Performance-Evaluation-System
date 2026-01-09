@@ -123,9 +123,14 @@ router.get('/:facultyId', async (req, res) => {
                 END as status
             FROM faculty_assignments fa
             INNER JOIN subjects s ON fa.subject_id = s.id
-            LEFT JOIN students st ON (
+            LEFT JOIN (
+                SELECT students.*, programs.program_code 
+                FROM students 
+                LEFT JOIN programs ON students.program_id = programs.id
+            ) st ON (
                 st.section = fa.section 
                 OR CONCAT(st.year_level, '-', st.section) = fa.section
+                OR CONCAT(st.program_code, ' ', st.year_level, '-', st.section) = fa.section
             ) AND st.status = 'active'
             LEFT JOIN student_evaluations se ON se.faculty_assignment_id = fa.id 
                 AND se.student_id = st.id

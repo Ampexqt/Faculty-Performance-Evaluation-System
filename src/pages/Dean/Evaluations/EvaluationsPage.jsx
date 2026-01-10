@@ -16,7 +16,7 @@ export function EvaluationsPage() {
     });
 
     useEffect(() => {
-        const userStr = localStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
             setUserInfo({

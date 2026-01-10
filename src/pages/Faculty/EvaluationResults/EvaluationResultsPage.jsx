@@ -17,7 +17,7 @@ export function EvaluationResultsPage() {
     useEffect(() => {
         const fetchResults = async () => {
             try {
-                const userId = localStorage.getItem('userId');
+                const userId = sessionStorage.getItem('userId');
                 if (!userId) {
                     throw new Error('User ID not found');
                 }
@@ -83,7 +83,7 @@ export function EvaluationResultsPage() {
     return (
         <DashboardLayout
             role="Faculty"
-            userName={localStorage.getItem('fullName') || 'Faculty Member'}
+            userName={sessionStorage.getItem('fullName') || 'Faculty Member'}
             notificationCount={3}
         >
             <div className={styles.page}>

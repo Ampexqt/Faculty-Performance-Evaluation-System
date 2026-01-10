@@ -10,15 +10,15 @@ export function FacultyResultsPage() {
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Get user info from localStorage
+    // Get user info from sessionStorage
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         collegeId: null,
     });
 
     useEffect(() => {
-        const fullName = localStorage.getItem('fullName') || 'College Dean';
-        const collegeId = localStorage.getItem('collegeId');
+        const fullName = sessionStorage.getItem('fullName') || 'College Dean';
+        const collegeId = sessionStorage.getItem('collegeId');
         setUserInfo({ fullName, collegeId });
     }, []);
 

@@ -79,9 +79,9 @@ export function SchedulesPage() {
     };
 
     useEffect(() => {
-        const departmentId = localStorage.getItem('departmentId');
-        const fullName = localStorage.getItem('fullName') || 'Department Chair';
-        const userId = localStorage.getItem('userId');
+        const departmentId = sessionStorage.getItem('departmentId');
+        const fullName = sessionStorage.getItem('fullName') || 'Department Chair';
+        const userId = sessionStorage.getItem('userId');
 
         if (userId) {
             fetchUserCollege(userId, departmentId, fullName);

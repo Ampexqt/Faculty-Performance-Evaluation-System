@@ -53,7 +53,7 @@ export function VPAAEvaluationFormPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [academicYear, setAcademicYear] = useState(null);
 
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
 
     useEffect(() => {
         if (!evaluation || !vpaaId) {

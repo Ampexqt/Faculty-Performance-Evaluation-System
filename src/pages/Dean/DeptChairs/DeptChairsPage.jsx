@@ -18,7 +18,7 @@ export function DeptChairsPage() {
         programName: '',
     });
 
-    // Get user info from localStorage
+    // Get user info from sessionStorage
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         collegeId: null,
@@ -26,9 +26,9 @@ export function DeptChairsPage() {
     });
 
     useEffect(() => {
-        const fullName = localStorage.getItem('fullName') || 'College Dean';
-        const collegeId = localStorage.getItem('collegeId');
-        const collegeName = localStorage.getItem('collegeName') || '';
+        const fullName = sessionStorage.getItem('fullName') || 'College Dean';
+        const collegeId = sessionStorage.getItem('collegeId');
+        const collegeName = sessionStorage.getItem('collegeName') || '';
         setUserInfo({ fullName, collegeId, collegeName });
     }, []);
 
@@ -77,7 +77,7 @@ export function DeptChairsPage() {
         e.preventDefault();
 
         try {
-            const userId = localStorage.getItem('userId');
+            const userId = sessionStorage.getItem('userId');
             if (!userId) {
                 addToast('Please login again', 'error');
                 return;

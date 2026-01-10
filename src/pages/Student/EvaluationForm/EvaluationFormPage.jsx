@@ -50,8 +50,8 @@ export function EvaluationFormPage() {
     const location = useLocation();
     const { toasts, removeToast, success, error: showError } = useToast();
 
-    const fullName = localStorage.getItem('fullName') || 'Student';
-    const studentId = localStorage.getItem('userId');
+    const fullName = sessionStorage.getItem('fullName') || 'Student';
+    const studentId = sessionStorage.getItem('userId');
 
     // Get evaluation details from location state
     const evaluationData = location.state?.evaluation || {};
@@ -214,7 +214,7 @@ export function EvaluationFormPage() {
             if (data.success) {
                 success('Evaluation submitted successfully!');
 
-                // Remove from pending evaluations in localStorage
+                // Remove from pending evaluations in sessionStorage
                 let storageKey;
                 if (isDean) {
                     storageKey = `deanPendingEvaluations_${studentId}`;
@@ -224,12 +224,12 @@ export function EvaluationFormPage() {
                     storageKey = `pendingEvaluations_${studentId}`;
                 }
 
-                const saved = localStorage.getItem(storageKey);
+                const saved = sessionStorage.getItem(storageKey);
 
                 if (saved) {
                     const pending = JSON.parse(saved);
                     const updated = pending.filter(p => p.id !== assignmentId);
-                    localStorage.setItem(storageKey, JSON.stringify(updated));
+                    sessionStorage.setItem(storageKey, JSON.stringify(updated));
                 }
 
                 // Navigate back to evaluations page

@@ -10,8 +10,8 @@ import styles from './EvaluationResultsPage.module.css';
 export function EvaluationResultsPage() {
     const [userInfo, setUserInfo] = useState(() => {
         return {
-            fullName: localStorage.getItem('fullName') || 'QCE Manager',
-            collegeId: localStorage.getItem('collegeId')
+            fullName: sessionStorage.getItem('fullName') || 'QCE Manager',
+            collegeId: sessionStorage.getItem('collegeId')
         };
     });
 

@@ -15,9 +15,9 @@ export function EvaluationsPage() {
 
     // Get user info
     const [userInfo, setUserInfo] = useState(() => {
-        const userStr = localStorage.getItem('user');
-        const departmentId = localStorage.getItem('departmentId'); // Fallback/Supplemental
-        const fullName = localStorage.getItem('fullName');
+        const userStr = sessionStorage.getItem('user');
+        const departmentId = sessionStorage.getItem('departmentId'); // Fallback/Supplemental
+        const fullName = sessionStorage.getItem('fullName');
 
         if (userStr) {
             const user = JSON.parse(userStr);
@@ -42,9 +42,9 @@ export function EvaluationsPage() {
         completed: 0
     });
 
-    // Initialize pending evaluations from localStorage (scoped to user)
+    // Initialize pending evaluations from sessionStorage (scoped to user)
     const [pendingEvaluations, setPendingEvaluations] = useState(() => {
-        const saved = localStorage.getItem(`deptChairPendingEvaluations_${userInfo.userId}`);
+        const saved = sessionStorage.getItem(`deptChairPendingEvaluations_${userInfo.userId}`);
         const parsed = saved ? JSON.parse(saved) : [];
         return parsed.filter(item => Number(item.evaluateeId) !== Number(userInfo.userId));
     });
@@ -52,10 +52,10 @@ export function EvaluationsPage() {
     const [completedEvaluations, setCompletedEvaluations] = useState([]);
     const { toasts, removeToast, success, error: showError } = useToast();
 
-    // Save to localStorage whenever pendingEvaluations changes
+    // Save to sessionStorage whenever pendingEvaluations changes
     useEffect(() => {
         if (userInfo.userId) {
-            localStorage.setItem(`deptChairPendingEvaluations_${userInfo.userId}`, JSON.stringify(pendingEvaluations));
+            sessionStorage.setItem(`deptChairPendingEvaluations_${userInfo.userId}`, JSON.stringify(pendingEvaluations));
             setStats(prev => ({ ...prev, pending: pendingEvaluations.length }));
         }
     }, [pendingEvaluations, userInfo.userId]);

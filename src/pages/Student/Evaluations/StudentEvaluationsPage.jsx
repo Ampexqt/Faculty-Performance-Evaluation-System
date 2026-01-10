@@ -12,14 +12,14 @@ import styles from './StudentEvaluationsPage.module.css';
 
 export function StudentEvaluationsPage() {
     const navigate = useNavigate();
-    const fullName = localStorage.getItem('fullName') || 'Student';
-    const studentId = localStorage.getItem('userId');
+    const fullName = sessionStorage.getItem('fullName') || 'Student';
+    const studentId = sessionStorage.getItem('userId');
     const [evalCode, setEvalCode] = useState('');
 
-    // Initialize pending evaluations from localStorage
+    // Initialize pending evaluations from sessionStorage
     const [pendingEvaluations, setPendingEvaluations] = useState(() => {
         try {
-            const saved = localStorage.getItem(`pendingEvaluations_${studentId}`);
+            const saved = sessionStorage.getItem(`pendingEvaluations_${studentId}`);
             const parsed = saved ? JSON.parse(saved) : [];
             return Array.isArray(parsed) ? parsed : [];
         } catch (error) {
@@ -31,10 +31,10 @@ export function StudentEvaluationsPage() {
     const [completedEvaluations, setCompletedEvaluations] = useState([]);
     const { toasts, removeToast, success, error: showError } = useToast();
 
-    // Save to localStorage whenever pendingEvaluations changes
+    // Save to sessionStorage whenever pendingEvaluations changes
     React.useEffect(() => {
         if (studentId) {
-            localStorage.setItem(`pendingEvaluations_${studentId}`, JSON.stringify(pendingEvaluations));
+            sessionStorage.setItem(`pendingEvaluations_${studentId}`, JSON.stringify(pendingEvaluations));
         }
     }, [pendingEvaluations, studentId]);
 

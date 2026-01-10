@@ -15,7 +15,7 @@ export function MySubjectsPage() {
 
     useEffect(() => {
         const fetchSubjectsData = async () => {
-            const userId = localStorage.getItem('userId');
+            const userId = sessionStorage.getItem('userId');
             if (!userId) return;
 
             try {
@@ -79,7 +79,7 @@ export function MySubjectsPage() {
     return (
         <DashboardLayout
             role="Faculty"
-            userName={localStorage.getItem('fullName') || "Faculty Member"}
+            userName={sessionStorage.getItem('fullName') || "Faculty Member"}
             notificationCount={3}
         >
             <div className={styles.page}>

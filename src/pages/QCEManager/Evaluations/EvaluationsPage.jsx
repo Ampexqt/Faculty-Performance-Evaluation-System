@@ -12,8 +12,8 @@ export function EvaluationsPage() {
     const [activeCategory, setActiveCategory] = useState('Heads'); // 'Heads' or 'Faculty'
     const [userInfo, setUserInfo] = useState(() => {
         return {
-            fullName: localStorage.getItem('fullName') || 'QCE Manager',
-            collegeId: localStorage.getItem('collegeId'),
+            fullName: sessionStorage.getItem('fullName') || 'QCE Manager',
+            collegeId: sessionStorage.getItem('collegeId'),
         };
     });
 

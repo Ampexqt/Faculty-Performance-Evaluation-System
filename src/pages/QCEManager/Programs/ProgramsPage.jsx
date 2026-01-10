@@ -13,7 +13,7 @@ export function ProgramsPage() {
     const [userName, setUserName] = useState('QCE Manager');
 
     useEffect(() => {
-        const storedName = localStorage.getItem('fullName');
+        const storedName = sessionStorage.getItem('fullName');
         if (storedName) {
             setUserName(storedName);
         }
@@ -48,7 +48,7 @@ export function ProgramsPage() {
     const fetchPrograms = async () => {
         setIsLoading(true);
         try {
-            const userStr = localStorage.getItem('user');
+            const userStr = sessionStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
                 if (user.college_id) {
@@ -79,7 +79,7 @@ export function ProgramsPage() {
         e.preventDefault();
 
         try {
-            const userStr = localStorage.getItem('user');
+            const userStr = sessionStorage.getItem('user');
             if (!userStr) {
                 addToast('Please login again', 'error');
                 return;

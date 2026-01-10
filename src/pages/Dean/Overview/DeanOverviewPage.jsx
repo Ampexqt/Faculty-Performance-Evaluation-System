@@ -18,17 +18,17 @@ export function DeanOverviewPage() {
         password: '',
     });
 
-    // Get user info from localStorage
+    // Get user info from sessionStorage
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         collegeName: '',
     });
 
     useEffect(() => {
-        const fullName = localStorage.getItem('fullName') || 'College Dean';
-        const collegeName = localStorage.getItem('collegeName') || 'Not Assigned';
-        const userId = localStorage.getItem('userId');
-        const collegeId = localStorage.getItem('collegeId');
+        const fullName = sessionStorage.getItem('fullName') || 'College Dean';
+        const collegeName = sessionStorage.getItem('collegeName') || 'Not Assigned';
+        const userId = sessionStorage.getItem('userId');
+        const collegeId = sessionStorage.getItem('collegeId');
         setUserInfo({ fullName, collegeName, collegeId });
     }, []);
 
@@ -84,7 +84,7 @@ export function DeanOverviewPage() {
         e.preventDefault();
 
         try {
-            const userId = localStorage.getItem('userId');
+            const userId = sessionStorage.getItem('userId');
 
             const response = await fetch('http://localhost:5000/api/qce/faculty', {
                 method: 'POST',

@@ -56,7 +56,7 @@ export function FacultyPage() {
 
     const fetchPrograms = async () => {
         try {
-            const userStr = localStorage.getItem('user');
+            const userStr = sessionStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
                 if (user.college_id) {
@@ -75,8 +75,8 @@ export function FacultyPage() {
     const fetchFaculty = async () => {
         setIsLoading(true);
         try {
-            // Get user from localStorage to find college_id if possible
-            const userStr = localStorage.getItem('user');
+            // Get user from sessionStorage to find college_id if possible
+            const userStr = sessionStorage.getItem('user');
             let queryParams = '';
             if (userStr) {
                 const user = JSON.parse(userStr);
@@ -134,8 +134,8 @@ export function FacultyPage() {
         }
 
         try {
-            // Get QCE user ID from localStorage
-            const userStr = localStorage.getItem('user');
+            // Get QCE user ID from sessionStorage
+            const userStr = sessionStorage.getItem('user');
             if (!userStr) {
                 addToast('User session not found. Please login again.', 'error');
                 return;
@@ -402,7 +402,7 @@ export function FacultyPage() {
     const [userName, setUserName] = useState('QCE Manager');
 
     useEffect(() => {
-        const storedName = localStorage.getItem('fullName');
+        const storedName = sessionStorage.getItem('fullName');
         if (storedName) {
             setUserName(storedName);
         }

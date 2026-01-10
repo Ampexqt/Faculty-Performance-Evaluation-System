@@ -12,8 +12,8 @@ export function PresidentDashboardPage() {
     const [vpaaList, setVpaaList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Get user data from localStorage
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    // Get user data from sessionStorage
+    const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
     const presidentId = userData.id;
 
     useEffect(() => {

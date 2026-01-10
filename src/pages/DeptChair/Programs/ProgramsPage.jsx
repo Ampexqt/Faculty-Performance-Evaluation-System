@@ -39,9 +39,9 @@ export function ProgramsPage() {
     };
 
     useEffect(() => {
-        const departmentId = localStorage.getItem('departmentId');
-        const fullName = localStorage.getItem('fullName') || 'Department Chair';
-        const userId = localStorage.getItem('userId');
+        const departmentId = sessionStorage.getItem('departmentId');
+        const fullName = sessionStorage.getItem('fullName') || 'Department Chair';
+        const userId = sessionStorage.getItem('userId');
         setUserInfo({ departmentId, fullName, userId });
     }, []);
 
@@ -88,7 +88,7 @@ export function ProgramsPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const userId = localStorage.getItem('userId');
+            const userId = sessionStorage.getItem('userId');
             const response = await fetch('http://localhost:5000/api/qce/programs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

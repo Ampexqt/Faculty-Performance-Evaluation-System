@@ -30,9 +30,9 @@ export function FacultyAccountsPage() {
     };
 
     useEffect(() => {
-        const departmentId = localStorage.getItem('departmentId');
-        const fullName = localStorage.getItem('fullName') || 'Department Chair';
-        const userId = localStorage.getItem('userId');
+        const departmentId = sessionStorage.getItem('departmentId');
+        const fullName = sessionStorage.getItem('fullName') || 'Department Chair';
+        const userId = sessionStorage.getItem('userId');
         setUserInfo({ departmentId, fullName, userId });
     }, []);
 
@@ -147,7 +147,7 @@ export function FacultyAccountsPage() {
         e.preventDefault();
 
         try {
-            const userId = localStorage.getItem('userId'); // Dept Chair's ID
+            const userId = sessionStorage.getItem('userId'); // Dept Chair's ID
 
             const response = await fetch('http://localhost:5000/api/qce/faculty', {
                 method: 'POST',

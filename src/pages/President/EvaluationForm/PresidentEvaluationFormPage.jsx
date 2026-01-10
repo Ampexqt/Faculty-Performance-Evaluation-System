@@ -50,8 +50,8 @@ export function PresidentEvaluationFormPage() {
     const location = useLocation();
     const { toasts, removeToast, success, error: showError } = useToast();
 
-    // Get user data from localStorage
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    // Get user data from sessionStorage
+    const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
     const fullName = userData.full_name || 'President';
     const presidentId = userData.id;
 

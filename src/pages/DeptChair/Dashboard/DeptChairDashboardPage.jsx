@@ -31,10 +31,10 @@ export function DeptChairDashboardPage() {
     });
 
     useEffect(() => {
-        const fullName = localStorage.getItem('fullName') || 'Department Chair';
-        const departmentId = localStorage.getItem('departmentId');
-        const departmentName = localStorage.getItem('departmentName') || 'Department';
-        const collegeName = localStorage.getItem('collegeName') || 'College';
+        const fullName = sessionStorage.getItem('fullName') || 'Department Chair';
+        const departmentId = sessionStorage.getItem('departmentId');
+        const departmentName = sessionStorage.getItem('departmentName') || 'Department';
+        const collegeName = sessionStorage.getItem('collegeName') || 'College';
         setUserInfo({ fullName, departmentId, departmentName, collegeName });
     }, []);
 

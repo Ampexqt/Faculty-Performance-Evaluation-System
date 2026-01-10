@@ -19,10 +19,10 @@ export function FacultyOverviewPage() {
     });
 
     useEffect(() => {
-        const fullName = localStorage.getItem('fullName') || 'Faculty Member';
-        const collegeName = localStorage.getItem('collegeName') || 'College';
-        const position = localStorage.getItem('position') || 'Faculty';
-        const userId = localStorage.getItem('userId');
+        const fullName = sessionStorage.getItem('fullName') || 'Faculty Member';
+        const collegeName = sessionStorage.getItem('collegeName') || 'College';
+        const position = sessionStorage.getItem('position') || 'Faculty';
+        const userId = sessionStorage.getItem('userId');
 
         setUserInfo({ fullName, collegeName, position });
 

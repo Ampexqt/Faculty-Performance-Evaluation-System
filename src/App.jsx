@@ -37,70 +37,92 @@ import { PresidentEvaluationFormPage } from './pages/President/EvaluationForm/Pr
 import { VPAADashboardPage } from './pages/VPAA/Dashboard/VPAADashboardPage';
 import { VPAAEvaluationFormPage } from './pages/VPAA/EvaluationForm/VPAAEvaluationFormPage';
 import './styles/globals.css';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 
 export function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Zonal Admin Routes */}
-        <Route path="/zonal/dashboard" element={<ZonalDashboardPage />} />
-        <Route path="/zonal/colleges" element={<CollegesPage />} />
-        <Route path="/zonal/qce-management" element={<QCEManagementPage />} />
-        <Route path="/zonal/academic-years" element={<AcademicYearsPage />} />
-        <Route path="/zonal/evaluator-accounts" element={<EvaluatorAccountsPage />} />
+          {/* Protected Routes */}
 
-        {/* QCE Manager Routes */}
-        <Route path="/qce/dashboard" element={<QCEDashboardPage />} />
-        <Route path="/qce/faculty" element={<FacultyPage />} />
-        <Route path="/qce/programs" element={<ProgramsPage />} />
-        <Route path="/qce/evaluations" element={<EvaluationsPage />} />
-        <Route path="/qce/evaluations/:facultyId" element={<FacultyEvaluationDetail />} />
-        <Route path="/qce/results" element={<QCEEvaluationResultsPage />} />
+          {/* Zonal Admin Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['Zonal Admin']} />}>
+            <Route path="/zonal/dashboard" element={<ZonalDashboardPage />} />
+            <Route path="/zonal/colleges" element={<CollegesPage />} />
+            <Route path="/zonal/qce-management" element={<QCEManagementPage />} />
+            <Route path="/zonal/academic-years" element={<AcademicYearsPage />} />
+            <Route path="/zonal/evaluator-accounts" element={<EvaluatorAccountsPage />} />
+          </Route>
 
-        {/* Dean Routes */}
-        <Route path="/dean/overview" element={<DeanOverviewPage />} />
-        <Route path="/dean/faculty-results" element={<FacultyResultsPage />} />
-        <Route path="/dean/dept-chairs" element={<DeptChairsPage />} />
-        <Route path="/dean/programs" element={<DeanProgramsPage />} />
-        <Route path="/dean/evaluations" element={<DeanEvaluationsPage />} />
-        <Route path="/dean/evaluation-form" element={<EvaluationFormPage />} />
+          {/* QCE Manager Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['QCE Manager']} />}>
+            <Route path="/qce/dashboard" element={<QCEDashboardPage />} />
+            <Route path="/qce/faculty" element={<FacultyPage />} />
+            <Route path="/qce/programs" element={<ProgramsPage />} />
+            <Route path="/qce/evaluations" element={<EvaluationsPage />} />
+            <Route path="/qce/evaluations/:facultyId" element={<FacultyEvaluationDetail />} />
+            <Route path="/qce/results" element={<QCEEvaluationResultsPage />} />
+          </Route>
 
-        {/* Department Chair Routes */}
-        <Route path="/dept-chair/faculty" element={<DeptChairDashboardPage />} />
-        <Route path="/dept-chair/faculty-accounts" element={<FacultyAccountsPage />} />
-        <Route path="/dept-chair/programs" element={<DeptChairProgramsPage />} />
-        <Route path="/dept-chair/subjects" element={<DeptChairSubjectsPage />} />
-        <Route path="/dept-chair/schedules" element={<DeptChairSchedulesPage />} />
-        <Route path="/dept-chair/evaluations" element={<DeptChairEvaluationsPage />} />
-        <Route path="/dept-chair/evaluation-form" element={<EvaluationFormPage />} />
+          {/* Dean Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['Dean']} />}>
+            <Route path="/dean/overview" element={<DeanOverviewPage />} />
+            <Route path="/dean/faculty-results" element={<FacultyResultsPage />} />
+            <Route path="/dean/dept-chairs" element={<DeptChairsPage />} />
+            <Route path="/dean/programs" element={<DeanProgramsPage />} />
+            <Route path="/dean/evaluations" element={<DeanEvaluationsPage />} />
+            <Route path="/dean/evaluation-form" element={<EvaluationFormPage />} />
+          </Route>
 
-        {/* Faculty Routes */}
-        <Route path="/faculty/overview" element={<FacultyOverviewPage />} />
-        <Route path="/faculty/subjects" element={<MySubjectsPage />} />
-        <Route path="/faculty/results" element={<FacultyEvaluationResultsPage />} />
+          {/* Department Chair Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['Department Chair']} />}>
+            <Route path="/dept-chair/faculty" element={<DeptChairDashboardPage />} />
+            <Route path="/dept-chair/faculty-accounts" element={<FacultyAccountsPage />} />
+            <Route path="/dept-chair/programs" element={<DeptChairProgramsPage />} />
+            <Route path="/dept-chair/subjects" element={<DeptChairSubjectsPage />} />
+            <Route path="/dept-chair/schedules" element={<DeptChairSchedulesPage />} />
+            <Route path="/dept-chair/evaluations" element={<DeptChairEvaluationsPage />} />
+            <Route path="/dept-chair/evaluation-form" element={<EvaluationFormPage />} />
+          </Route>
 
-        {/* Student Routes */}
-        <Route path="/student/dashboard" element={<StudentOverviewPage />} />
-        <Route path="/student/evaluations" element={<StudentEvaluationsPage />} />
-        <Route path="/student/evaluation-form" element={<EvaluationFormPage />} />
+          {/* Faculty Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['Faculty']} />}>
+            <Route path="/faculty/overview" element={<FacultyOverviewPage />} />
+            <Route path="/faculty/subjects" element={<MySubjectsPage />} />
+            <Route path="/faculty/results" element={<FacultyEvaluationResultsPage />} />
+          </Route>
 
-        {/* President Routes */}
-        <Route path="/president/dashboard" element={<PresidentDashboardPage />} />
-        <Route path="/president/evaluate" element={<PresidentEvaluationFormPage />} />
+          {/* Student Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['Student']} />}>
+            <Route path="/student/dashboard" element={<StudentOverviewPage />} />
+            <Route path="/student/evaluations" element={<StudentEvaluationsPage />} />
+            <Route path="/student/evaluation-form" element={<EvaluationFormPage />} />
+          </Route>
 
-        {/* VPAA Routes */}
-        <Route path="/vpaa/dashboard" element={<VPAADashboardPage />} />
-        <Route path="/vpaa/evaluate" element={<VPAAEvaluationFormPage />} />
+          {/* President Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['President']} />}>
+            <Route path="/president/dashboard" element={<PresidentDashboardPage />} />
+            <Route path="/president/evaluate" element={<PresidentEvaluationFormPage />} />
+          </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+          {/* VPAA Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['VPAA']} />}>
+            <Route path="/vpaa/dashboard" element={<VPAADashboardPage />} />
+            <Route path="/vpaa/evaluate" element={<VPAAEvaluationFormPage />} />
+          </Route>
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

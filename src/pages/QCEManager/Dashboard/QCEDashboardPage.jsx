@@ -34,6 +34,7 @@ export function QCEDashboardPage() {
         section: '',
     });
     const [generatedCode, setGeneratedCode] = useState('');
+    const [isExistingCode, setIsExistingCode] = useState(false);
 
     // Toast hook
     const { toasts, removeToast, success, error: showError } = useToast();
@@ -45,7 +46,7 @@ export function QCEDashboardPage() {
     const [sectionList, setSectionList] = useState([]); // Sections for selected subject
     const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
-    // Get user info from localStorage
+    // Get user info from sessionStorage
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         collegeName: '',
@@ -54,10 +55,10 @@ export function QCEDashboardPage() {
     });
 
     useEffect(() => {
-        const fullName = localStorage.getItem('fullName') || 'QCE Manager';
-        const collegeName = localStorage.getItem('collegeName') || 'Not Assigned';
-        const departmentName = localStorage.getItem('departmentName') || '';
-        const collegeId = localStorage.getItem('collegeId');
+        const fullName = sessionStorage.getItem('fullName') || 'QCE Manager';
+        const collegeName = sessionStorage.getItem('collegeName') || 'Not Assigned';
+        const departmentName = sessionStorage.getItem('departmentName') || '';
+        const collegeId = sessionStorage.getItem('collegeId');
         setUserInfo({ fullName, collegeName, departmentName, collegeId });
     }, []);
 
@@ -177,11 +178,21 @@ export function QCEDashboardPage() {
     // Generate code when all fields are filled
     useEffect(() => {
         if (formData.faculty && formData.subject && formData.section) {
-            setGeneratedCode(generateCode());
+            // Check if code already exists for this assignment
+            const assignment = facultyAssignments.find(a => a.id.toString() === formData.section.toString());
+
+            if (assignment && assignment.evalCode) {
+                setGeneratedCode(assignment.evalCode);
+                setIsExistingCode(true);
+            } else {
+                setGeneratedCode(generateCode());
+                setIsExistingCode(false);
+            }
         } else {
             setGeneratedCode('');
+            setIsExistingCode(false);
         }
-    }, [formData.faculty, formData.subject, formData.section]);
+    }, [formData.faculty, formData.subject, formData.section, facultyAssignments]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -225,7 +236,9 @@ export function QCEDashboardPage() {
                 success('Evaluation code generated and activated successfully!');
                 setIsModalOpen(false);
                 setFormData({ facultyRole: '', faculty: '', subject: '', section: '' });
+                setFormData({ facultyRole: '', faculty: '', subject: '', section: '' });
                 setGeneratedCode('');
+                setIsExistingCode(false);
                 // Optionally refresh evaluations list here
             } else {
                 showError('Failed to save code: ' + data.message);
@@ -239,7 +252,9 @@ export function QCEDashboardPage() {
     const handleCancel = () => {
         setIsModalOpen(false);
         setFormData({ facultyRole: '', faculty: '', subject: '', section: '' });
+        setFormData({ facultyRole: '', faculty: '', subject: '', section: '' });
         setGeneratedCode('');
+        setIsExistingCode(false);
     };
 
 
@@ -400,8 +415,9 @@ export function QCEDashboardPage() {
                             <Button
                                 type="submit"
                                 variant="primary"
+                                disabled={isExistingCode}
                             >
-                                Save & Activate
+                                {isExistingCode ? 'Code Already Generated' : 'Save & Activate'}
                             </Button>
                         </div>
                     </form>

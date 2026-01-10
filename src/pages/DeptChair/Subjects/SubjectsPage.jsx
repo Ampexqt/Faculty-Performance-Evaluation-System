@@ -71,13 +71,13 @@ export function SubjectsPage() {
     };
 
     useEffect(() => {
-        const userId = localStorage.getItem('userId');
-        const fullName = localStorage.getItem('fullName') || 'Department Chair';
+        const userId = sessionStorage.getItem('userId');
+        const fullName = sessionStorage.getItem('fullName') || 'Department Chair';
 
         if (userId) {
             fetchCurrentUser(userId, fullName);
         } else {
-            console.warn('No User ID found in localStorage');
+            console.warn('No User ID found in sessionStorage');
         }
     }, []);
 
@@ -99,15 +99,15 @@ export function SubjectsPage() {
                         fullName: currentUser.name || fallbackName
                     });
 
-                    // Update localStorage with fresh data
-                    localStorage.setItem('departmentId', currentUser.department_id || '');
-                    localStorage.setItem('collegeId', currentUser.college_id || '');
+                    // Update sessionStorage with fresh data
+                    sessionStorage.setItem('departmentId', currentUser.department_id || '');
+                    sessionStorage.setItem('collegeId', currentUser.college_id || '');
                 } else {
                     console.error('Current user not found in faculty list');
-                    // Fallback to localStorage if server search fails (though unlikely if logged in)
+                    // Fallback to sessionStorage if server search fails (though unlikely if logged in)
                     setUserInfo({
-                        departmentId: localStorage.getItem('departmentId'),
-                        collegeId: localStorage.getItem('collegeId'),
+                        departmentId: sessionStorage.getItem('departmentId'),
+                        collegeId: sessionStorage.getItem('collegeId'),
                         fullName: fallbackName
                     });
                 }
@@ -116,8 +116,8 @@ export function SubjectsPage() {
             console.error('Error fetching current user details:', error);
             // Fallback
             setUserInfo({
-                departmentId: localStorage.getItem('departmentId'),
-                collegeId: localStorage.getItem('collegeId'),
+                departmentId: sessionStorage.getItem('departmentId'),
+                collegeId: sessionStorage.getItem('collegeId'),
                 fullName: fallbackName
             });
         }

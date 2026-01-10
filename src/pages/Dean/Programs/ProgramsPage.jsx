@@ -40,9 +40,9 @@ export function ProgramsPage() {
 
     useEffect(() => {
         // Fetch user info specific to Dean
-        const collegeId = localStorage.getItem('collegeId');
-        const fullName = localStorage.getItem('fullName') || 'College Dean';
-        const userId = localStorage.getItem('userId');
+        const collegeId = sessionStorage.getItem('collegeId');
+        const fullName = sessionStorage.getItem('fullName') || 'College Dean';
+        const userId = sessionStorage.getItem('userId');
         setUserInfo({ collegeId, fullName, userId });
     }, []);
 
@@ -88,7 +88,7 @@ export function ProgramsPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const userId = localStorage.getItem('userId');
+            const userId = sessionStorage.getItem('userId');
             const response = await fetch('http://localhost:5000/api/qce/programs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -152,6 +152,7 @@ router.get('/assignments', async (req, res) => {
                 s.subject_name,
                 f.first_name,
                 f.last_name,
+                fa.eval_code,
                 ay.year_label,
                 ay.semester
             FROM faculty_assignments fa
@@ -189,6 +190,7 @@ router.get('/assignments', async (req, res) => {
                 section: a.section,
                 facultyName: `${a.first_name} ${a.last_name}`,
                 schedule: a.schedule,
+                evalCode: a.eval_code,
                 academicYear: `${a.year_label} ${a.semester}`
             }))
         });
@@ -482,6 +484,26 @@ router.post('/assignments/generate-code', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Assignment ID and Code are required'
+            });
+        }
+
+        // Check if code already exists
+        const [existing] = await promisePool.query(
+            'SELECT eval_code FROM faculty_assignments WHERE id = ?',
+            [assignmentId]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Assignment not found'
+            });
+        }
+
+        if (existing[0].eval_code && existing[0].eval_code.trim() !== '') {
+            return res.status(400).json({
+                success: false,
+                message: 'Evaluation code has already been generated for this subject and section.'
             });
         }
 

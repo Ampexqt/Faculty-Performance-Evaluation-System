@@ -32,7 +32,7 @@ export function FacultyEvaluationDetail() {
     const [isLoading, setIsLoading] = useState(true);
     const [userInfo, setUserInfo] = useState(() => {
         return {
-            fullName: localStorage.getItem('fullName') || 'QCE Manager',
+            fullName: sessionStorage.getItem('fullName') || 'QCE Manager',
         };
     });
 

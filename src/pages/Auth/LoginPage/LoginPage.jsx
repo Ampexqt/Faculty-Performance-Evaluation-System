@@ -6,8 +6,11 @@ import { Button } from '@/components/Button/Button';
 import zppsuLogo from '@/assets/ZPPSU-LOGO.jpg';
 import styles from './LoginPage.module.css';
 
+import { useAuth } from '@/context/AuthContext';
+
 export function LoginPage() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -72,49 +75,56 @@ export function LoginPage() {
 
             // Login successful
             if (data.success) {
-                // Store user info in localStorage
-                localStorage.setItem('user', JSON.stringify(data.user));
-                localStorage.setItem('userRole', data.user.role);
-                localStorage.setItem('userId', data.user.id);
-                localStorage.setItem('userEmail', data.user.email);
-                localStorage.setItem('fullName', data.user.full_name);
+                // Call context login to set state and timer
+                login(data.user);
+
+                // Store user info in sessionStorage
+                // session storage is also set by login(), but we need to set the extensive list below
+                // Since login() sets 'user', we can rely on that, but the code below sets many individual items
+                // explicitly used by legacy code. We keep them as is (now using sessionStorage).
+
+                sessionStorage.setItem('user', JSON.stringify(data.user));
+                sessionStorage.setItem('userRole', data.user.role);
+                sessionStorage.setItem('userId', data.user.id);
+                sessionStorage.setItem('userEmail', data.user.email);
+                sessionStorage.setItem('fullName', data.user.full_name);
 
                 // Store additional info based on role
                 if (data.user.role === 'Zonal Admin') {
-                    localStorage.setItem('username', data.user.username);
-                    localStorage.setItem('zone', data.user.zone);
+                    sessionStorage.setItem('username', data.user.username);
+                    sessionStorage.setItem('zone', data.user.zone);
                 } else if (data.user.role === 'QCE Manager') {
-                    localStorage.setItem('position', data.user.position);
-                    localStorage.setItem('collegeId', data.user.college_id);
-                    localStorage.setItem('collegeName', data.user.college_name);
-                    localStorage.setItem('departmentId', data.user.department_id || '');
-                    localStorage.setItem('departmentName', data.user.department_name || '');
+                    sessionStorage.setItem('position', data.user.position);
+                    sessionStorage.setItem('collegeId', data.user.college_id);
+                    sessionStorage.setItem('collegeName', data.user.college_name);
+                    sessionStorage.setItem('departmentId', data.user.department_id || '');
+                    sessionStorage.setItem('departmentName', data.user.department_name || '');
                 } else if (data.user.role === 'Dean') {
-                    localStorage.setItem('position', data.user.position);
-                    localStorage.setItem('collegeId', data.user.college_id);
-                    localStorage.setItem('collegeName', data.user.college_name);
+                    sessionStorage.setItem('position', data.user.position);
+                    sessionStorage.setItem('collegeId', data.user.college_id);
+                    sessionStorage.setItem('collegeName', data.user.college_name);
                 } else if (data.user.role === 'Department Chair') {
-                    localStorage.setItem('position', data.user.position);
-                    localStorage.setItem('collegeId', data.user.college_id);
-                    localStorage.setItem('collegeName', data.user.college_name);
-                    localStorage.setItem('departmentId', data.user.department_id || '');
-                    localStorage.setItem('departmentName', data.user.department_name);
+                    sessionStorage.setItem('position', data.user.position);
+                    sessionStorage.setItem('collegeId', data.user.college_id);
+                    sessionStorage.setItem('collegeName', data.user.college_name);
+                    sessionStorage.setItem('departmentId', data.user.department_id || '');
+                    sessionStorage.setItem('departmentName', data.user.department_name);
                 } else if (data.user.role === 'Faculty') {
-                    localStorage.setItem('position', data.user.position);
-                    localStorage.setItem('collegeId', data.user.college_id);
-                    localStorage.setItem('collegeName', data.user.college_name);
-                    localStorage.setItem('departmentId', data.user.department_id || '');
-                    localStorage.setItem('departmentName', data.user.department_name);
+                    sessionStorage.setItem('position', data.user.position);
+                    sessionStorage.setItem('collegeId', data.user.college_id);
+                    sessionStorage.setItem('collegeName', data.user.college_name);
+                    sessionStorage.setItem('departmentId', data.user.department_id || '');
+                    sessionStorage.setItem('departmentName', data.user.department_name);
                 } else if (data.user.role === 'Student') {
-                    localStorage.setItem('collegeId', data.user.college_id);
-                    localStorage.setItem('collegeName', data.user.college_name);
-                    localStorage.setItem('programId', data.user.program_id);
-                    localStorage.setItem('programName', data.user.program_name);
-                    localStorage.setItem('section', data.user.section);
-                    localStorage.setItem('yearLevel', data.user.year_level);
-                    localStorage.setItem('studentId', data.user.student_id);
+                    sessionStorage.setItem('collegeId', data.user.college_id);
+                    sessionStorage.setItem('collegeName', data.user.college_name);
+                    sessionStorage.setItem('programId', data.user.program_id);
+                    sessionStorage.setItem('programName', data.user.program_name);
+                    sessionStorage.setItem('section', data.user.section);
+                    sessionStorage.setItem('yearLevel', data.user.year_level);
+                    sessionStorage.setItem('studentId', data.user.student_id);
                 } else if (data.user.role === 'President' || data.user.role === 'VPAA') {
-                    localStorage.setItem('position', data.user.position);
+                    sessionStorage.setItem('position', data.user.position);
                 }
 
                 // Redirect based on role

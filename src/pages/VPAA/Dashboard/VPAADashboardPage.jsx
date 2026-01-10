@@ -14,8 +14,8 @@ export function VPAADashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [evaluationCode, setEvaluationCode] = useState('');
 
-    // Get user data from localStorage
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    // Get user data from sessionStorage
+    const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
     const vpaaId = userData.id;
 
     useEffect(() => {

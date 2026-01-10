@@ -5,9 +5,9 @@ import { StatCard } from '@/components/StatCard/StatCard';
 import styles from './StudentOverviewPage.module.css';
 
 export function StudentOverviewPage() {
-    // Helper to safely get string from localStorage
+    // Helper to safely get string from sessionStorage
     const getSafeStorage = (key, fallback = '') => {
-        const val = localStorage.getItem(key);
+        const val = sessionStorage.getItem(key);
         if (!val || val === 'null' || val === 'undefined') return fallback;
         return val;
     };
@@ -29,12 +29,12 @@ export function StudentOverviewPage() {
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
-                const userId = localStorage.getItem('userId');
-                const programId = localStorage.getItem('programId'); // This is actually department_id
-                const section = localStorage.getItem('section');
+                const userId = sessionStorage.getItem('userId');
+                const programId = sessionStorage.getItem('programId'); // This is actually department_id
+                const section = sessionStorage.getItem('section');
 
                 if (!userId || !programId || !section) {
-                    console.log('Missing user details in localStorage');
+                    console.log('Missing user details in sessionStorage');
                     setIsLoading(false);
                     return;
                 }

@@ -14,7 +14,7 @@ export function DeanEvaluatePage() {
     const navigate = useNavigate();
     // Get user info with same logic as other Dean pages to ensure Sidebar consistency
     const [userInfo, setUserInfo] = useState(() => {
-        const userStr = localStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
             return {
@@ -38,9 +38,9 @@ export function DeanEvaluatePage() {
         completed: 0
     });
 
-    // Initialize pending evaluations from localStorage (scoped to user)
+    // Initialize pending evaluations from sessionStorage (scoped to user)
     const [pendingEvaluations, setPendingEvaluations] = useState(() => {
-        const saved = localStorage.getItem(`deanPendingEvaluations_${userInfo.userId}`);
+        const saved = sessionStorage.getItem(`deanPendingEvaluations_${userInfo.userId}`);
         const parsed = saved ? JSON.parse(saved) : [];
         // Filter out any self-evaluations that might have been saved locally
         return parsed.filter(item => Number(item.evaluateeId) !== Number(userInfo.userId));
@@ -49,10 +49,10 @@ export function DeanEvaluatePage() {
     const [completedEvaluations, setCompletedEvaluations] = useState([]);
     const { toasts, removeToast, success, error: showError } = useToast();
 
-    // Save to localStorage whenever pendingEvaluations changes
+    // Save to sessionStorage whenever pendingEvaluations changes
     useEffect(() => {
         if (userInfo.userId) {
-            localStorage.setItem(`deanPendingEvaluations_${userInfo.userId}`, JSON.stringify(pendingEvaluations));
+            sessionStorage.setItem(`deanPendingEvaluations_${userInfo.userId}`, JSON.stringify(pendingEvaluations));
             setStats(prev => ({ ...prev, pending: pendingEvaluations.length }));
         }
     }, [pendingEvaluations, userInfo.userId]);

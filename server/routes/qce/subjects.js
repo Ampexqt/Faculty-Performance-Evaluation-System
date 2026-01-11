@@ -22,10 +22,8 @@ router.get('/', async (req, res) => {
         if (department_id && department_id !== 'null' && department_id !== 'undefined') {
             query += ` AND s.department_id = ?`;
             params.push(department_id);
-        } else if (req.query.hasOwnProperty('department_id')) {
-            // If department_id param EXISTS but is null/undefined/empty, intentionally return nothing (or filter by NULL if that was the intent, but likely it's an error).
-            // Prevent returning ALL subjects when a filter was attempted but failed.
-            query += ` AND 1=0`;
+        } else if (department_id === 'null') {
+            query += ` AND s.department_id IS NULL`;
         }
 
         query += ` ORDER BY s.subject_code ASC`;
@@ -61,10 +59,10 @@ router.post('/', async (req, res) => {
     try {
         const { subjectCode, subjectName, units, departmentId } = req.body;
 
-        if (!subjectCode || !subjectName || !departmentId) {
+        if (!subjectCode || !subjectName) {
             return res.status(400).json({
                 success: false,
-                message: 'Subject Code, Name, and Department ID are required'
+                message: 'Subject Code and Name are required'
             });
         }
 
@@ -163,11 +161,13 @@ router.get('/assignments', async (req, res) => {
         `;
         const params = [];
 
-        if (department_id) {
+        if (department_id && department_id !== 'null' && department_id !== 'undefined') {
             // Filter by subject's department or faculty's department?
             // Usually Dept Chair wants to see subjects assigned UNDER their department.
             query += ` AND s.department_id = ?`;
             params.push(department_id);
+        } else if (department_id === 'null') {
+            query += ` AND s.department_id IS NULL`;
         }
 
         if (req.query.faculty_id) {

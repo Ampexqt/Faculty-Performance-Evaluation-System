@@ -31,23 +31,32 @@ export function FacultyAccountsPage() {
 
     useEffect(() => {
         const departmentId = sessionStorage.getItem('departmentId');
+        const collegeId = sessionStorage.getItem('collegeId');
         const fullName = sessionStorage.getItem('fullName') || 'Department Chair';
         const userId = sessionStorage.getItem('userId');
-        setUserInfo({ departmentId, fullName, userId });
+        setUserInfo({ departmentId, collegeId, fullName, userId });
     }, []);
 
     useEffect(() => {
-        if (userInfo.departmentId) {
+        if (userInfo.collegeId || userInfo.departmentId) {
             fetchFaculty();
             fetchPrograms();
         }
-    }, [userInfo.departmentId, userInfo.userId]);
+    }, [userInfo.departmentId, userInfo.collegeId, userInfo.userId]);
 
     const fetchPrograms = async () => {
         try {
-            // Fetch programs based on the department's college
-            // This ensures we see all programs relevant to the Dept Chair, regardless of who is assigned as Program Chair
-            const response = await fetch(`http://localhost:5000/api/qce/programs?department_id=${userInfo.departmentId}`);
+            // Fetch programs based on the department or college
+            let url = `http://localhost:5000/api/qce/programs?`;
+            if (userInfo.departmentId && userInfo.departmentId !== 'null' && userInfo.departmentId !== 'undefined') {
+                url += `department_id=${userInfo.departmentId}`;
+            } else if (userInfo.collegeId) {
+                url += `college_id=${userInfo.collegeId}`;
+            } else {
+                return;
+            }
+
+            const response = await fetch(url);
             const data = await response.json();
             if (data.success) {
                 setPrograms(data.data);
@@ -59,24 +68,35 @@ export function FacultyAccountsPage() {
 
     const fetchFaculty = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/qce/faculty?department_id=${userInfo.departmentId}`);
+            let url = `http://localhost:5000/api/qce/faculty?`;
+            if (userInfo.departmentId && userInfo.departmentId !== 'null' && userInfo.departmentId !== 'undefined') {
+                url += `department_id=${userInfo.departmentId}`;
+            } else if (userInfo.collegeId) {
+                // Fallback to fetch by college if department is not set (e.g. single-department college)
+                url += `college_id=${userInfo.collegeId}`;
+            } else {
+                return; // Can't fetch without context
+            }
+
+            const response = await fetch(url);
             const data = await response.json();
             if (data.success) {
                 // Map API data to table format
-                // Map API data to table format
-                const mappedFaculty = data.data.map(f => ({
-                    id: f.id,
-                    facultyName: f.name,
-                    firstName: f.firstName,
-                    middleInitial: f.middleInitial || '',
-                    lastName: f.lastName,
-                    email: f.email,
-                    gender: f.gender,
-                    role: f.role,
-                    status: f.status,
-                    assignedSubjects: 0, // Placeholder
-                    assignedPrograms: f.assignedPrograms || []
-                }));
+                const mappedFaculty = data.data
+                    .filter(f => f.role !== 'Dean' && f.id != userInfo.userId) // Filter out Dean and current user
+                    .map(f => ({
+                        id: f.id,
+                        facultyName: f.name,
+                        firstName: f.firstName,
+                        middleInitial: f.middleInitial || '',
+                        lastName: f.lastName,
+                        email: f.email,
+                        gender: f.gender,
+                        role: f.role,
+                        status: f.status,
+                        assignedSubjects: 0, // Placeholder
+                        assignedPrograms: f.assignedPrograms || []
+                    }));
                 setFaculty(mappedFaculty);
             }
         } catch (error) {

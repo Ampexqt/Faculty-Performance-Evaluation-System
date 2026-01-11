@@ -55,7 +55,15 @@ export function ProgramsPage() {
         try {
             const queryParams = new URLSearchParams();
             // Use department_id to fetch all programs in the college, regardless of assigned chair
-            if (userInfo.departmentId) queryParams.append('department_id', userInfo.departmentId);
+            if (userInfo.departmentId) {
+                queryParams.append('department_id', userInfo.departmentId);
+            } else if (userInfo.userId) {
+                // Fallback: If no departmentId found, try fetching by chairperson_id
+                queryParams.append('chairperson_id', userInfo.userId);
+            } else {
+                // If neither, abort to avoid 400
+                return;
+            }
 
             const response = await fetch(`http://localhost:5000/api/qce/programs?${queryParams.toString()}`);
             const data = await response.json();

@@ -280,7 +280,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, middleInitial, lastName, email, gender, employmentStatus, facultyRole, assignedPrograms } = req.body;
+        const { firstName, middleInitial, lastName, email, gender, employmentStatus, facultyRole, assignedPrograms, departmentId } = req.body;
 
         console.log(`Updating faculty ${id}. Role: ${facultyRole}, Programs:`, assignedPrograms);
 
@@ -292,9 +292,9 @@ router.put('/:id', async (req, res) => {
             // Update faculty details
             await connection.query(
                 `UPDATE faculty 
-                 SET first_name = ?, middle_initial = ?, last_name = ?, email = ?, gender = ?, employment_status = ?, position = ?
+                 SET first_name = ?, middle_initial = ?, last_name = ?, email = ?, gender = ?, employment_status = ?, position = ?, department_id = ?
                  WHERE id = ?`,
-                [firstName, middleInitial || null, lastName, email, gender, employmentStatus, facultyRole, id]
+                [firstName, middleInitial || null, lastName, email, gender, employmentStatus, facultyRole, departmentId || null, id]
             );
 
             // Handle Program Assignments if provided

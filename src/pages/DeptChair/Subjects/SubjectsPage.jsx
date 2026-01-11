@@ -124,17 +124,15 @@ export function SubjectsPage() {
     };
 
     useEffect(() => {
-        if (userInfo.departmentId) {
+        // Fetch subjects once user info is loaded (using fullName as proxy or just existence)
+        if (userInfo.fullName) {
             fetchSubjects();
         }
-    }, [userInfo.departmentId]);
+    }, [userInfo.departmentId, userInfo.fullName]);
 
     const fetchSubjects = async () => {
-        // Only block if explicitly the string "null" or "undefined" or falsy
-        if (!userInfo.departmentId || userInfo.departmentId === 'null' || userInfo.departmentId === 'undefined') {
-            // Note: We don't log warning here because this might happen during initial render before useEffect sets info
-            return;
-        }
+        // removed blocking logic for missing departmentId
+
 
         try {
             const response = await fetch(`http://localhost:5000/api/qce/subjects?department_id=${userInfo.departmentId}`);
@@ -165,10 +163,8 @@ export function SubjectsPage() {
         e.preventDefault();
 
         // Extra validation to prevent backend error
-        if (!userInfo.departmentId) {
-            addToast('Error: You are not assigned to a department. Please contact administrator.', 'error');
-            return;
-        }
+        // Extra validation removed to allow null department (College Level)
+
         try {
             const response = await fetch('http://localhost:5000/api/qce/subjects', {
                 method: 'POST',

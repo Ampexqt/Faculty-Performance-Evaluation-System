@@ -34,6 +34,7 @@ export function SchedulesPage() {
 
     const [editFormData, setEditFormData] = useState({
         subjectId: '',
+        programCode: '',
         yearLevel: '',
         section: '',
         facultyId: '',
@@ -104,9 +105,7 @@ export function SchedulesPage() {
                         collegeId: currentUser.college_id,
                         fullName: currentUser.name || fullName
                     });
-                    if (currentUser.department_id) {
-                        fetchPrograms(currentUser.department_id);
-                    }
+
                 } else {
                     setUserInfo({ departmentId, collegeId: null, fullName });
                 }
@@ -117,9 +116,18 @@ export function SchedulesPage() {
         }
     };
 
-    const fetchPrograms = async (deptId) => {
+    const fetchPrograms = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/qce/programs?department_id=${deptId}`);
+            let url = `http://localhost:5000/api/qce/programs?`;
+            if (userInfo.departmentId && userInfo.departmentId !== 'null') {
+                url += `department_id=${userInfo.departmentId}`;
+            } else if (userInfo.collegeId) {
+                url += `college_id=${userInfo.collegeId}`;
+            } else {
+                return;
+            }
+
+            const response = await fetch(url);
             const data = await response.json();
             if (data.success) {
                 setProgramsList(data.data);
@@ -133,6 +141,7 @@ export function SchedulesPage() {
         if (userInfo.departmentId || userInfo.collegeId) {
             fetchAssignments();
             fetchSubjects();
+            fetchPrograms();
 
             // Prioritize college-wide faculty, fallback to department-only
             if (userInfo.collegeId) {
@@ -260,10 +269,33 @@ export function SchedulesPage() {
 
     const handleEditClick = (assignment) => {
         setSelectedAssignment(assignment);
-        // Parse section (e.g., "4-B" -> yearLevel: "4", section: "B")
-        const [yearLevel, section] = assignment.section.split('-');
+
+        // Parse section string which handles "ProgramCode Year-Section" or just "Year-Section"
+        let programCode = '';
+        let yearLevel = '';
+        let section = '';
+
+        const lastSpaceIndex = assignment.section.lastIndexOf(' ');
+        if (lastSpaceIndex !== -1) {
+            programCode = assignment.section.substring(0, lastSpaceIndex);
+            const yearSection = assignment.section.substring(lastSpaceIndex + 1);
+            const parts = yearSection.split('-');
+            if (parts.length === 2) {
+                yearLevel = parts[0];
+                section = parts[1];
+            }
+        } else {
+            // Fallback for old format "Year-Section"
+            const parts = assignment.section.split('-');
+            if (parts.length === 2) {
+                yearLevel = parts[0];
+                section = parts[1];
+            }
+        }
+
         setEditFormData({
             subjectId: assignment.subjectId || '',
+            programCode: programCode || '',
             yearLevel: yearLevel || '',
             section: section || '',
             facultyId: assignment.facultyId || ''
@@ -286,7 +318,13 @@ export function SchedulesPage() {
 
     const handleUpdateAssignment = async (e) => {
         e.preventDefault();
-        const sectionName = `${editFormData.yearLevel}-${editFormData.section}`;
+
+        let sectionName = '';
+        if (editFormData.programCode) {
+            sectionName = `${editFormData.programCode} ${editFormData.yearLevel}-${editFormData.section}`;
+        } else {
+            sectionName = `${editFormData.yearLevel}-${editFormData.section}`;
+        }
 
         try {
             const response = await fetch(`http://localhost:5000/api/qce/subjects/assignments/${selectedAssignment.id}`, {
@@ -579,6 +617,20 @@ export function SchedulesPage() {
                                 value={editFormData.subjectId}
                                 onChange={handleEditInputChange}
                                 options={subjectsList.map(s => ({ value: s.id, label: `${s.code} - ${s.name}` }))}
+                                searchable
+                                required
+                            />
+                        </div>
+
+                        {/* Program Dropdown (Added for Edit) */}
+                        <div className={styles.formGroup}>
+                            <Select
+                                label="Program"
+                                name="programCode"
+                                placeholder="Select Program"
+                                value={editFormData.programCode}
+                                onChange={handleEditInputChange}
+                                options={programsList.map(p => ({ value: p.code, label: p.name ? `${p.code} - ${p.name}` : p.code }))}
                                 searchable
                                 required
                             />

@@ -56,6 +56,8 @@ export function FacultyAccountsPage() {
         }
     };
 
+
+
     const fetchFaculty = async () => {
         try {
             // Fetch faculty based on the college
@@ -74,7 +76,8 @@ export function FacultyAccountsPage() {
                     role: f.role,
                     status: f.status,
                     assignedSubjects: f.teachingLoad || 0, // Using teaching load for Dean view or similar
-                    assignedPrograms: f.assignedPrograms || []
+                    assignedPrograms: f.assignedPrograms || [],
+                    departmentId: f.department_id
                 }));
                 setFaculty(mappedFaculty);
             }
@@ -92,6 +95,7 @@ export function FacultyAccountsPage() {
         employmentStatus: '',
         facultyRole: '',
         assignedPrograms: [],
+        departmentId: '',
         password: '',
     });
 
@@ -198,6 +202,7 @@ export function FacultyAccountsPage() {
             employmentStatus: '',
             facultyRole: '',
             assignedPrograms: [],
+            departmentId: '',
             password: '',
         });
     };
@@ -221,7 +226,8 @@ export function FacultyAccountsPage() {
         gender: '',
         employmentStatus: '',
         facultyRole: '',
-        assignedPrograms: []
+        assignedPrograms: [],
+        departmentId: ''
     });
 
     const handleEditClick = (faculty) => {
@@ -234,7 +240,8 @@ export function FacultyAccountsPage() {
             gender: faculty.gender || '',
             employmentStatus: faculty.status,
             facultyRole: faculty.role,
-            assignedPrograms: faculty.assignedPrograms || []
+            assignedPrograms: faculty.assignedPrograms || [],
+            departmentId: faculty.departmentId || ''
         });
         setEditModalOpen(true);
     };
@@ -527,6 +534,8 @@ export function FacultyAccountsPage() {
                             </div>
                         </div>
 
+
+
                         <div className={styles.formGroup}>
                             <label className={styles.label}>
                                 Faculty Role <span className={styles.required}>*</span>
@@ -689,6 +698,8 @@ export function FacultyAccountsPage() {
                             </div>
                         </div>
 
+
+
                         <div className={styles.formGroup}>
                             <label className={styles.label}>
                                 Faculty Role <span className={styles.required}>*</span>
@@ -788,7 +799,7 @@ export function FacultyAccountsPage() {
                 </Modal>
 
                 <ToastContainer toasts={toasts} removeToast={removeToast} />
-            </div>
-        </DashboardLayout>
+            </div >
+        </DashboardLayout >
     );
 }

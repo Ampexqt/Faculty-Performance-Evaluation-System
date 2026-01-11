@@ -478,7 +478,7 @@ router.delete('/assignments/:id', async (req, res) => {
  */
 router.post('/assignments/generate-code', async (req, res) => {
     try {
-        const { assignmentId, code } = req.body;
+        const { assignmentId, code, criteriaType = 'old' } = req.body; // Default to 'old'
 
         if (!assignmentId || !code) {
             return res.status(400).json({
@@ -508,8 +508,8 @@ router.post('/assignments/generate-code', async (req, res) => {
         }
 
         const [result] = await promisePool.query(
-            'UPDATE faculty_assignments SET eval_code = ? WHERE id = ?',
-            [code, assignmentId]
+            'UPDATE faculty_assignments SET eval_code = ?, criteria_type = ? WHERE id = ?',
+            [code, criteriaType, assignmentId]
         );
 
         if (result.affectedRows === 0) {

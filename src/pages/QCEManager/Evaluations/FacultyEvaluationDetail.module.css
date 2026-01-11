@@ -451,3 +451,65 @@
     gap: 0.75rem;
     margin-top: 1rem;
 }
+
+/* Selection Modal Styles */
+.selectionContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.selectionInstruction {
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.selectionCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    width: 100%;
+}
+
+.selectionCard:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.selectionCardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.selectionCardTitle {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.selectionCardDesc {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.disabledCard {
+    opacity: 0.75;
+}
+
+.selectionActions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}

@@ -24,6 +24,7 @@ router.post('/validate', async (req, res) => {
                 fa.subject_id,
                 fa.faculty_id,
                 fa.section as assignment_section,
+                fa.criteria_type,
                 s.subject_code,
                 s.subject_name,
                 s.department_id as subject_department_id,
@@ -121,7 +122,8 @@ router.post('/validate', async (req, res) => {
                 subject: `${assignment.subject_code} - ${assignment.subject_name}`,
                 instructor: `${assignment.first_name} ${assignment.last_name}`,
                 facultyRole: assignment.faculty_role,
-                status: 'Pending'
+                status: 'Pending',
+                criteriaType: assignment.criteria_type || 'old'
             }
         });
 
@@ -320,25 +322,19 @@ router.post('/submit', async (req, res) => {
         }
 
         // Calculate category scores
-        const categoryScores = {
-            'A. Commitment': 0,
-            'B. Knowledge of Subject': 0,
-            'C. Teaching for Independent Learning': 0,
-            'D. Management of Learning': 0
-        };
+        // Calculate category scores based on prefix (works for both Old and New criteria titles)
+        let scoreCommitment = 0;
+        let scoreKnowledge = 0;
+        let scoreTeaching = 0;
+        let scoreManagement = 0;
 
-        // Sum up ratings for each category
         for (const [key, rating] of Object.entries(ratings)) {
-            const category = Object.keys(categoryScores).find(cat => key.startsWith(cat));
-            if (category) {
-                categoryScores[category] += parseInt(rating) || 0;
-            }
+            const val = parseInt(rating) || 0;
+            if (key.startsWith('A.')) scoreCommitment += val;
+            else if (key.startsWith('B.')) scoreKnowledge += val;
+            else if (key.startsWith('C.')) scoreTeaching += val;
+            else if (key.startsWith('D.')) scoreManagement += val;
         }
-
-        const scoreCommitment = categoryScores['A. Commitment'];
-        const scoreKnowledge = categoryScores['B. Knowledge of Subject'];
-        const scoreTeaching = categoryScores['C. Teaching for Independent Learning'];
-        const scoreManagement = categoryScores['D. Management of Learning'];
         const totalScore = scoreCommitment + scoreKnowledge + scoreTeaching + scoreManagement;
 
         // Insert main evaluation record with all details

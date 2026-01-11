@@ -37,7 +37,7 @@ initializeTables();
  */
 router.post('/generate-supervisor', async (req, res) => {
     try {
-        const { evaluateeId, creatorId, type = 'Dean' } = req.body; // Default to Dean
+        const { evaluateeId, creatorId, type = 'Dean', criteriaType = 'old' } = req.body; // Default to Dean, Old
 
         if (!evaluateeId || !creatorId) {
             return res.status(400).json({
@@ -70,9 +70,9 @@ router.post('/generate-supervisor', async (req, res) => {
         // Insert code
         await promisePool.query(
             `INSERT INTO supervisor_evaluation_codes 
-            (code, evaluatee_id, evaluation_period_id, created_by, status, evaluator_type) 
-            VALUES (?, ?, ?, ?, 'active', ?)`,
-            [code, evaluateeId, periodId, creatorId, type]
+            (code, evaluatee_id, evaluation_period_id, created_by, status, evaluator_type, criteria_type) 
+            VALUES (?, ?, ?, ?, 'active', ?, ?)`,
+            [code, evaluateeId, periodId, creatorId, type, criteriaType]
         );
 
         res.json({

@@ -14,7 +14,7 @@ const RATING_SCALE = [
     { value: 1, label: 'Poor', description: 'The faculty fails to meet job requirements.' }
 ];
 
-const EVALUATION_CRITERIA = {
+const OLD_CRITERIA = {
     'A. Commitment': [
         'Demonstrates sensitivity to students\' ability to attend and absorb content information.',
         'Integrates sensitively his/her learning objectives with those of the students in a collaborative process.',
@@ -45,6 +45,37 @@ const EVALUATION_CRITERIA = {
     ]
 };
 
+const NEW_CRITERIA = {
+    'A. Professional Commitment': [
+        'Shows awareness of students’ learning abilities and limitations.',
+        'Aligns instructional goals with students’ learning needs through collaboration.',
+        'Is accessible to students outside scheduled class hours when necessary.',
+        'Attends classes punctually and comes prepared to fulfill teaching duties.',
+        'Maintains accurate academic records and submits them on time.'
+    ],
+    'B. Subject Matter Expertise': [
+        'Demonstrates strong command of the subject beyond prescribed materials.',
+        'Incorporates current theories and practices relevant to the discipline.',
+        'Relates course content to practical situations and student goals.',
+        'Connects present topics with prior lessons and real-life applications.',
+        'Keeps updated with emerging trends and issues in the field.'
+    ],
+    'C. Promotion of Independent Learning': [
+        'Uses teaching approaches that encourage active student participation.',
+        'Builds students’ confidence and recognizes their academic efforts.',
+        'Encourages students to participate in shaping learning goals and responsibilities.',
+        'Fosters independent thinking and accountability in decision-making.',
+        'Motivates students to explore concepts beyond course requirements.'
+    ],
+    'D. Learning Management': [
+        'Encourages student engagement through group and collaborative activities.',
+        'Effectively assumes multiple instructional roles to guide learning.',
+        'Establishes learning environments that promote constructive discussion.',
+        'Organizes learning activities to achieve shared instructional objectives.',
+        'Uses appropriate instructional resources and technologies to enhance learning.'
+    ]
+};
+
 export function EvaluationFormPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -60,7 +91,8 @@ export function EvaluationFormPage() {
         id: assignmentId,
         evaluateeId: rawEvaluateeId, // Capture evaluateeId directly
         subject,
-        evaluatorType
+        evaluatorType,
+        criteriaType = 'old'
     } = evaluationData;
 
     // Resolve instructor name: 'instructor' (Student) or 'evaluatee' (Dean)
@@ -81,6 +113,7 @@ export function EvaluationFormPage() {
             : 'http://localhost:5000/api/student/evaluations/submit';
 
     const evaluatorPosition = isSupervisor ? 'Supervisor' : 'Student';
+    const activeCriteria = criteriaType === 'new' ? NEW_CRITERIA : OLD_CRITERIA;
 
     const [ratings, setRatings] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -150,13 +183,13 @@ export function EvaluationFormPage() {
     // Initialize ratings object
     useEffect(() => {
         const initialRatings = {};
-        Object.keys(EVALUATION_CRITERIA).forEach(category => {
-            EVALUATION_CRITERIA[category].forEach((_, index) => {
+        Object.keys(activeCriteria).forEach(category => {
+            activeCriteria[category].forEach((_, index) => {
                 initialRatings[`${category}-${index}`] = 0;
             });
         });
         setRatings(initialRatings);
-    }, []);
+    }, [activeCriteria]);
 
     const handleRatingChange = (category, index, value) => {
         setRatings(prev => ({
@@ -167,7 +200,7 @@ export function EvaluationFormPage() {
 
     const calculateTotalScore = (category) => {
         let total = 0;
-        EVALUATION_CRITERIA[category].forEach((_, index) => {
+        activeCriteria[category].forEach((_, index) => {
             total += ratings[`${category}-${index}`] || 0;
         });
         return total;
@@ -357,7 +390,7 @@ export function EvaluationFormPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className={styles.evaluationForm}>
-                        {Object.entries(EVALUATION_CRITERIA).map(([category, criteria]) => (
+                        {Object.entries(activeCriteria).map(([category, criteria]) => (
                             <div key={category} className={styles.categorySection}>
                                 <h3 className={styles.categoryTitle}>{category}</h3>
 

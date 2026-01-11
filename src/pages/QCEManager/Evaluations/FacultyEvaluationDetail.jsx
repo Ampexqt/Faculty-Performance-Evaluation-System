@@ -37,7 +37,10 @@ export function FacultyEvaluationDetail() {
     });
 
     // Modal State
+    // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
+    const [selectedCriteria, setSelectedCriteria] = useState('old'); // 'old' or 'new'
     const [selectedAssignment, setSelectedAssignment] = useState(null);
     const [tempCode, setTempCode] = useState(''); // Only used for modal display or temporary storage
 
@@ -108,7 +111,17 @@ export function FacultyEvaluationDetail() {
     };
 
     const handleCreateClick = (row) => {
-        setSelectedAssignment(row);
+        handleOpenSelection(row);
+    };
+
+    const handleOpenSelection = (assignment) => {
+        setSelectedAssignment(assignment);
+        setIsSelectionModalOpen(true);
+    };
+
+    const handleSelectionConfirm = (criteria) => {
+        setSelectedCriteria(criteria);
+        setIsSelectionModalOpen(false);
         setTempCode(generateCode());
         setIsModalOpen(true);
     };
@@ -131,7 +144,11 @@ export function FacultyEvaluationDetail() {
             const isVPAAEval = selectedAssignment.assignment_id === 'supervisor_eval_vpaa';
 
             let endpoint = 'http://localhost:5000/api/qce/subjects/assignments/generate-code';
-            let payload = { assignmentId: selectedAssignment.assignment_id, code: tempCode };
+            let payload = {
+                assignmentId: selectedAssignment.assignment_id,
+                code: tempCode,
+                criteriaType: selectedCriteria // Send selected criteria to backend
+            };
 
             if (isDeanEval || isChairEval || isVPAAEval) {
                 endpoint = 'http://localhost:5000/api/qce/code/generate-supervisor';
@@ -387,14 +404,12 @@ export function FacultyEvaluationDetail() {
                                         <Button
                                             variant="primary"
                                             onClick={() => {
-                                                setSelectedAssignment({
+                                                handleOpenSelection({
                                                     subject_name: 'Supervisor Evaluation (VPAA)',
                                                     subject_code: 'SUP-EVAL-VPAA',
                                                     section: 'N/A',
                                                     assignment_id: 'supervisor_eval_vpaa'
                                                 });
-                                                setTempCode('');
-                                                setIsModalOpen(true);
                                             }}
                                         >
                                             Generate VPAA Code
@@ -444,14 +459,12 @@ export function FacultyEvaluationDetail() {
                                         <Button
                                             variant="primary"
                                             onClick={() => {
-                                                setSelectedAssignment({
+                                                handleOpenSelection({
                                                     subject_name: 'Supervisor Evaluation (Dean)',
                                                     subject_code: 'SUP-EVAL',
                                                     section: 'N/A',
                                                     assignment_id: 'supervisor_eval_dean'
                                                 });
-                                                setTempCode('');
-                                                setIsModalOpen(true);
                                             }}
                                         >
                                             Generate Dean Code
@@ -500,14 +513,12 @@ export function FacultyEvaluationDetail() {
                                         <Button
                                             variant="primary"
                                             onClick={() => {
-                                                setSelectedAssignment({
+                                                handleOpenSelection({
                                                     subject_name: 'Peer Evaluation (Dept. Chair)',
                                                     subject_code: 'CHR-EVAL',
                                                     section: 'N/A',
                                                     assignment_id: 'supervisor_eval_chair'
                                                 });
-                                                setTempCode('');
-                                                setIsModalOpen(true);
                                             }}
                                         >
                                             Generate Chair Code
@@ -540,6 +551,22 @@ export function FacultyEvaluationDetail() {
                     title="Generate Evaluation Code"
                 >
                     <form onSubmit={handleModalSubmit} className={styles.modalForm}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Evaluation Criteria</label>
+                            <div style={{
+                                padding: '0.75rem',
+                                backgroundColor: selectedCriteria === 'new' ? '#ecfdf5' : '#eff6ff',
+                                border: `1px solid ${selectedCriteria === 'new' ? '#10b981' : '#3b82f6'}`,
+                                borderRadius: '0.375rem',
+                                color: selectedCriteria === 'new' ? '#047857' : '#1d4ed8',
+                                fontWeight: 500,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}>
+                                {selectedCriteria === 'new' ? '✨ New Criteria (Updated)' : 'Old Criteria (Existing)'}
+                            </div>
+                        </div>
                         <div className={styles.formGroup}>
                             <label className={styles.label}>Faculty Role</label>
                             <input
@@ -603,6 +630,50 @@ export function FacultyEvaluationDetail() {
                             </Button>
                         </div>
                     </form>
+                </Modal>
+
+                {/* Criteria Selection Modal */}
+                <Modal
+                    isOpen={isSelectionModalOpen}
+                    onClose={() => setIsSelectionModalOpen(false)}
+                    title="Select Evaluation Criteria"
+                >
+                    <div className={styles.selectionContainer}>
+                        <p className={styles.selectionInstruction}>Please select which evaluation criteria version to use for this evaluation.</p>
+
+                        <button
+                            onClick={() => handleSelectionConfirm('old')}
+                            className={styles.selectionCard}
+                            style={{ borderLeft: '4px solid #1e40af' }}
+                        >
+                            <div className={styles.selectionCardContent}>
+                                <h3 className={styles.selectionCardTitle}>Old Criteria (Existing)</h3>
+                                <p className={styles.selectionCardDesc}>Use the existing standard evaluation questionnaire.</p>
+                            </div>
+                            <CheckCircle size={20} color="#1e40af" />
+                        </button>
+
+                        <button
+                            onClick={() => handleSelectionConfirm('new')}
+                            className={`${styles.selectionCard} ${styles.disabledCard}`}
+                            style={{ borderLeft: '4px solid #059669' }}
+                        >
+                            <div className={styles.selectionCardContent}>
+                                <h3 className={styles.selectionCardTitle}>New Criteria (Coming Soon)</h3>
+                                <p className={styles.selectionCardDesc}>Use the new updated evaluation questionnaire.</p>
+                            </div>
+                            <CheckCircle size={20} color="#059669" />
+                        </button>
+
+                        <div className={styles.selectionActions}>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setIsSelectionModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
                 </Modal>
                 <ToastContainer toasts={toasts} removeToast={removeToast} />
             </div>

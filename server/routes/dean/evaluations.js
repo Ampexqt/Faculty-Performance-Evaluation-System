@@ -132,7 +132,8 @@ router.post('/validate', async (req, res) => {
                     f.last_name,
                     f.position as faculty_role,
                     f.college_id,
-                    sec.evaluator_type
+                    sec.evaluator_type,
+                    sec.criteria_type
                 FROM supervisor_evaluation_codes sec
                 JOIN faculty f ON sec.evaluatee_id = f.id
                 WHERE sec.code = ? AND sec.status = 'active'
@@ -173,7 +174,8 @@ router.post('/validate', async (req, res) => {
                     evaluatee: `${supData.first_name} ${supData.last_name}`,
                     evaluateeRole: supData.faculty_role,
                     status: 'Pending',
-                    type: 'Supervisor' // Flag for frontend submission logic
+                    type: 'Supervisor', // Flag for frontend submission logic
+                    criteriaType: supData.criteria_type || 'old'
                 }
             });
         }
@@ -342,24 +344,19 @@ router.post('/submit', async (req, res) => {
         }
 
         // Calculate scores
-        const categoryScores = {
-            'A. Commitment': 0,
-            'B. Knowledge of Subject': 0,
-            'C. Teaching for Independent Learning': 0,
-            'D. Management of Learning': 0
-        };
+        // Calculate category scores based on prefix
+        let scoreCommitment = 0;
+        let scoreKnowledge = 0;
+        let scoreTeaching = 0;
+        let scoreManagement = 0;
 
         for (const [key, rating] of Object.entries(ratings)) {
-            const category = Object.keys(categoryScores).find(cat => key.startsWith(cat));
-            if (category) {
-                categoryScores[category] += parseInt(rating) || 0;
-            }
+            const val = parseInt(rating) || 0;
+            if (key.startsWith('A.')) scoreCommitment += val;
+            else if (key.startsWith('B.')) scoreKnowledge += val;
+            else if (key.startsWith('C.')) scoreTeaching += val;
+            else if (key.startsWith('D.')) scoreManagement += val;
         }
-
-        const scoreCommitment = categoryScores['A. Commitment'];
-        const scoreKnowledge = categoryScores['B. Knowledge of Subject'];
-        const scoreTeaching = categoryScores['C. Teaching for Independent Learning'];
-        const scoreManagement = categoryScores['D. Management of Learning'];
         const totalScore = scoreCommitment + scoreKnowledge + scoreTeaching + scoreManagement;
 
         // Insert into supervisor_evaluations

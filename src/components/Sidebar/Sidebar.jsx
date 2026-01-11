@@ -29,7 +29,7 @@ const zonalAdminMenuItems = [
 const qceMenuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/qce/dashboard' },
     { icon: Users, label: 'Faculty', path: '/qce/faculty' },
-    { icon: BookOpen, label: 'Programs', path: '/qce/programs' },
+
     { icon: ClipboardList, label: 'Evaluations', path: '/qce/evaluations' },
     { icon: BarChart3, label: 'Evaluation Results', path: '/qce/results' },
 ];

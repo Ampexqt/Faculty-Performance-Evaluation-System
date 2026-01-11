@@ -290,12 +290,7 @@ export function QCEDashboardPage() {
                         subtitle="Active this semester"
                         icon={Users}
                     />
-                    <StatCard
-                        title="Total Programs"
-                        value={stats.totalPrograms}
-                        subtitle="Managed programs"
-                        icon={BookOpen}
-                    />
+
                     <StatCard
                         title="Evaluations Created"
                         value={stats.evaluationsCreated}

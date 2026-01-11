@@ -16,12 +16,12 @@ import { EvaluationsPage } from './pages/QCEManager/Evaluations/EvaluationsPage'
 import { FacultyEvaluationDetail } from './pages/QCEManager/Evaluations/FacultyEvaluationDetail';
 import { EvaluationResultsPage as QCEEvaluationResultsPage } from './pages/QCEManager/Results/EvaluationResultsPage';
 import { DeanOverviewPage } from './pages/Dean/Overview/DeanOverviewPage';
-import { FacultyResultsPage } from './pages/Dean/FacultyResults/FacultyResultsPage';
+import { FacultyAccountsPage as DeanFacultyAccountsPage } from './pages/Dean/FacultyAccounts/FacultyAccountsPage';
 import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
 import { DeanEvaluatePage as DeanEvaluationsPage } from './pages/Dean/Evaluations/DeanEvaluatePage';
 import { ProgramsPage as DeanProgramsPage } from './pages/Dean/Programs/ProgramsPage';
 import { DeptChairDashboardPage } from './pages/DeptChair/Dashboard/DeptChairDashboardPage';
-import { FacultyAccountsPage } from './pages/DeptChair/FacultyAccounts/FacultyAccountsPage';
+import { FacultyAccountsPage as DeptChairFacultyAccountsPage } from './pages/DeptChair/FacultyAccounts/FacultyAccountsPage';
 import { ProgramsPage as DeptChairProgramsPage } from './pages/DeptChair/Programs/ProgramsPage';
 import { SubjectsPage as DeptChairSubjectsPage } from './pages/DeptChair/Subjects/SubjectsPage';
 import { SchedulesPage as DeptChairSchedulesPage } from './pages/DeptChair/Schedules/SchedulesPage';
@@ -75,7 +75,7 @@ export function App() {
           {/* Dean Routes */}
           <Route element={<ProtectedRoute allowedRoles={['Dean']} />}>
             <Route path="/dean/overview" element={<DeanOverviewPage />} />
-            <Route path="/dean/faculty-results" element={<FacultyResultsPage />} />
+            <Route path="/dean/faculty-accounts" element={<DeanFacultyAccountsPage />} />
             <Route path="/dean/dept-chairs" element={<DeptChairsPage />} />
             <Route path="/dean/programs" element={<DeanProgramsPage />} />
             <Route path="/dean/evaluations" element={<DeanEvaluationsPage />} />
@@ -85,7 +85,7 @@ export function App() {
           {/* Department Chair Routes */}
           <Route element={<ProtectedRoute allowedRoles={['Department Chair']} />}>
             <Route path="/dept-chair/faculty" element={<DeptChairDashboardPage />} />
-            <Route path="/dept-chair/faculty-accounts" element={<FacultyAccountsPage />} />
+            <Route path="/dept-chair/faculty-accounts" element={<DeptChairFacultyAccountsPage />} />
             <Route path="/dept-chair/programs" element={<DeptChairProgramsPage />} />
             <Route path="/dept-chair/subjects" element={<DeptChairSubjectsPage />} />
             <Route path="/dept-chair/schedules" element={<DeptChairSchedulesPage />} />

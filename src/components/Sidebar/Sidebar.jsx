@@ -36,7 +36,7 @@ const qceMenuItems = [
 
 const deanMenuItems = [
     { icon: LayoutDashboard, label: 'Overview', path: '/dean/overview' },
-    { icon: ClipboardList, label: 'Faculty Results', path: '/dean/faculty-results' },
+    { icon: Users, label: 'Faculty Accounts', path: '/dean/faculty-accounts' },
     { icon: BookOpen, label: 'Programs', path: '/dean/programs' },
     { icon: ClipboardList, label: 'Evaluations', path: '/dean/evaluations' },
 ];

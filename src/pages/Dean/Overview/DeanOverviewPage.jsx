@@ -13,9 +13,11 @@ export function DeanOverviewPage() {
     const [toasts, setToasts] = useState([]);
     const [formData, setFormData] = useState({
         firstName: '',
+        middleInitial: '',
         lastName: '',
         email: '',
         password: '',
+        gender: '',
     });
 
     // Get user info from sessionStorage
@@ -93,9 +95,11 @@ export function DeanOverviewPage() {
                 },
                 body: JSON.stringify({
                     firstName: formData.firstName,
+                    middleInitial: formData.middleInitial,
                     lastName: formData.lastName,
                     email: formData.email,
                     password: formData.password,
+                    gender: formData.gender,
                     // departmentId removed as per request
                     role: 'Department Chair',
                     employmentStatus: 'Regular', // Default for Dept Chair
@@ -111,9 +115,11 @@ export function DeanOverviewPage() {
                 setIsModalOpen(false);
                 setFormData({
                     firstName: '',
+                    middleInitial: '',
                     lastName: '',
                     email: '',
                     password: '',
+                    gender: '',
                 });
             } else {
                 addToast(result.message || 'Failed to create account', 'error');
@@ -128,9 +134,11 @@ export function DeanOverviewPage() {
         setIsModalOpen(false);
         setFormData({
             firstName: '',
+            middleInitial: '',
             lastName: '',
             email: '',
             password: '',
+            gender: '',
         });
     };
 
@@ -243,6 +251,15 @@ export function DeanOverviewPage() {
                                 required
                             />
                             <Input
+                                label="M.I."
+                                name="middleInitial"
+                                type="text"
+                                placeholder="A"
+                                value={formData.middleInitial}
+                                onChange={handleInputChange}
+                                maxLength="2"
+                            />
+                            <Input
                                 label="Last Name"
                                 name="lastName"
                                 type="text"
@@ -253,15 +270,35 @@ export function DeanOverviewPage() {
                             />
                         </div>
 
-                        <Input
-                            label="Email Address"
-                            name="email"
-                            type="email"
-                            placeholder="john.doe@university.edu"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            required
-                        />
+                        <div className={styles.formRow}>
+                            <Input
+                                label="Email Address"
+                                name="email"
+                                type="email"
+                                placeholder="john.doe@university.edu"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                required
+                            />
+                            <div className={styles.inputGroup}>
+                                <label className={styles.label}>
+                                    Gender <span style={{ color: '#DC2626' }}>*</span>
+                                </label>
+                                <select
+                                    name="gender"
+                                    value={formData.gender}
+                                    onChange={handleInputChange}
+                                    required
+                                    className={styles.select}
+                                >
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+
 
                         <Input
                             label="Password"

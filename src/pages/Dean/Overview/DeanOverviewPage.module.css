@@ -85,8 +85,12 @@
 
 .formRow {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 0.5fr 2fr;
     gap: var(--spacing-md);
+}
+
+.formRow:has(> :nth-child(2):last-child) {
+    grid-template-columns: 1fr 1fr;
 }
 
 .modalActions {
@@ -95,6 +99,40 @@
     gap: var(--spacing-sm);
     margin-top: var(--spacing-md);
 }
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-text-primary);
+}
+
+.select {
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+    color: var(--color-text-primary);
+    background-color: var(--color-background-white);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+}
+
+.select:hover {
+    border-color: var(--color-primary-light);
+}
+
 
 /* ========== RESPONSIVE ========== */
 

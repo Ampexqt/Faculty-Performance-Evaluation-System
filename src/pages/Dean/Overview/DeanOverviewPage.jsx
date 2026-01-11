@@ -2,23 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Users, ClipboardList, BookOpen } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { StatCard } from '@/components/StatCard/StatCard';
-import { Button } from '@/components/Button/Button';
-import { Modal } from '@/components/Modal/Modal';
-import { Input } from '@/components/Input/Input';
 import { ToastContainer } from '@/components/Toast/Toast';
 import styles from './DeanOverviewPage.module.css';
 
 export function DeanOverviewPage() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [toasts, setToasts] = useState([]);
-    const [formData, setFormData] = useState({
-        firstName: '',
-        middleInitial: '',
-        lastName: '',
-        email: '',
-        password: '',
-        gender: '',
-    });
+
 
     // Get user info from sessionStorage
     const [userInfo, setUserInfo] = useState({
@@ -72,74 +61,6 @@ export function DeanOverviewPage() {
 
     const removeToast = (id) => {
         setToasts(prev => prev.filter(toast => toast.id !== id));
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        try {
-            const userId = sessionStorage.getItem('userId');
-
-            const response = await fetch('http://localhost:5000/api/qce/faculty', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    firstName: formData.firstName,
-                    middleInitial: formData.middleInitial,
-                    lastName: formData.lastName,
-                    email: formData.email,
-                    password: formData.password,
-                    gender: formData.gender,
-                    // departmentId removed as per request
-                    role: 'Department Chair',
-                    employmentStatus: 'Regular', // Default for Dept Chair
-                    qceId: userId,
-                    creatorType: 'faculty' // Specify this is a Dean (Faculty) creating the user
-                }),
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                addToast('Department Chair assigned successfully', 'success');
-                setIsModalOpen(false);
-                setFormData({
-                    firstName: '',
-                    middleInitial: '',
-                    lastName: '',
-                    email: '',
-                    password: '',
-                    gender: '',
-                });
-            } else {
-                addToast(result.message || 'Failed to create account', 'error');
-            }
-        } catch (error) {
-            console.error('Error creating chair:', error);
-            addToast('An error occurred. Please try again.', 'error');
-        }
-    };
-
-    const handleCancel = () => {
-        setIsModalOpen(false);
-        setFormData({
-            firstName: '',
-            middleInitial: '',
-            lastName: '',
-            email: '',
-            password: '',
-            gender: '',
-        });
     };
 
     const [activeYear, setActiveYear] = useState(null);
@@ -205,9 +126,7 @@ export function DeanOverviewPage() {
                                 </span>
                             </div>
                         )}
-                        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-                            + Assign Dept. Chair
-                        </Button>
+
                     </div>
                 </div>
 
@@ -234,99 +153,7 @@ export function DeanOverviewPage() {
                 </div>
 
                 {/* Assign Department Chair Modal */}
-                <Modal
-                    isOpen={isModalOpen}
-                    onClose={handleCancel}
-                    title="Assign Department Chair"
-                >
-                    <form onSubmit={handleSubmit} className={styles.modalForm}>
-                        <div className={styles.formRow}>
-                            <Input
-                                label="First Name"
-                                name="firstName"
-                                type="text"
-                                placeholder="e.g. John"
-                                value={formData.firstName}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <Input
-                                label="M.I."
-                                name="middleInitial"
-                                type="text"
-                                placeholder="A"
-                                value={formData.middleInitial}
-                                onChange={handleInputChange}
-                                maxLength="2"
-                            />
-                            <Input
-                                label="Last Name"
-                                name="lastName"
-                                type="text"
-                                placeholder="e.g. Doe"
-                                value={formData.lastName}
-                                onChange={handleInputChange}
-                                required
-                            />
-                        </div>
 
-                        <div className={styles.formRow}>
-                            <Input
-                                label="Email Address"
-                                name="email"
-                                type="email"
-                                placeholder="john.doe@university.edu"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <div className={styles.inputGroup}>
-                                <label className={styles.label}>
-                                    Gender <span style={{ color: '#DC2626' }}>*</span>
-                                </label>
-                                <select
-                                    name="gender"
-                                    value={formData.gender}
-                                    onChange={handleInputChange}
-                                    required
-                                    className={styles.select}
-                                >
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                        </div>
-
-
-
-                        <Input
-                            label="Password"
-                            name="password"
-                            type="password"
-                            placeholder="••••••••"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            required
-                        />
-
-                        <div className={styles.modalActions}>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={handleCancel}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                variant="primary"
-                            >
-                                Assign Chair
-                            </Button>
-                        </div>
-                    </form>
-                </Modal>
 
                 <ToastContainer toasts={toasts} removeToast={removeToast} />
             </div>

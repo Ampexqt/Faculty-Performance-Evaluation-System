@@ -248,43 +248,47 @@ export function EvaluationResultsPage() {
                             </div>
                         ) : facultyDetails ? (
                             <>
-                                {/* Faculty Header */}
-                                <div className={styles.facultyHeader}>
-                                    <h2 className={styles.facultyName}>{facultyDetails.faculty.name}</h2>
-                                    <p className={styles.facultyPosition}>{facultyDetails.faculty.position}</p>
-                                    <p className={styles.facultyEmail}>{facultyDetails.faculty.email}</p>
-                                </div>
-
-                                {/* Statistics Grid */}
-                                <div className={styles.statsGrid2}>
-                                    <div className={styles.statBox}>
-                                        <span className={styles.statLabel2}>STUDENT EVALUATIONS</span>
-                                        <span className={styles.statValue2}>{facultyDetails.statistics.studentCount}</span>
-                                    </div>
-                                    <div className={styles.statBox}>
-                                        <span className={styles.statLabel2}>SUPERVISOR EVALUATIONS</span>
-                                        <span className={styles.statValue2}>{facultyDetails.statistics.supervisorCount}</span>
-                                    </div>
-                                    <div className={styles.statBox}>
-                                        <span className={styles.statLabel2}>STUDENT AVERAGE</span>
-                                        <span className={styles.statValue2}>
-                                            {facultyDetails.statistics.studentAverage ? facultyDetails.statistics.studentAverage.toFixed(2) : 'N/A'}
-                                        </span>
-                                    </div>
-                                    <div className={styles.statBox}>
-                                        <span className={styles.statLabel2}>SUPERVISOR AVERAGE</span>
-                                        <span className={styles.statValue2}>
-                                            {facultyDetails.statistics.supervisorAverage ? facultyDetails.statistics.supervisorAverage.toFixed(2) : 'N/A'}
-                                        </span>
+                                {/* Faculty Info Section */}
+                                <div className={styles.modalHeader}>
+                                    <div className={styles.facultyInfo}>
+                                        <h2 className={styles.modalFacultyName}>{facultyDetails.faculty.name}</h2>
+                                        <p className={styles.modalFacultyPosition}>{facultyDetails.faculty.position}</p>
+                                        <p className={styles.modalFacultyEmail}>{facultyDetails.faculty.email}</p>
                                     </div>
                                 </div>
 
-                                {/* Overall Score */}
-                                <div className={styles.overallScoreBox}>
-                                    <span className={styles.overallScoreLabel}>OVERALL SCORE</span>
-                                    <span className={styles.overallScoreValue}>
-                                        {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) : '---'}
-                                    </span>
+                                {/* Evaluation Statistics */}
+                                <div className={styles.evaluationStats}>
+                                    <div className={styles.statsRow}>
+                                        <div className={styles.statItem}>
+                                            <div className={styles.statItemLabel}>STUDENT EVALUATIONS</div>
+                                            <div className={styles.statItemValue}>{facultyDetails.statistics.studentCount}</div>
+                                        </div>
+                                        <div className={styles.statItem}>
+                                            <div className={styles.statItemLabel}>SUPERVISOR EVALUATIONS</div>
+                                            <div className={styles.statItemValue}>{facultyDetails.statistics.supervisorCount}</div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.statsRow}>
+                                        <div className={styles.statItem}>
+                                            <div className={styles.statItemLabel}>STUDENT AVERAGE</div>
+                                            <div className={styles.statItemValue}>
+                                                {facultyDetails.statistics.studentAverage ? facultyDetails.statistics.studentAverage.toFixed(2) : 'N/A'}
+                                            </div>
+                                        </div>
+                                        <div className={styles.statItem}>
+                                            <div className={styles.statItemLabel}>SUPERVISOR AVERAGE</div>
+                                            <div className={styles.statItemValue}>
+                                                {facultyDetails.statistics.supervisorAverage ? facultyDetails.statistics.supervisorAverage.toFixed(2) : 'N/A'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.overallScoreRow}>
+                                        <div className={styles.statItemLabel}>OVERALL SCORE</div>
+                                        <div className={styles.overallScoreLarge}>
+                                            {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) : '---'}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Computation Tables */}

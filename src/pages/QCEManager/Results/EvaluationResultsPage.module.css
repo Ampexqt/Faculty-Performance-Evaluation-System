@@ -205,8 +205,9 @@
 
 /* Modal Styles */
 .modalContent {
-    max-height: 75vh;
+    max-height: 90vh;
     overflow-y: auto;
+    max-width: 650px;
 }
 
 .modalLoading {
@@ -226,31 +227,91 @@
 /* Faculty Header */
 .facultyHeader {
     text-align: center;
-    padding: 1rem;
+    padding: 0.75rem 1rem 0.5rem;
     border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .facultyName {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: #1a1a1a;
     margin: 0 0 0.25rem 0;
 }
 
 .facultyPosition {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #666;
-    margin: 0.125rem 0;
+    margin: 0 0 0.125rem 0;
 }
 
 .facultyEmail {
-    font-size: 0.8125rem;
-    color: #7f1d1d;
-    margin: 0.25rem 0 0 0;
+    font-size: 0.75rem;
+    color: #666;
+    margin: 0;
 }
 
-/* Stats Container */
+/* New Stats Grid */
+.statsGrid2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0 1rem;
+}
+
+.statBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+}
+
+.statLabel2 {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.statValue2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+/* Overall Score Box */
+.overallScoreBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+    background: #7f1d1d;
+    border-radius: 8px;
+    margin: 0 1rem 0.75rem;
+    text-align: center;
+}
+
+.overallScoreLabel {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.375rem;
+}
+
+.overallScoreValue {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+}
+
+/* Legacy Stats Container (keep for compatibility) */
 .statsContainer {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -291,7 +352,7 @@
     line-height: 1;
 }
 
-/* Overall Score Container */
+/* Legacy Overall Score Container (keep for compatibility) */
 .overallScoreContainer {
     display: flex;
     flex-direction: column;
@@ -318,82 +379,87 @@
     line-height: 1;
 }
 
-/* Computation Section */
-.computationSection {
-    margin-top: 1.25rem;
-    padding-top: 1.25rem;
-    border-top: 2px solid #e5e7eb;
+/* Annex Section */
+.annexSection {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem 0.5rem;
+    border-top: 1px solid #e5e7eb;
 }
 
-.computationTitle {
-    font-size: 1.125rem;
+.annexTitle {
+    font-size: 0.9375rem;
     font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 1rem 0;
-    text-align: center;
-}
-
-.tableWrapper {
-    margin-bottom: 1.25rem;
-}
-
-.tableTitle {
-    font-size: 0.875rem;
-    font-weight: 600;
     color: #1a1a1a;
     margin: 0 0 0.5rem 0;
 }
 
-/* Computation Table */
-.computationTable {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8125rem;
+.annexGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.annexCard {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem;
     background: white;
-    border: 1px solid #d1d5db;
-}
-
-.computationTable thead {
-    background: #f9fafb;
-}
-
-.computationTable th {
-    padding: 0.5rem 0.375rem;
-    text-align: center;
-    font-weight: 600;
-    color: #374151;
-    border: 1px solid #d1d5db;
-    font-size: 0.75rem;
-}
-
-.computationTable td {
-    padding: 0.5rem 0.375rem;
-    text-align: center;
-    border: 1px solid #d1d5db;
-    color: #1f2937;
-}
-
-.computationTable td:first-child {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
     text-align: left;
+    width: 100%;
+}
+
+.annexCard:hover {
+    border-color: #b91c1c;
+    background: #fef2f2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.annexIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #fee2e2;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.annexInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.annexLabel {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.annexAction {
+    font-size: 0.625rem;
+    color: #666;
     font-weight: 500;
-    background: #f9fafb;
-    font-size: 0.75rem;
 }
 
-.computationCell {
-    text-align: center !important;
-    font-weight: 500;
-    background: white !important;
+.annexArrow {
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: all 0.2s;
 }
 
-.totalRow {
-    background: #f3f4f6;
-    font-weight: 600;
-}
-
-.totalRow td {
-    padding: 0.625rem 0.5rem;
-    font-size: 0.875rem;
+.annexCard:hover .annexArrow {
+    opacity: 1;
+    transform: translateX(0);
+    color: #b91c1c !important;
 }
 
 .noData {

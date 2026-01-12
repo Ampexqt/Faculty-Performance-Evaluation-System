@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, TrendingUp, Users, Award, X, Printer } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, TrendingUp, Users, Award, X, Printer, FileText, ChevronRight } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Table } from '@/components/Table/Table';
 import { Badge } from '@/components/Badge/Badge';
@@ -8,6 +9,7 @@ import { Modal } from '@/components/Modal/Modal';
 import styles from './EvaluationResultsPage.module.css';
 
 export function EvaluationResultsPage() {
+    const navigate = useNavigate();
     const [userInfo, setUserInfo] = useState(() => {
         return {
             fullName: sessionStorage.getItem('fullName') || 'QCE Manager',
@@ -99,7 +101,7 @@ export function EvaluationResultsPage() {
         {
             header: 'Faculty Name',
             accessor: 'name',
-            width: '25%',
+            width: '30%',
             render: (value, row) => (
                 <div className={styles.facultyCell}>
                     <div className={styles.tableFacultyName}>{value}</div>
@@ -110,7 +112,7 @@ export function EvaluationResultsPage() {
         {
             header: 'Student Evaluations',
             accessor: 'studentEvaluations',
-            width: '15%',
+            width: '20%',
             align: 'center',
             render: (value) => (
                 <span className={styles.countBadge}>{value || 0}</span>
@@ -119,45 +121,31 @@ export function EvaluationResultsPage() {
         {
             header: 'Supervisor Evaluations',
             accessor: 'supervisorEvaluations',
-            width: '15%',
+            width: '20%',
             align: 'center',
             render: (value) => (
                 <span className={styles.countBadge}>{value || 0}</span>
             )
         },
         {
-            header: 'Student Avg',
-            accessor: 'studentAverage',
-            width: '12%',
-            align: 'center',
-            render: (value) => (
-                <span className={styles.scoreValue}>{value ? value.toFixed(2) : 'N/A'}</span>
-            )
-        },
-        {
-            header: 'Supervisor Avg',
-            accessor: 'supervisorAverage',
-            width: '12%',
-            align: 'center',
-            render: (value) => (
-                <span className={styles.scoreValue}>{value ? value.toFixed(2) : 'N/A'}</span>
-            )
-        },
-        {
             header: 'Overall Score',
             accessor: 'overallScore',
-            width: '12%',
+            width: '15%',
             align: 'center',
             render: (value) => (
                 <div className={styles.overallScore}>
-                    <span className={styles.scoreHighlight}>{value ? value.toFixed(2) : 'N/A'}</span>
+                    {value ? (
+                        <span className={styles.scoreHighlight}>{value.toFixed(2)}</span>
+                    ) : (
+                        <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>
+                    )}
                 </div>
             )
         },
         {
             header: 'Action',
             accessor: 'action',
-            width: '9%',
+            width: '15%',
             align: 'center',
             render: (value, row) => (
                 <button
@@ -260,252 +248,67 @@ export function EvaluationResultsPage() {
                             </div>
                         ) : facultyDetails ? (
                             <>
-                                <button className={styles.printButton} onClick={() => window.print()}>
-                                    <Printer size={16} />
-                                    Print Results
-                                </button>
-
                                 {/* Faculty Header */}
                                 <div className={styles.facultyHeader}>
                                     <h2 className={styles.facultyName}>{facultyDetails.faculty.name}</h2>
-                                    <p className={styles.facultyPosition}>
-                                        {facultyDetails.faculty.position}
-                                        {facultyDetails.faculty.department_name && (
-                                            <span> • {facultyDetails.faculty.department_name}</span>
-                                        )}
-                                    </p>
+                                    <p className={styles.facultyPosition}>{facultyDetails.faculty.position}</p>
                                     <p className={styles.facultyEmail}>{facultyDetails.faculty.email}</p>
                                 </div>
 
                                 {/* Statistics Grid */}
-                                <div className={styles.statsContainer}>
-                                    <div className={styles.statColumn}>
-                                        <span className={styles.statLabel}>STUDENT EVALUATIONS</span>
-                                        <span className={styles.statNumber}>{facultyDetails.statistics.studentCount}</span>
+                                <div className={styles.statsGrid2}>
+                                    <div className={styles.statBox}>
+                                        <span className={styles.statLabel2}>STUDENT EVALUATIONS</span>
+                                        <span className={styles.statValue2}>{facultyDetails.statistics.studentCount}</span>
                                     </div>
-                                    <div className={styles.statColumn}>
-                                        <span className={styles.statLabel}>SUPERVISOR EVALUATIONS</span>
-                                        <span className={styles.statNumber}>{facultyDetails.statistics.supervisorCount}</span>
+                                    <div className={styles.statBox}>
+                                        <span className={styles.statLabel2}>SUPERVISOR EVALUATIONS</span>
+                                        <span className={styles.statValue2}>{facultyDetails.statistics.supervisorCount}</span>
                                     </div>
-                                </div>
-
-                                <div className={styles.statsContainer}>
-                                    <div className={styles.statColumn}>
-                                        <span className={styles.statLabel}>STUDENT AVERAGE</span>
-                                        <span className={styles.statNumberLarge}>
+                                    <div className={styles.statBox}>
+                                        <span className={styles.statLabel2}>STUDENT AVERAGE</span>
+                                        <span className={styles.statValue2}>
                                             {facultyDetails.statistics.studentAverage ? facultyDetails.statistics.studentAverage.toFixed(2) : 'N/A'}
                                         </span>
                                     </div>
-                                    <div className={styles.statColumn}>
-                                        <span className={styles.statLabel}>SUPERVISOR AVERAGE</span>
-                                        <span className={styles.statNumberLarge}>
+                                    <div className={styles.statBox}>
+                                        <span className={styles.statLabel2}>SUPERVISOR AVERAGE</span>
+                                        <span className={styles.statValue2}>
                                             {facultyDetails.statistics.supervisorAverage ? facultyDetails.statistics.supervisorAverage.toFixed(2) : 'N/A'}
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* Overall Score */}
-                                <div className={styles.overallScoreContainer}>
-                                    <span className={styles.overallLabel}>OVERALL SCORE</span>
-                                    <span className={styles.overallValue}>
-                                        {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) : 'N/A'}
+                                <div className={styles.overallScoreBox}>
+                                    <span className={styles.overallScoreLabel}>OVERALL SCORE</span>
+                                    <span className={styles.overallScoreValue}>
+                                        {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) : '---'}
                                     </span>
                                 </div>
 
                                 {/* Computation Tables */}
                                 {(facultyDetails.studentEvaluations.length > 0 || facultyDetails.supervisorEvaluations.length > 0) && (() => {
-                                    // 1. Get Distinct Years from Data
-                                    const distinctYears = Array.from(new Set([
-                                        ...facultyDetails.studentEvaluations.map(e => e.year_label),
-                                        ...facultyDetails.supervisorEvaluations.map(e => e.year_label)
-                                    ].filter(Boolean))).sort();
-
-                                    // 2. Determine Start Year (Earliest from data)
-                                    let startYear = new Date().getFullYear();
-                                    if (distinctYears.length > 0) {
-                                        // Pick the earliest year found
-                                        const match = distinctYears[0].match(/(\d{4})/);
-                                        if (match) startYear = parseInt(match[1]);
-                                    }
-
-                                    // 3. Generate 3-Year Window (6 Semesters) starting from earliest
-                                    const years = [
-                                        `${startYear}-${startYear + 1}`,
-                                        `${startYear + 1}-${startYear + 2}`,
-                                        `${startYear + 2}-${startYear + 3}`
-                                    ];
-
-                                    // Helper: Get Average Score for a specific Year & Semester
-                                    const getSemScore = (evals, yearLabel, semesterCheck) => {
-                                        const matches = evals.filter(e =>
-                                            e.year_label === yearLabel &&
-                                            e.semester && e.semester.includes(semesterCheck)
-                                        );
-
-                                        if (matches.length === 0) return 0;
-                                        const sum = matches.reduce((acc, curr) => acc + parseFloat(curr.total_score || 0), 0);
-                                        return sum / matches.length;
-                                    };
-
-                                    // Fixed Divisor for 6 Semesters (3 Years)
-                                    const divisor = 6;
-
-                                    // Calculate Student Stats
-                                    let studentSum = 0;
-                                    years.forEach(yr => {
-                                        studentSum += getSemScore(facultyDetails.studentEvaluations, yr, '1st');
-                                        studentSum += getSemScore(facultyDetails.studentEvaluations, yr, '2nd');
-                                    });
-                                    const studentAverageCalc = studentSum / divisor;
-                                    const studentPoints = (studentAverageCalc / 100) * 36;
-
-                                    // Calculate Supervisor Stats
-                                    let supervisorSum = 0;
-                                    years.forEach(yr => {
-                                        supervisorSum += getSemScore(facultyDetails.supervisorEvaluations, yr, '1st');
-                                        supervisorSum += getSemScore(facultyDetails.supervisorEvaluations, yr, '2nd');
-                                    });
-                                    const supervisorAverageCalc = supervisorSum / divisor;
-                                    const supervisorPoints = (supervisorAverageCalc / 100) * 24;
-
-                                    const totalPoints = studentPoints + supervisorPoints;
-
                                     return (
-                                        <div className={styles.computationSection}>
-                                            <h3 className={styles.computationTitle}>Sample Computation</h3>
-
-                                            {/* Student Table */}
-                                            <div className={styles.tableWrapper}>
-                                                <h4 className={styles.tableTitle}>1. Points for Student Evaluation</h4>
-                                                <table className={styles.computationTable}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th rowSpan="2" style={{ width: '20%' }}>Semester</th>
-                                                            {years.map(yr => <th key={yr} colSpan="2">{yr}</th>)}
-                                                        </tr>
-                                                        <tr>
-                                                            {years.map(yr => (
-                                                                <React.Fragment key={yr}>
-                                                                    <th>1st Sem</th>
-                                                                    <th>2nd Sem</th>
-                                                                </React.Fragment>
-                                                            ))}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>Ave. Student Eval. Ratings</td>
-                                                            {years.map(yr => (
-                                                                <React.Fragment key={yr}>
-                                                                    <td>
-                                                                        {(() => {
-                                                                            const s = getSemScore(facultyDetails.studentEvaluations, yr, '1st');
-                                                                            return s > 0 ? s.toFixed(2) : 'N/A';
-                                                                        })()}
-                                                                    </td>
-                                                                    <td>
-                                                                        {(() => {
-                                                                            const s = getSemScore(facultyDetails.studentEvaluations, yr, '2nd');
-                                                                            return s > 0 ? s.toFixed(2) : 'N/A';
-                                                                        })()}
-                                                                    </td>
-                                                                </React.Fragment>
-                                                            ))}
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Average</td>
-                                                            <td colSpan="6" className={styles.computationCell}>
-                                                                {`(${studentSum.toFixed(2)}) / 6 = ${studentAverageCalc.toFixed(2)}`}
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Points (x 0.36)</td>
-                                                            <td colSpan="6" className={styles.computationCell}>
-                                                                <strong>{studentPoints.toFixed(2)}</strong>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-
-                                            {/* Supervisor Table */}
-                                            <div className={styles.tableWrapper}>
-                                                <h4 className={styles.tableTitle}>2. Points for Supervisor's Evaluation</h4>
-                                                <table className={styles.computationTable}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th rowSpan="2" style={{ width: '20%' }}>Semester</th>
-                                                            {years.map(yr => <th key={yr} colSpan="2">{yr}</th>)}
-                                                        </tr>
-                                                        <tr>
-                                                            {years.map(yr => (
-                                                                <React.Fragment key={yr}>
-                                                                    <th>1st Sem</th>
-                                                                    <th>2nd Sem</th>
-                                                                </React.Fragment>
-                                                            ))}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>Supervisor's Rating</td>
-                                                            {years.map(yr => (
-                                                                <React.Fragment key={yr}>
-                                                                    <td>
-                                                                        {(() => {
-                                                                            const s = getSemScore(facultyDetails.supervisorEvaluations, yr, '1st');
-                                                                            return s > 0 ? s.toFixed(2) : 'N/A';
-                                                                        })()}
-                                                                    </td>
-                                                                    <td>
-                                                                        {(() => {
-                                                                            const s = getSemScore(facultyDetails.supervisorEvaluations, yr, '2nd');
-                                                                            return s > 0 ? s.toFixed(2) : 'N/A';
-                                                                        })()}
-                                                                    </td>
-                                                                </React.Fragment>
-                                                            ))}
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Average</td>
-                                                            <td colSpan="6" className={styles.computationCell}>
-                                                                {`(${supervisorSum.toFixed(2)}) / 6 = ${supervisorAverageCalc.toFixed(2)}`}
-                                                            </td>
-                                                        </tr>                                                        <tr>
-                                                            <td>Points (x 0.24)</td>
-                                                            <td colSpan="6" className={styles.computationCell}>
-                                                                <strong>{supervisorPoints.toFixed(2)}</strong>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-
-                                            {/* Summary Table */}
-                                            <div className={styles.tableWrapper}>
-                                                <h4 className={styles.tableTitle}>3. Faculty Performance Evaluation</h4>
-                                                <table className={styles.computationTable}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Category</th>
-                                                            <th>Points</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>Student Evaluation</td>
-                                                            <td>{studentPoints.toFixed(2)}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Supervisor's Evaluation</td>
-                                                            <td>{supervisorPoints.toFixed(2)}</td>
-                                                        </tr>
-                                                        <tr className={styles.totalRow}>
-                                                            <td><strong>Total Points</strong></td>
-                                                            <td><strong>{totalPoints.toFixed(2)}</strong></td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                        <div className={styles.annexSection}>
+                                            <h3 className={styles.annexTitle}>Detailed Evaluation Reports</h3>
+                                            <div className={styles.annexGrid}>
+                                                {['A', 'B', 'C', 'D'].map((annex) => (
+                                                    <button
+                                                        key={annex}
+                                                        className={styles.annexCard}
+                                                        onClick={() => navigate(`/qce/results/${facultyDetails.faculty.id}/annex-${annex.toLowerCase()}`)}
+                                                    >
+                                                        <div className={styles.annexIcon}>
+                                                            <FileText size={24} color="#b91c1c" />
+                                                        </div>
+                                                        <div className={styles.annexInfo}>
+                                                            <span className={styles.annexLabel}>Annex {annex}</span>
+                                                            <span className={styles.annexAction}>View Report</span>
+                                                        </div>
+                                                        <ChevronRight size={20} className={styles.annexArrow} color="#9ca3af" />
+                                                    </button>
+                                                ))}
                                             </div>
                                         </div>
                                     );

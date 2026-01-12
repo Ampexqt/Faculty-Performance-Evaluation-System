@@ -212,11 +212,14 @@ export function FacultyEvaluationDetail() {
             accessor: 'year_section',
             width: '15%',
             align: 'center',
-            render: (_, row) => (
-                <span style={{ fontWeight: 500 }}>
-                    {row.year_level}-{row.section}
-                </span>
-            )
+            render: (_, row) => {
+                const program = row.program_code || row.student_program_code || '';
+                return (
+                    <span style={{ fontWeight: 500 }}>
+                        {program} {row.year_level}-{row.section}
+                    </span>
+                );
+            }
         },
         {
             header: 'Total Students',
@@ -570,17 +573,16 @@ export function FacultyEvaluationDetail() {
                         <div className={styles.formGroup}>
                             <label className={styles.label}>Evaluation Criteria</label>
                             <div style={{
-                                padding: '0.75rem',
-                                backgroundColor: selectedCriteria === 'new' ? '#ecfdf5' : '#eff6ff',
-                                border: `1px solid ${selectedCriteria === 'new' ? '#10b981' : '#3b82f6'}`,
+                                padding: '0.5rem 0.875rem',
+                                backgroundColor: selectedCriteria === 'new' ? '#d1fae5' : '#dbeafe',
+                                borderLeft: `3px solid ${selectedCriteria === 'new' ? '#10b981' : '#3b82f6'}`,
                                 borderRadius: '0.375rem',
-                                color: selectedCriteria === 'new' ? '#047857' : '#1d4ed8',
-                                fontWeight: 500,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem'
+                                color: '#1f2937',
+                                fontSize: '0.875rem',
+                                fontWeight: 600,
+                                borderRadius: '0.25rem'
                             }}>
-                                {selectedCriteria === 'new' ? '✨ New Criteria (Updated)' : 'Old Criteria (Existing)'}
+                                {selectedCriteria === 'new' ? 'New Criteria (Updated)' : 'Old Criteria (Existing)'}
                             </div>
                         </div>
                         <div className={styles.formGroup}>

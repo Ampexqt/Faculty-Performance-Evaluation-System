@@ -111,6 +111,7 @@ router.get('/:facultyId', async (req, res) => {
                 END as year_level,
                 fa.eval_code,
                 fa.criteria_type,
+                MAX(st.program_code) as student_program_code,
                 COUNT(DISTINCT st.id) as total_students,
                 COUNT(DISTINCT se.student_id) as evaluated_count,
                 COALESCE(

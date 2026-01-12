@@ -14,6 +14,14 @@ const RATING_SCALE = [
     { value: 1, label: 'Poor', description: 'The faculty fails to meet job requirements.' }
 ];
 
+const NEW_RATING_SCALE = [
+    { value: 5, label: 'Always manifested', description: 'Evident in nearly all relevant situations (81–100%)' },
+    { value: 4, label: 'Often manifested', description: 'Evident most of the time, with occasional lapses (61–80%)' },
+    { value: 3, label: 'Sometimes manifested', description: 'Evident about half the time (41–60%)' },
+    { value: 2, label: 'Seldom manifested', description: 'Infrequently demonstrated; partly evident in limited situations (21–40%)' },
+    { value: 1, label: 'Not manifested', description: 'Seldom demonstrated; almost never evident, with only isolated cases (0–20%)' }
+];
+
 const OLD_CRITERIA = {
     'A. Commitment': [
         'Demonstrates sensitivity to students\' ability to attend and absorb content information.',
@@ -45,35 +53,43 @@ const OLD_CRITERIA = {
     ]
 };
 
+
 const NEW_CRITERIA = {
-    'A. Professional Commitment': [
-        'Shows awareness of students’ learning abilities and limitations.',
-        'Aligns instructional goals with students’ learning needs through collaboration.',
-        'Is accessible to students outside scheduled class hours when necessary.',
-        'Attends classes punctually and comes prepared to fulfill teaching duties.',
-        'Maintains accurate academic records and submits them on time.'
+    'A. Management of Teaching and Learning': [
+        'Comes to class on time.',
+        'Explains learning outcomes, expectations, grading system, and various requirements of the subject/course.',
+        'Maximizes the allocated teaching hours effectively.',
+        'Facilitates students to think critically and creatively by providing appropriate learning activities.',
+        'Guides students to learn on their own, reflect on their learning and monitor their own progress.',
+        'Provides timely and constructive feedback on student performance to improve learning.'
     ],
-    'B. Subject Matter Expertise': [
-        'Demonstrates strong command of the subject beyond prescribed materials.',
-        'Incorporates current theories and practices relevant to the discipline.',
-        'Relates course content to practical situations and student goals.',
-        'Connects present topics with prior lessons and real-life applications.',
-        'Keeps updated with emerging trends and issues in the field.'
+    'B. Content Knowledge, Pedagogy, and Technology': [
+        'Demonstrates extensive and broad knowledge of the subject/course.',
+        'Simplifies complex ideas in the lesson for ease of understanding.',
+        'Relates the subject matter to contemporary issues and developments in the discipline and daily life activities.',
+        'Promotes active learning and student engagement by using appropriate teaching and learning resources, including ICT tools and platforms.',
+        'Uses appropriate assessments (projects, exams, quizzes, assignments, etc.) aligned with the learning outcomes.'
     ],
-    'C. Promotion of Independent Learning': [
-        'Uses teaching approaches that encourage active student participation.',
-        'Builds students’ confidence and recognizes their academic efforts.',
-        'Encourages students to participate in shaping learning goals and responsibilities.',
-        'Fosters independent thinking and accountability in decision-making.',
-        'Motivates students to explore concepts beyond course requirements.'
+    'C. Commitment and Transparency': [
+        'Recognizes and values the unique diversity and individual differences among students.',
+        'Assists students with their learning challenges during consultation hours.',
+        'Provides immediate feedback on student outputs and performance.',
+        'Provides transparent and clear criteria in rating student performance.'
     ],
-    'D. Learning Management': [
-        'Encourages student engagement through group and collaborative activities.',
-        'Effectively assumes multiple instructional roles to guide learning.',
-        'Establishes learning environments that promote constructive discussion.',
-        'Organizes learning activities to achieve shared instructional objectives.',
-        'Uses appropriate instructional resources and technologies to enhance learning.'
+    'D. Professionalism and Personal Qualities': [
+        'Maintains a professional and respectful demeanor in the classroom/online environment.',
+        'Demonstrates mastery of communication skills (verbal and non-verbal) for effective teaching.',
+        'Observes official class schedule and attends classes regularly.',
+        'Adheres to school policies and regulations regarding faculty conduct.',
+        'Participates actively in school-related activities and community engagement initiatives.'
     ]
+};
+
+const NEW_CRITERIA_DESCRIPTIONS = {
+    'A. Management of Teaching and Learning': 'Management of Teaching and Learning refers to the standard and organized planning of instructional activities, clear communication of academic expectations, efficient use of time, and the successful use of student-centered activities that promote critical thinking, collaborative learning, individual decision making, and continuous academic improvement through constructive feedback.',
+    'B. Content Knowledge, Pedagogy, and Technology': 'Content knowledge, pedagogy, and technology refer to teachers’ ability to demonstrate a strong grasp of subject matter, present concepts in a clear and accessible way, relate content to relevant and current developments, engage students through appropriate instructional strategies and digital tools, and apply assessment methods aligned with intended learning outcomes.',
+    'C. Commitment and Transparency': 'Commitment and transparency refer to the teacher’s consistent dedication to supporting student learning by demonstrating professionalism, providing timely academic support and feedback, and upholding fairness and accountability through the use of clear and openly communicated performance criteria.',
+    'D. Professionalism and Personal Qualities': 'Professionalism and personal qualities refer to the faculty’s adherence to ethical standards, proper grooming, respect for authority and students, effective communication, and active participation in the academic community.'
 };
 
 export function EvaluationFormPage() {
@@ -115,17 +131,21 @@ export function EvaluationFormPage() {
     const evaluatorPosition = isSupervisor ? 'Supervisor' : 'Student';
     const activeCriteria = criteriaType === 'new' ? NEW_CRITERIA : OLD_CRITERIA;
 
+    // Calculate offsets for continuous numbering if new criteria
+    let currentOffset = 0;
+    const categoryOffsets = {};
+    if (criteriaType === 'new') {
+        Object.entries(activeCriteria).forEach(([key, items]) => {
+            categoryOffsets[key] = currentOffset;
+            currentOffset += items.length;
+        });
+    }
+
     const [ratings, setRatings] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [comments, setComments] = useState('');
 
-    // Debug: Log the evaluation data
-    useEffect(() => {
-        console.log('Evaluation Data:', evaluationData);
-        console.log('Faculty Role:', facultyRole);
-    }, [evaluationData, facultyRole]);
 
-    // Fetch faculty role if missing
     const [fetchedRole, setFetchedRole] = useState(null);
     useEffect(() => {
         const fetchFacultyRole = async () => {
@@ -311,88 +331,192 @@ export function EvaluationFormPage() {
             <div className={styles.page}>
                 <div className={styles.formContainer}>
                     {/* Form Header */}
+                    {/* Form Header */}
                     <div className={styles.formHeader}>
-                        <h1 className={styles.formTitle}>
-                            Instrument for the Instruction/Teaching Effectiveness
-                        </h1>
+                        {criteriaType === 'new' ? (
+                            <>
+                                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                                    <h1 className={styles.formTitle} style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>EVALUATION INSTRUMENT</h1>
+                                    <h2 className={styles.formTitle} style={{ fontSize: '1.5rem' }}>STUDENT EVALUATION OF TEACHERS (SET)</h2>
+                                </div>
 
-                        <div className={styles.headerInfo}>
-                            <p className={styles.qceInfo}>The QCE of the NBC No. 461</p>
-                            <p className={styles.ratingPeriod}>
-                                <strong>Rating Period:</strong> {formatRatingPeriod()}
-                            </p>
-                        </div>
+                                <div className={styles.sectionHeader}>
+                                    <h3>A. Faculty Information</h3>
+                                    <span className={styles.subtext}>(To be accomplished by the Designated Office)</span>
+                                </div>
 
-                        <div className={styles.facultyInfo}>
-                            <div className={styles.infoRow}>
-                                <label className={styles.infoLabel}>Name of Faculty:</label>
-                                <div className={styles.infoValue}>{instructor}</div>
-                            </div>
-                            <div className={styles.infoRow}>
-                                <label className={styles.infoLabel}>Academic Rank:</label>
-                                <div className={styles.infoValue}>{displayRole}</div>
-                            </div>
-                        </div>
+                                <div className={styles.facultyInfoGrid}>
+                                    <div className={styles.infoRow}>
+                                        <label>Evaluation Period:</label>
+                                        <div className={styles.infoLine}>{formatRatingPeriod()}</div>
+                                    </div>
+                                    <div className={styles.infoRow}>
+                                        <label>Name of Faculty Member:</label>
+                                        <div className={styles.infoLine}>{instructor}</div>
+                                    </div>
+                                    <div className={styles.infoRow}>
+                                        <label>College/Department:</label>
+                                        <div className={styles.infoLine}>College of Information and Computing Sciences</div>
+                                    </div>
+                                    <div className={styles.infoRow}>
+                                        <label>Course Code / Title:</label>
+                                        <div className={styles.infoLine}>{subject}</div>
+                                    </div>
+                                    <div className={styles.infoRow}>
+                                        <label>Program Level:</label>
+                                        <div className={styles.infoLine}>College</div>
+                                    </div>
+                                </div>
 
-                        <div className={styles.evaluatorType}>
-                            <label className={styles.evaluatorLabel}>Evaluators:</label>
-                            <div className={styles.checkboxGroup}>
-                                <label className={styles.checkbox}>
-                                    <input type="checkbox" disabled />
-                                    <span>Self</span>
-                                </label>
-                                <label className={styles.checkbox}>
-                                    <input type="checkbox" checked={!isSupervisor} disabled />
-                                    <span>Student</span>
-                                </label>
-                                <label className={styles.checkbox}>
-                                    <input type="checkbox" disabled />
-                                    <span>Peer</span>
-                                </label>
-                                <label className={styles.checkbox}>
-                                    <input type="checkbox" checked={isSupervisor} disabled />
-                                    <span>Supervisor</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                                <div className={styles.evaluatorType} style={{ marginTop: '1.5rem', border: 'none', padding: 0 }}>
+                                    <label className={styles.evaluatorLabel} style={{ marginBottom: '0.5rem', display: 'block' }}>Type of Evaluator:</label>
+                                    <div className={styles.checkboxGroup}>
+                                        <label className={styles.checkbox}>
+                                            <input type="checkbox" checked={!isSupervisor} disabled />
+                                            <span>Student</span>
+                                        </label>
+                                        <label className={styles.checkbox}>
+                                            <input type="checkbox" disabled />
+                                            <span>Peer</span>
+                                        </label>
+                                        <label className={styles.checkbox}>
+                                            <input type="checkbox" checked={isSupervisor} disabled />
+                                            <span>Supervisor</span>
+                                        </label>
+                                        <label className={styles.checkbox}>
+                                            <input type="checkbox" disabled />
+                                            <span>Self</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <h1 className={styles.formTitle}>
+                                    Instrument for the Instruction/Teaching Effectiveness
+                                </h1>
 
-                    {/* Subject Info Bar */}
-                    <div className={styles.subjectBar}>
-                        <strong>Subject:</strong> {subject}
+                                <div className={styles.headerInfo}>
+                                    <p className={styles.qceInfo}>The QCE of the NBC No. 461</p>
+                                    <p className={styles.ratingPeriod}>
+                                        <strong>Rating Period:</strong> {formatRatingPeriod()}
+                                    </p>
+                                </div>
+
+                                <div className={styles.facultyInfo}>
+                                    <div className={styles.infoRow}>
+                                        <label className={styles.infoLabel}>Name of Faculty:</label>
+                                        <div className={styles.infoValue}>{instructor}</div>
+                                    </div>
+                                    <div className={styles.infoRow}>
+                                        <label className={styles.infoLabel}>Academic Rank:</label>
+                                        <div className={styles.infoValue}>{displayRole}</div>
+                                    </div>
+                                </div>
+
+                                <div className={styles.evaluatorType}>
+                                    <label className={styles.evaluatorLabel}>Evaluators:</label>
+                                    <div className={styles.checkboxGroup}>
+                                        <label className={styles.checkbox}>
+                                            <input type="checkbox" disabled />
+                                            <span>Self</span>
+                                        </label>
+                                        <label className={styles.checkbox}>
+                                            <input type="checkbox" checked={!isSupervisor} disabled />
+                                            <span>Student</span>
+                                        </label>
+                                        <label className={styles.checkbox}>
+                                            <input type="checkbox" disabled />
+                                            <span>Peer</span>
+                                        </label>
+                                        <label className={styles.checkbox}>
+                                            <input type="checkbox" checked={isSupervisor} disabled />
+                                            <span>Supervisor</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Subject Info Bar for Old Criteria */}
+                                <div className={styles.subjectBar}>
+                                    <strong>Subject:</strong> {subject}
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <div className={styles.instructions}>
-                        <h3>Instructions</h3>
-                        <p>Please evaluate the faculty using the scale below. Encircle your rating.</p>
+                        {criteriaType === 'new' ? (
+                            <>
+                                <div className={styles.sectionHeader}>
+                                    <h3>B. Rating Scale</h3>
+                                </div>
+                                <div className={styles.ratingScale}>
+                                    <table className={styles.scaleTable}>
+                                        <thead>
+                                            <tr>
+                                                <th>Scale</th>
+                                                <th>Qualitative Description</th>
+                                                <th style={{ width: '50%' }}>Operational Definition</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {NEW_RATING_SCALE.map(scale => (
+                                                <tr key={scale.value}>
+                                                    <td style={{ fontWeight: 'bold' }}>{scale.value}</td>
+                                                    <td>{scale.label}</td>
+                                                    <td>{scale.description}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                        <div className={styles.ratingScale}>
-                            <h4>Rating Scale</h4>
-                            <table className={styles.scaleTable}>
-                                <thead>
-                                    <tr>
-                                        <th>Scale</th>
-                                        <th>Descriptive Rating</th>
-                                        <th>Qualitative Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {RATING_SCALE.map(scale => (
-                                        <tr key={scale.value}>
-                                            <td>{scale.value}</td>
-                                            <td>{scale.label}</td>
-                                            <td>{scale.description}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                <div className={styles.sectionHeader} style={{ marginTop: '2rem' }}>
+                                    <h3>C. Instruction</h3>
+                                </div>
+                                <p style={{ marginTop: '0.5rem' }}>
+                                    Read the benchmark statements carefully. Please rate the faculty on each of the following statements below using the above-defined rating scale. Encircle your rating.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h3>Instructions</h3>
+                                <p>Please evaluate the faculty using the scale below. Encircle your rating.</p>
+
+                                <div className={styles.ratingScale}>
+                                    <h4>Rating Scale</h4>
+                                    <table className={styles.scaleTable}>
+                                        <thead>
+                                            <tr>
+                                                <th>Scale</th>
+                                                <th>Descriptive Rating</th>
+                                                <th>Qualitative Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {RATING_SCALE.map(scale => (
+                                                <tr key={scale.value}>
+                                                    <td>{scale.value}</td>
+                                                    <td>{scale.label}</td>
+                                                    <td>{scale.description}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <form onSubmit={handleSubmit} className={styles.evaluationForm}>
                         {Object.entries(activeCriteria).map(([category, criteria]) => (
                             <div key={category} className={styles.categorySection}>
                                 <h3 className={styles.categoryTitle}>{category}</h3>
+                                {criteriaType === 'new' && NEW_CRITERIA_DESCRIPTIONS[category] && (
+                                    <p style={{ fontStyle: 'italic', marginBottom: '1rem', color: '#4b5563', lineHeight: '1.5' }}>
+                                        ({NEW_CRITERIA_DESCRIPTIONS[category]})
+                                    </p>
+                                )}
 
                                 <table className={styles.criteriaTable}>
                                     <thead>
@@ -409,7 +533,11 @@ export function EvaluationFormPage() {
                                     <tbody>
                                         {criteria.map((criterion, index) => (
                                             <tr key={index}>
-                                                <td className={styles.numberCell}>{index + 1}</td>
+                                                <td className={styles.numberCell}>
+                                                    {criteriaType === 'new'
+                                                        ? categoryOffsets[category] + index + 1
+                                                        : index + 1}
+                                                </td>
                                                 <td className={styles.indicatorCell}>{criterion}</td>
                                                 {[5, 4, 3, 2, 1].map(value => (
                                                     <td key={value} className={styles.ratingCell}>

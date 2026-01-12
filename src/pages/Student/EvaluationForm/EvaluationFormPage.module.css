@@ -12,6 +12,50 @@
 }
 
 /* Form Header Styles */
+.sectionHeader {
+    margin-bottom: 1rem;
+}
+
+.sectionHeader h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.subtext {
+    font-size: 0.875rem;
+    font-style: italic;
+    color: #6b7280;
+}
+
+.facultyInfoGrid {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.facultyInfoGrid .infoRow {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0;
+}
+
+.facultyInfoGrid label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.infoLine {
+    border-bottom: 1px solid #000;
+    min-height: 1.5em;
+    padding-left: 0.5rem;
+}
+
 .formHeader {
     padding: 2rem;
     background: white;

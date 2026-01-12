@@ -296,6 +296,26 @@
     color: #991b1b;
 }
 
+/* NBC Score Column */
+.nbcScore {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.nbcScoreValue {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #7f1d1d;
+}
+
+.nbcScoreTotal {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #9ca3af;
+}
+
 /* Modal Styles */
 .modalContent {
     max-height: 90vh;

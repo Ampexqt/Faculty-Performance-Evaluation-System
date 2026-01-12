@@ -101,7 +101,7 @@ export function EvaluationResultsPage() {
         {
             header: 'Faculty Name',
             accessor: 'name',
-            width: '35%',
+            width: '25%',
             render: (value, row) => (
                 <div className={styles.facultyCell}>
                     <div className={styles.tableFacultyName}>{value}</div>
@@ -112,7 +112,7 @@ export function EvaluationResultsPage() {
         {
             header: 'Performance Rating',
             accessor: 'overallScore',
-            width: '30%',
+            width: '25%',
             align: 'center',
             render: (value) => {
                 if (!value) {
@@ -149,7 +149,7 @@ export function EvaluationResultsPage() {
         {
             header: 'Overall Score',
             accessor: 'overallScore',
-            width: '20%',
+            width: '15%',
             align: 'center',
             render: (value) => (
                 <div className={styles.overallScore}>
@@ -160,6 +160,30 @@ export function EvaluationResultsPage() {
                     )}
                 </div>
             )
+        },
+        {
+            header: 'NBC 461 - POINTS',
+            accessor: 'nbcScore',
+            width: '20%',
+            align: 'center',
+            render: (value, row) => {
+                // Calculate NBC score from student and supervisor averages
+                const studentAvg = row.studentAverage || 0;
+                const supervisorAvg = row.supervisorAverage || 0;
+
+                if (!studentAvg && !supervisorAvg) {
+                    return <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>;
+                }
+
+                const nbcScore = ((studentAvg / 100) * 36) + ((supervisorAvg / 100) * 24);
+
+                return (
+                    <div className={styles.nbcScore}>
+                        <span className={styles.nbcScoreValue}>{nbcScore.toFixed(2)}</span>
+                        <span className={styles.nbcScoreTotal}>/ 60</span>
+                    </div>
+                );
+            }
         },
         {
             header: 'Action',

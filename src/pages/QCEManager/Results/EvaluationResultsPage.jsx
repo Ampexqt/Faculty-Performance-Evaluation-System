@@ -194,13 +194,34 @@ export function EvaluationResultsPage() {
                         </div>
                     </div>
 
-                    <div className={styles.statCard}>
-                        <div className={styles.statIcon} style={{ background: '#d1fae5' }}>
-                            <Award size={24} color="#065f46" />
+                </div>
+
+                {/* Performance Rating Scale Card */}
+                <div className={styles.ratingScaleCard}>
+                    <div className={styles.ratingScaleHeader}>
+                        <Award size={20} color="#7f1d1d" />
+                        <span className={styles.ratingScaleTitle}>Performance Rating Scale</span>
+                    </div>
+                    <div className={styles.ratingScaleItems}>
+                        <div className={styles.ratingScaleItem}>
+                            <span className={styles.ratingRange}>90-100%</span>
+                            <span className={styles.ratingLabel}>Outstanding</span>
                         </div>
-                        <div className={styles.statContent}>
-                            <span className={styles.statValue}>{stats.averageRating}</span>
-                            <span className={styles.statLabel}>Average Rating</span>
+                        <div className={styles.ratingScaleItem}>
+                            <span className={styles.ratingRange}>85-89%</span>
+                            <span className={styles.ratingLabel}>Very Satisfactory</span>
+                        </div>
+                        <div className={styles.ratingScaleItem}>
+                            <span className={styles.ratingRange}>80-84%</span>
+                            <span className={styles.ratingLabel}>Satisfactory</span>
+                        </div>
+                        <div className={styles.ratingScaleItem}>
+                            <span className={styles.ratingRange}>70-79%</span>
+                            <span className={styles.ratingLabel}>Fair</span>
+                        </div>
+                        <div className={styles.ratingScaleItem}>
+                            <span className={styles.ratingRange}>Below 70%</span>
+                            <span className={styles.ratingLabel}>Poor</span>
                         </div>
                     </div>
                 </div>
@@ -248,46 +269,78 @@ export function EvaluationResultsPage() {
                             </div>
                         ) : facultyDetails ? (
                             <>
-                                {/* Faculty Info Section */}
-                                <div className={styles.modalHeader}>
-                                    <div className={styles.facultyInfo}>
-                                        <h2 className={styles.modalFacultyName}>{facultyDetails.faculty.name}</h2>
-                                        <p className={styles.modalFacultyPosition}>{facultyDetails.faculty.position}</p>
-                                        <p className={styles.modalFacultyEmail}>{facultyDetails.faculty.email}</p>
-                                    </div>
+                                {/* Faculty Header - Inline */}
+                                <div className={styles.facultyHeaderCompact}>
+                                    <h2 className={styles.facultyNameCompact}>{facultyDetails.faculty.name}</h2>
+                                    <p className={styles.facultyDetailsCompact}>
+                                        {facultyDetails.faculty.position} • {facultyDetails.faculty.email}
+                                    </p>
                                 </div>
 
-                                {/* Evaluation Statistics */}
-                                <div className={styles.evaluationStats}>
-                                    <div className={styles.statsRow}>
-                                        <div className={styles.statItem}>
-                                            <div className={styles.statItemLabel}>STUDENT EVALUATIONS</div>
-                                            <div className={styles.statItemValue}>{facultyDetails.statistics.studentCount}</div>
+                                {/* Metrics Container */}
+                                <div className={styles.metricsContainer}>
+                                    <div className={styles.metricsRow}>
+                                        <div className={styles.metricBox}>
+                                            <span className={styles.metricLabel}>STUDENT EVALUATIONS</span>
+                                            <span className={styles.metricValue}>{facultyDetails.statistics.studentCount}</span>
                                         </div>
-                                        <div className={styles.statItem}>
-                                            <div className={styles.statItemLabel}>SUPERVISOR EVALUATIONS</div>
-                                            <div className={styles.statItemValue}>{facultyDetails.statistics.supervisorCount}</div>
+                                        <div className={styles.metricBox}>
+                                            <span className={styles.metricLabel}>SUPERVISOR EVALUATIONS</span>
+                                            <span className={styles.metricValue}>{facultyDetails.statistics.supervisorCount}</span>
                                         </div>
                                     </div>
-                                    <div className={styles.statsRow}>
-                                        <div className={styles.statItem}>
-                                            <div className={styles.statItemLabel}>STUDENT AVERAGE</div>
-                                            <div className={styles.statItemValue}>
+                                    <div className={styles.metricsRow}>
+                                        <div className={styles.metricBox}>
+                                            <span className={styles.metricLabel}>STUDENT AVERAGE</span>
+                                            <span className={styles.metricValue}>
                                                 {facultyDetails.statistics.studentAverage ? facultyDetails.statistics.studentAverage.toFixed(2) : 'N/A'}
-                                            </div>
+                                            </span>
                                         </div>
-                                        <div className={styles.statItem}>
-                                            <div className={styles.statItemLabel}>SUPERVISOR AVERAGE</div>
-                                            <div className={styles.statItemValue}>
+                                        <div className={styles.metricBox}>
+                                            <span className={styles.metricLabel}>SUPERVISOR AVERAGE</span>
+                                            <span className={styles.metricValue}>
                                                 {facultyDetails.statistics.supervisorAverage ? facultyDetails.statistics.supervisorAverage.toFixed(2) : 'N/A'}
-                                            </div>
+                                            </span>
                                         </div>
                                     </div>
-                                    <div className={styles.overallScoreRow}>
-                                        <div className={styles.statItemLabel}>OVERALL SCORE</div>
-                                        <div className={styles.overallScoreLarge}>
-                                            {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) : '---'}
+                                    <div className={styles.scoresRow}>
+                                        <div className={styles.scoreBoxPrimary}>
+                                            <span className={styles.scoreBoxLabel}>OVERALL RATING</span>
+                                            <span className={styles.scoreBoxValue}>
+                                                {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) : '---'}
+                                            </span>
                                         </div>
+                                        <div className={styles.scoreBoxPrimary}>
+                                            <span className={styles.scoreBoxLabel}>NBC 461 - POINTS</span>
+                                            <span className={styles.scoreBoxValue}>
+                                                {(() => {
+                                                    const sAvg = facultyDetails.statistics.studentAverage || 0;
+                                                    const pAvg = facultyDetails.statistics.supervisorAverage || 0;
+                                                    if (!sAvg && !pAvg) return '---';
+
+                                                    const nbcScore = ((sAvg / 100) * 36) + ((pAvg / 100) * 24);
+                                                    return (
+                                                        <>
+                                                            {nbcScore.toFixed(2)} <span className={styles.scoreBoxTotal}>/ 60</span>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className={styles.performanceCategory}>
+                                        <span className={styles.performanceLabel}>PERFORMANCE CATEGORY</span>
+                                        <span className={styles.performanceRating}>
+                                            {(() => {
+                                                const score = facultyDetails.statistics.overallScore || 0;
+                                                if (score >= 90) return 'Outstanding';
+                                                if (score >= 85) return 'Very Satisfactory';
+                                                if (score >= 80) return 'Satisfactory';
+                                                if (score >= 70) return 'Fair';
+                                                if (score > 0) return 'Poor';
+                                                return '---';
+                                            })()}
+                                        </span>
                                     </div>
                                 </div>
 

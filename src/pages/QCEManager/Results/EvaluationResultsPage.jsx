@@ -110,32 +110,6 @@ export function EvaluationResultsPage() {
             )
         },
         {
-            header: 'Role',
-            accessor: 'role',
-            width: '15%',
-            align: 'center',
-            render: (value) => {
-                if (!value || value === 'Faculty') {
-                    return <span className={styles.roleBadge}>Faculty</span>;
-                }
-
-                let roleClass = '';
-                if (value === 'Dean') {
-                    roleClass = styles.roleDean;
-                } else if (value === 'Department Chair') {
-                    roleClass = styles.roleDeptChair;
-                } else if (value === 'Program Chair') {
-                    roleClass = styles.roleProgChair;
-                }
-
-                return (
-                    <span className={`${styles.roleBadge} ${roleClass}`}>
-                        {value}
-                    </span>
-                );
-            }
-        },
-        {
             header: 'Performance Rating',
             accessor: 'overallScore',
             width: '25%',

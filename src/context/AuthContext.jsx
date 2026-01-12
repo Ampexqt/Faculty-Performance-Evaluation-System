@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
 
     // Inactivity Timer
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 15 minutes
+    const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutes
     // Store timer ref inside a state or ref is not enough due to closures?
     // Using a simple variable outside effect might be tricky.
     // Better to use useRef for the timer.

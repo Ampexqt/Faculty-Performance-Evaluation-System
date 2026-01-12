@@ -102,10 +102,15 @@ router.get('/:facultyId', async (req, res) => {
                 s.subject_code,
                 s.subject_name,
                 CASE 
+                    WHEN fa.section REGEXP '^[0-9]+-' THEN NULL
+                    ELSE SUBSTRING_INDEX(fa.section, ' ', 1)
+                END as program_code,
+                CASE 
                     WHEN fa.section REGEXP '^[0-9]+-' THEN SUBSTRING_INDEX(fa.section, '-', 1)
                     ELSE SUBSTRING_INDEX(TRIM(SUBSTRING_INDEX(fa.section, '-', 1)), ' ', -1)
                 END as year_level,
                 fa.eval_code,
+                fa.criteria_type,
                 COUNT(DISTINCT st.id) as total_students,
                 COUNT(DISTINCT se.student_id) as evaluated_count,
                 COALESCE(

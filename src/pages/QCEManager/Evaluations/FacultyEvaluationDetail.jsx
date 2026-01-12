@@ -208,15 +208,15 @@ export function FacultyEvaluationDetail() {
             )
         },
         {
-            header: 'Section',
-            accessor: 'section',
+            header: 'Year & Section',
+            accessor: 'year_section',
             width: '15%',
-        },
-        {
-            header: 'Year Level',
-            accessor: 'year_level',
-            width: '12%',
             align: 'center',
+            render: (_, row) => (
+                <span style={{ fontWeight: 500 }}>
+                    {row.year_level}-{row.section}
+                </span>
+            )
         },
         {
             header: 'Total Students',
@@ -238,13 +238,29 @@ export function FacultyEvaluationDetail() {
         {
             header: 'Progress',
             accessor: 'progress',
-            width: '12%',
+            width: '10%',
             align: 'center',
             render: (value) => (
                 <div className={styles.progressCell}>
                     <span className={styles.progressText}>{value}%</span>
                 </div>
             )
+        },
+        {
+            header: 'Criteria',
+            accessor: 'criteria_type',
+            width: '10%',
+            align: 'center',
+            render: (value, row) => {
+                if (row.status === 'Not Created' || !value || value === '') {
+                    return <span style={{ color: '#9ca3af' }}>---</span>;
+                }
+                return (
+                    <Badge variant={value === 'new' ? 'info' : 'default'}>
+                        {value === 'new' ? 'New' : 'Old'}
+                    </Badge>
+                );
+            }
         },
         {
             header: 'Status',
@@ -644,25 +660,31 @@ export function FacultyEvaluationDetail() {
                         <button
                             onClick={() => handleSelectionConfirm('old')}
                             className={styles.selectionCard}
-                            style={{ borderLeft: '4px solid #1e40af' }}
                         >
                             <div className={styles.selectionCardContent}>
-                                <h3 className={styles.selectionCardTitle}>Old Criteria (Existing)</h3>
+                                <h3 className={styles.selectionCardTitle}>
+                                    Old Criteria (Existing)
+                                </h3>
                                 <p className={styles.selectionCardDesc}>Use the existing standard evaluation questionnaire.</p>
                             </div>
-                            <CheckCircle size={20} color="#1e40af" />
+                            <div className={styles.selectionCardIcon} style={{ background: '#eff6ff' }}>
+                                <CheckCircle size={24} color="#1e40af" />
+                            </div>
                         </button>
 
                         <button
                             onClick={() => handleSelectionConfirm('new')}
-                            className={`${styles.selectionCard} ${styles.disabledCard}`}
-                            style={{ borderLeft: '4px solid #059669' }}
+                            className={styles.selectionCard}
                         >
                             <div className={styles.selectionCardContent}>
-                                <h3 className={styles.selectionCardTitle}>New Criteria (Coming Soon)</h3>
+                                <h3 className={styles.selectionCardTitle}>
+                                    New Criteria (Updated)
+                                </h3>
                                 <p className={styles.selectionCardDesc}>Use the new updated evaluation questionnaire.</p>
                             </div>
-                            <CheckCircle size={20} color="#059669" />
+                            <div className={styles.selectionCardIcon} style={{ background: '#ecfdf5' }}>
+                                <CheckCircle size={24} color="#059669" />
+                            </div>
                         </button>
 
                         <div className={styles.selectionActions}>

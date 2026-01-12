@@ -254,7 +254,7 @@ router.post('/submit', async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        const { studentId: evaluatorId, assignmentId, ratings, comments, evaluatorName, evaluationDate, evaluationType, evaluateeId: reqEvaluateeId } = req.body;
+        const { studentId: evaluatorId, assignmentId, ratings, comments, evaluatorName, evaluationDate, evaluationType, evaluateeId: reqEvaluateeId, criteriaType } = req.body;
 
         // Validation
         if (!evaluatorId || !ratings) {
@@ -357,7 +357,12 @@ router.post('/submit', async (req, res) => {
             else if (key.startsWith('C.')) scoreTeaching += val;
             else if (key.startsWith('D.')) scoreManagement += val;
         }
-        const totalScore = scoreCommitment + scoreKnowledge + scoreTeaching + scoreManagement;
+        let totalScore = scoreCommitment + scoreKnowledge + scoreTeaching + scoreManagement;
+
+        // Normalize total score to 100-point scale if using new criteria (Max raw score is 75)
+        if (criteriaType === 'new') {
+            totalScore = (totalScore / 75) * 100;
+        }
 
         // Insert into supervisor_evaluations
         const [evalResult] = await connection.query(

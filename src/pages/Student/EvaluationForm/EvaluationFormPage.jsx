@@ -76,20 +76,14 @@ const NEW_CRITERIA = {
         'Provides immediate feedback on student outputs and performance.',
         'Provides transparent and clear criteria in rating student performance.'
     ],
-    'D. Professionalism and Personal Qualities': [
-        'Maintains a professional and respectful demeanor in the classroom/online environment.',
-        'Demonstrates mastery of communication skills (verbal and non-verbal) for effective teaching.',
-        'Observes official class schedule and attends classes regularly.',
-        'Adheres to school policies and regulations regarding faculty conduct.',
-        'Participates actively in school-related activities and community engagement initiatives.'
-    ]
+
 };
 
 const NEW_CRITERIA_DESCRIPTIONS = {
     'A. Management of Teaching and Learning': 'Management of Teaching and Learning refers to the standard and organized planning of instructional activities, clear communication of academic expectations, efficient use of time, and the successful use of student-centered activities that promote critical thinking, collaborative learning, individual decision making, and continuous academic improvement through constructive feedback.',
     'B. Content Knowledge, Pedagogy, and Technology': 'Content knowledge, pedagogy, and technology refer to teachers’ ability to demonstrate a strong grasp of subject matter, present concepts in a clear and accessible way, relate content to relevant and current developments, engage students through appropriate instructional strategies and digital tools, and apply assessment methods aligned with intended learning outcomes.',
     'C. Commitment and Transparency': 'Commitment and transparency refer to the teacher’s consistent dedication to supporting student learning by demonstrating professionalism, providing timely academic support and feedback, and upholding fairness and accountability through the use of clear and openly communicated performance criteria.',
-    'D. Professionalism and Personal Qualities': 'Professionalism and personal qualities refer to the faculty’s adherence to ethical standards, proper grooming, respect for authority and students, effective communication, and active participation in the academic community.'
+
 };
 
 export function EvaluationFormPage() {
@@ -250,7 +244,8 @@ export function EvaluationFormPage() {
                 evaluatorName: fullName,
                 evaluationDate: formattedDate,
                 evaluationType: isSupervisor ? 'Supervisor' : 'Assignment',
-                evaluateeId: rawEvaluateeId // Pass the explicit ID
+                evaluateeId: rawEvaluateeId, // Pass the explicit ID
+                criteriaType // Pass criteria type to backend
             };
 
             console.log('Submitting payload:', payload);

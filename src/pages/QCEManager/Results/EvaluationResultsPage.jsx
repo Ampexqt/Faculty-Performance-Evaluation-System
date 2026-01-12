@@ -101,7 +101,7 @@ export function EvaluationResultsPage() {
         {
             header: 'Faculty Name',
             accessor: 'name',
-            width: '30%',
+            width: '35%',
             render: (value, row) => (
                 <div className={styles.facultyCell}>
                     <div className={styles.tableFacultyName}>{value}</div>
@@ -112,7 +112,7 @@ export function EvaluationResultsPage() {
         {
             header: 'Performance Rating',
             accessor: 'overallScore',
-            width: '25%',
+            width: '30%',
             align: 'center',
             render: (value) => {
                 if (!value) {
@@ -149,7 +149,7 @@ export function EvaluationResultsPage() {
         {
             header: 'Overall Score',
             accessor: 'overallScore',
-            width: '15%',
+            width: '20%',
             align: 'center',
             render: (value) => (
                 <div className={styles.overallScore}>

@@ -110,22 +110,41 @@ export function EvaluationResultsPage() {
             )
         },
         {
-            header: 'Student Evaluations',
-            accessor: 'studentEvaluations',
-            width: '20%',
+            header: 'Performance Rating',
+            accessor: 'overallScore',
+            width: '25%',
             align: 'center',
-            render: (value) => (
-                <span className={styles.countBadge}>{value || 0}</span>
-            )
-        },
-        {
-            header: 'Supervisor Evaluations',
-            accessor: 'supervisorEvaluations',
-            width: '20%',
-            align: 'center',
-            render: (value) => (
-                <span className={styles.countBadge}>{value || 0}</span>
-            )
+            render: (value) => {
+                if (!value) {
+                    return <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>;
+                }
+
+                let rating = '';
+                let ratingClass = '';
+
+                if (value >= 90) {
+                    rating = 'Outstanding';
+                    ratingClass = styles.ratingOutstanding;
+                } else if (value >= 85) {
+                    rating = 'Very Satisfactory';
+                    ratingClass = styles.ratingVerySatisfactory;
+                } else if (value >= 80) {
+                    rating = 'Satisfactory';
+                    ratingClass = styles.ratingSatisfactory;
+                } else if (value >= 70) {
+                    rating = 'Fair';
+                    ratingClass = styles.ratingFair;
+                } else {
+                    rating = 'Poor';
+                    ratingClass = styles.ratingPoor;
+                }
+
+                return (
+                    <div className={styles.performanceRatingCell}>
+                        <span className={ratingClass}>{rating}</span>
+                    </div>
+                );
+            }
         },
         {
             header: 'Overall Score',

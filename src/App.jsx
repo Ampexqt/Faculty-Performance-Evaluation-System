@@ -15,6 +15,7 @@ import { ProgramsPage } from './pages/QCEManager/Programs/ProgramsPage';
 import { EvaluationsPage } from './pages/QCEManager/Evaluations/EvaluationsPage';
 import { FacultyEvaluationDetail } from './pages/QCEManager/Evaluations/FacultyEvaluationDetail';
 import { EvaluationResultsPage as QCEEvaluationResultsPage } from './pages/QCEManager/Results/EvaluationResultsPage';
+import { AnnexReportPage } from './pages/QCEManager/Results/AnnexReportPage';
 import { DeanOverviewPage } from './pages/Dean/Overview/DeanOverviewPage';
 import { FacultyAccountsPage as DeanFacultyAccountsPage } from './pages/Dean/FacultyAccounts/FacultyAccountsPage';
 import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
@@ -70,6 +71,7 @@ export function App() {
             <Route path="/qce/evaluations" element={<EvaluationsPage />} />
             <Route path="/qce/evaluations/:facultyId" element={<FacultyEvaluationDetail />} />
             <Route path="/qce/results" element={<QCEEvaluationResultsPage />} />
+            <Route path="/qce/results/:facultyId/:annexType" element={<AnnexReportPage />} />
           </Route>
 
           {/* Dean Routes */}

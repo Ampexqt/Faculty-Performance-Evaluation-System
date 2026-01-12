@@ -209,4 +209,105 @@ router.get('/evaluation-results/faculty/:facultyId', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/qce/evaluation-results/faculty/:facultyId/annex/:annexType
+ * Get aggregated ratings for specific annex type (A=Student, B=Peer, D=Supervisor)
+ */
+router.get('/evaluation-results/faculty/:facultyId/annex/:annexType', async (req, res) => {
+    try {
+        const { facultyId, annexType } = req.params;
+        const type = annexType.toLowerCase();
+
+        let query = '';
+        let params = [];
+        let ratings = {};
+        let criteriaType = 'new'; // Default
+
+        if (type === 'annex-a') {
+            // Annex A: Student Evaluations
+            // Using evaluation_ratings_detail and student_evaluations
+            query = `
+                SELECT 
+                    erd.category,
+                    erd.criterion_index,
+                    AVG(erd.rating) as avg_rating,
+                    COUNT(erd.rating) as count
+                FROM evaluation_ratings_detail erd
+                JOIN student_evaluations se ON erd.evaluation_id = se.id
+                JOIN faculty_assignments fa ON se.faculty_assignment_id = fa.id
+                WHERE fa.faculty_id = ? AND se.status = 'completed'
+                GROUP BY erd.category, erd.criterion_index
+            `;
+            params = [facultyId];
+
+        } else if (type === 'annex-b' || type === 'annex-d') {
+            // Annex B: Peer (Dept Chair), Annex D: Supervisor (Dean)
+            // Using supervisor_evaluation_ratings and supervisor_evaluations
+            const position = type === 'annex-b' ? 'Department Chair' : 'Supervisor';
+
+            query = `
+                SELECT 
+                    ser.category,
+                    ser.criterion_index,
+                    AVG(ser.rating) as avg_rating,
+                    COUNT(ser.rating) as count
+                FROM supervisor_evaluation_ratings ser
+                JOIN supervisor_evaluations se ON ser.evaluation_id = se.id
+                WHERE se.evaluatee_id = ? 
+                AND se.status = 'completed' 
+                AND se.evaluator_position = ?
+                GROUP BY ser.category, ser.criterion_index
+            `;
+            params = [facultyId, position];
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid annex type'
+            });
+        }
+
+        const [rows] = await promisePool.query(query, params);
+
+        // Process rows into ratings object { "A-0": 4.5, "A-1": ... }
+        // And infer criteria type
+        let maxIndexA = 0;
+        let maxIndexC = 0;
+
+        rows.forEach(row => {
+            const key = `${row.category}-${row.criterion_index}`;
+            ratings[key] = parseFloat(row.avg_rating);
+
+            if (row.category === 'A' && row.criterion_index > maxIndexA) maxIndexA = row.criterion_index;
+            if (row.category === 'C' && row.criterion_index > maxIndexC) maxIndexC = row.criterion_index;
+        });
+
+        // Infer criteria type
+        // New Criteria: A has 6 items (index 5)
+        // Old Criteria: C has 5 items (index 4)
+        if (maxIndexA >= 5) {
+            criteriaType = 'new';
+        } else if (maxIndexC >= 4) {
+            criteriaType = 'old';
+        } else {
+            // Fallback or default
+            criteriaType = 'new';
+        }
+
+        res.json({
+            success: true,
+            data: {
+                ratings,
+                criteriaType
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching annex report:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching annex report'
+        });
+    }
+});
+
 module.exports = router;

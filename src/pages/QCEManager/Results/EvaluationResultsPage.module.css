@@ -227,9 +227,9 @@
 /* Modal Header */
 .modalHeader {
     background: #f9fafb;
-    padding: 1.25rem;
+    padding: 0.875rem 1rem;
     border-bottom: 2px solid #e5e7eb;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .facultyInfo {
@@ -237,22 +237,22 @@
 }
 
 .modalFacultyName {
-    font-size: 1.375rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: #1a1a1a;
-    margin: 0 0 0.375rem 0;
+    margin: 0 0 0.25rem 0;
     line-height: 1.2;
 }
 
 .modalFacultyPosition {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #666;
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.125rem 0;
     line-height: 1.3;
 }
 
 .modalFacultyEmail {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: #7f1d1d;
     margin: 0;
     font-weight: 500;
@@ -260,35 +260,35 @@
 
 /* Evaluation Statistics */
 .evaluationStats {
-    padding: 0 1.25rem 1rem;
+    padding: 0 1rem 0.75rem;
 }
 
 .statsRow {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
+    gap: 0.625rem;
+    margin-bottom: 0.5rem;
 }
 
 .statItem {
     text-align: center;
-    padding: 0.75rem;
+    padding: 0.5rem;
     background: #f9fafb;
     border-radius: 6px;
     border: 1px solid #e5e7eb;
 }
 
 .statItemLabel {
-    font-size: 0.625rem;
+    font-size: 0.5625rem;
     font-weight: 600;
     color: #666;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
 }
 
 .statItemValue {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: #1a1a1a;
     line-height: 1;
@@ -296,19 +296,19 @@
 
 .overallScoreRow {
     text-align: center;
-    padding: 1rem;
+    padding: 0.75rem;
     background: #7f1d1d;
     border-radius: 6px;
-    margin-top: 0.5rem;
+    margin-top: 0.375rem;
 }
 
 .overallScoreRow .statItemLabel {
     color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
 }
 
 .overallScoreLarge {
-    font-size: 2.25rem;
+    font-size: 1.875rem;
     font-weight: 700;
     color: white;
     line-height: 1;

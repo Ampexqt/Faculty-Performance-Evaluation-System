@@ -73,6 +73,7 @@ export function AnnexReportPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState({ ratings: {}, criteriaType: 'new' });
     const [facultyInfo, setFacultyInfo] = useState(null);
+    const [supervisorData, setSupervisorData] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -88,11 +89,12 @@ export function AnnexReportPage() {
                     showError(result.message || 'Failed to fetch report data');
                 }
 
-                // Fetch Faculty Info for header
+                // Fetch Faculty Info for header AND Supervisor Data
                 const facResponse = await fetch(`http://localhost:5000/api/qce/evaluation-results/faculty/${facultyId}`);
                 const facResult = await facResponse.json();
                 if (facResult.success) {
                     setFacultyInfo(facResult.data.faculty);
+                    setSupervisorData(facResult.data.supervisorEvaluations || []);
                 }
 
             } catch (error) {
@@ -145,6 +147,88 @@ export function AnnexReportPage() {
 
     return (
         <DashboardLayout role="QCE Manager" userName={userName}>
+            <style>{`
+                @media print {
+                    @page {
+                        margin: 0; /* Hides browser default headers/footers */
+                        size: auto;
+                    }
+                    body {
+                        visibility: hidden;
+                        background: white;
+                        margin: 0;
+                    }
+                    #report-content {
+                        visibility: visible;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        margin: 0;
+                        padding: 2cm; /* Add padding to content instead of page margins */
+                        background: white;
+                        box-shadow: none !important;
+                        font-size: 12pt !important;
+                        line-height: 1.5;
+                        box-sizing: border-box;
+                    }
+                    #report-content * {
+                        visibility: visible;
+                    }
+                    
+                    /* Typography */
+                    h2 { font-size: 16pt !important; margin-bottom: 1rem !important; }
+                    h3 { font-size: 14pt !important; margin-top: 1.5rem !important; margin-bottom: 0.5rem !important; page-break-after: avoid; }
+                    h4 { font-size: 12pt !important; }
+                    p, td, th, div, span { font-size: 12pt !important; }
+                    
+                    /* Page Breaks */
+                    table { page-break-inside: auto; width: 100% !important; border-collapse: collapse; }
+                    tr { page-break-inside: avoid; page-break-after: auto; }
+                    thead { display: table-header-group; }
+                    tfoot { display: table-footer-group; }
+                    
+                    /* Table Layout Balance */
+                    th, td { 
+                        border: 1px solid #d1d5db !important; 
+                        padding: 0.5rem !important; 
+                        text-align: left;
+                    }
+                    /* Number Column */
+                    th:nth-child(1), td:nth-child(1) {
+                        width: 8% !important;
+                        text-align: center;
+                    }
+                    /* Indicators Column */
+                    th:nth-child(2), td:nth-child(2) {
+                        width: 77% !important; /* Give most space to indicators */
+                    }
+                    /* Rating Column */
+                    th:nth-child(3), td:nth-child(3) {
+                        width: 15% !important;
+                        text-align: center;
+                        white-space: nowrap;
+                    }
+                    
+                    /* Header styles for table */
+                    th {
+                        background-color: #991b1b !important;
+                        color: white !important;
+                        font-weight: bold !important;
+                        -webkit-print-color-adjust: exact; 
+                    }
+
+                    /* Hide non-print elements explicitly if any remain */
+                    button, .no-print { display: none !important; }
+
+                    /* Ensure backgrounds print */
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                        color-adjust: exact !important; 
+                    }
+                }
+            `}</style>
             <div className={styles.container}>
                 {/* Header Actions */}
                 <div className="print:hidden" style={{ marginBottom: '1.5rem' }}>
@@ -212,7 +296,7 @@ export function AnnexReportPage() {
                 </div>
 
                 {/* Report Content */}
-                <div className="bg-white rounded-lg shadow-sm p-8 print:shadow-none print:p-0">
+                <div id="report-content" className="bg-white rounded-lg shadow-sm p-8 print:shadow-none print:p-0">
                     {/* Centered ANNEX Title */}
                     <div className="text-center mb-6">
                         <h2 className="text-2xl font-bold text-gray-900">{annexLabel}</h2>
@@ -327,9 +411,14 @@ export function AnnexReportPage() {
                             // Convert to 0-100 scale (ratings are 1-5, so multiply by 20)
                             const studentPercentage = studentAvg * 20;
 
-                            // For now, we'll use a placeholder for supervisor data
-                            // In a real scenario, this would come from the API
-                            const supervisorPercentage = 0; // Will be fetched from API
+                            // Calculate Supervisor Average from fetched data
+                            let supervisorPercentage = 0;
+                            if (supervisorData.length > 0) {
+                                // Calculate total score across all supervisor evaluations
+                                // Note: total_score is already 0-100 based on backend logic
+                                const total = supervisorData.reduce((sum, evalItem) => sum + parseFloat(evalItem.total_score || 0), 0);
+                                supervisorPercentage = total / supervisorData.length;
+                            }
 
                             // Calculate scores
                             const studentScore = (studentPercentage / 100) * 36;

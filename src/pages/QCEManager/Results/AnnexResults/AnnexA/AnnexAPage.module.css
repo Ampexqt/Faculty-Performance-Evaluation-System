@@ -44,7 +44,6 @@
 .infoValue {
     color: #1f2937;
     padding-bottom: 0.25rem;
-    border-bottom: 1px solid #d1d5db;
 }
 
 .categorySection {
@@ -120,6 +119,57 @@
     border: 1px solid #991b1b;
     font-weight: 600;
     color: #991b1b;
+}
+
+/* Action Buttons */
+.actionButtons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.backButton,
+.printButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.backButton {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.backButton:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.printButton {
+    background: #991b1b;
+    color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.printButton:hover {
+    background: #7f1d1d;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.buttonIcon {
+    width: 1rem;
+    height: 1rem;
 }
 
 /* Scoring Section Styles */
@@ -215,6 +265,9 @@
         background-color: white;
         max-width: 100%;
         z-index: 9999;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 12pt;
+        line-height: 1.5;
     }
 
     .title {
@@ -242,7 +295,7 @@
     }
 
     .categoryDescription {
-        font-size: 11pt;
+        font-size: 12pt;
         color: #6b7280 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -250,7 +303,7 @@
 
     .criteriaTable {
         page-break-inside: auto;
-        font-size: 11pt;
+        font-size: 12pt;
         width: 100% !important;
     }
 
@@ -297,6 +350,7 @@
     }
 
     /* Hide pure UI elements */
+    .actionButtons,
     button,
     :global(nav),
     :global(aside),
@@ -313,8 +367,18 @@
         print-color-adjust: exact;
     }
 
+    /* Force Page Breaks */
+    :global(#category-B) {
+        break-before: page;
+        page-break-before: always;
+    }
+
     .scoringSection {
         border-top: 2px solid #991b1b !important;
+        break-before: page;
+        page-break-before: always;
+        margin-top: 0 !important;
+        padding-top: 2rem !important;
     }
 
     .totalScore {

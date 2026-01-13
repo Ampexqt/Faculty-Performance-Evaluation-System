@@ -362,23 +362,49 @@ router.get('/evaluation-results/faculty/:facultyId/annex/:annexType', async (req
             });
 
         } else if (type === 'annex-d') {
-            // Annex D: Supervisor (Dean) Detailed Ratings
-            const position = 'Supervisor';
+            // Annex D: Faculty Evaluation Acknowledgement Form
 
-            query = `
-                SELECT 
-                    ser.category,
-                    ser.criterion_index,
-                    AVG(ser.rating) as avg_rating,
-                    COUNT(ser.rating) as count
-                FROM supervisor_evaluation_ratings ser
-                JOIN supervisor_evaluations se ON ser.evaluation_id = se.id
+            // 1. Get Active Academic Year
+            const [activeYearRows] = await promisePool.query("SELECT id, year_label, semester FROM academic_years WHERE status = 'active' LIMIT 1");
+            const activeYear = activeYearRows[0] || { year_label: '2025-2026', semester: '1st Semester' };
+
+            // 2. Get SET Score (Student Evaluation of Teachers)
+            const [setRows] = await promisePool.query(`
+                SELECT AVG(se.total_score) as set_score
+                FROM student_evaluations se
+                JOIN faculty_assignments fa ON se.faculty_assignment_id = fa.id
+                JOIN academic_years ay ON fa.academic_year_id = ay.id
+                WHERE fa.faculty_id = ? 
+                AND ay.id = ?
+                AND se.status = 'completed'
+            `, [facultyId, activeYear.id]);
+
+            const setScore = parseFloat(setRows[0]?.set_score) || 0;
+
+            // 3. Get SAF Score (Supervisor's Assessment of Faculty)
+            const [safRows] = await promisePool.query(`
+                SELECT AVG(se.total_score) as saf_score
+                FROM supervisor_evaluations se
+                JOIN evaluation_periods ep ON se.evaluation_period_id = ep.id
+                JOIN academic_years ay ON ep.academic_year_id = ay.id
                 WHERE se.evaluatee_id = ? 
-                AND se.status = 'completed' 
-                AND se.evaluator_position = ?
-                GROUP BY ser.category, ser.criterion_index
-            `;
-            params = [facultyId, position];
+                AND ay.id = ?
+                AND se.status = 'completed'
+                AND se.evaluator_position = 'Supervisor'
+            `, [facultyId, activeYear.id]);
+
+            const safScore = parseFloat(safRows[0]?.saf_score) || 0;
+
+            return res.json({
+                success: true,
+                data: {
+                    academicYear: activeYear.year_label,
+                    semester: activeYear.semester,
+                    setScore,
+                    safScore
+                }
+            });
+
         } else {
             return res.status(400).json({
                 success: false,

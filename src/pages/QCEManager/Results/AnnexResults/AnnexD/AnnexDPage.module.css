@@ -1,196 +1,272 @@
-/* Annex D Report Styles */
-
+/* Report Container */
 .reportContainer {
-    background: white;
-    padding: 2rem;
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    min-height: 100vh;
 }
 
-.header {
-    text-align: center;
+/* Action Buttons */
+.actionButtons {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 2rem;
 }
 
-.title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 1rem;
+.backButton,
+.printButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.subtitle {
-    font-size: 1rem;
-    color: #6b7280;
-    margin-bottom: 0.5rem;
-}
-
-.facultyInfo {
-    margin-bottom: 2rem;
-}
-
-.infoRow {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-}
-
-.infoLabel {
-    font-weight: 600;
+.backButton {
+    background: white;
+    border: 1px solid #d1d5db;
     color: #374151;
 }
 
-.infoValue {
-    color: #1f2937;
-    padding-bottom: 0.25rem;
-    border-bottom: 1px solid #d1d5db;
+.backButton:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
 }
 
-.categorySection {
-    margin-bottom: 3rem;
-}
-
-.categoryTitle {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #991b1b;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #991b1b;
-}
-
-.categoryDescription {
-    font-style: italic;
-    color: #6b7280;
-    margin-bottom: 1rem;
-    line-height: 1.6;
-}
-
-.criteriaTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-}
-
-.criteriaTable thead {
-    background-color: #991b1b;
+.printButton {
+    background: #7f1d1d;
+    border: none;
     color: white;
 }
 
-.criteriaTable th {
-    padding: 0.75rem;
-    text-align: center;
-    font-weight: 600;
-    border: 1px solid #7f1d1d;
-    vertical-align: middle;
+.printButton:hover {
+    background: #991b1b;
 }
 
-.criteriaTable tbody tr {
-    border-bottom: 1px solid #e5e7eb;
+.buttonIcon {
+    width: 1rem;
+    height: 1rem;
 }
 
-.criteriaTable tbody tr:hover {
-    background-color: #f9fafb;
-}
-
-.criteriaTable td {
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    vertical-align: middle;
-}
-
-.numberCol {
-    width: 60px;
-    text-align: center;
-}
-
-.indicatorCol {
-    text-align: left;
-}
-
-.ratingCol {
-    width: 120px;
-    text-align: center;
-}
-
-.averageRow {
+/* Header */
+.header {
     text-align: right;
-    padding: 1rem;
-    background-color: #fef2f2;
-    border: 1px solid #991b1b;
+    margin-bottom: 1rem;
+}
+
+.mainTitle {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.reportTitle {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.reportTitle h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+/* Section */
+.section {
+    margin-bottom: 2rem;
+}
+
+.sectionTitle {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    background: #1a1a1a;
+    color: white;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Info Table */
+.infoTable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+    margin-bottom: 1rem;
+}
+
+.infoTable td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #000;
+    font-size: 0.875rem;
+}
+
+.labelCell {
+    width: 35%;
     font-weight: 600;
-    color: #991b1b;
+    background: #f9fafb;
+}
+
+.colonCell {
+    width: 3%;
+    text-align: center;
+    background: #f9fafb;
+}
+
+.valueCell {
+    width: 62%;
+    font-weight: 500;
+}
+
+/* Summary Table */
+.summaryTable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+    margin-bottom: 1rem;
+}
+
+.summaryTable th,
+.summaryTable td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #000;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.summaryTable thead th {
+    background: #1a1a1a;
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.summaryTable tbody tr:first-child td {
+    font-weight: 600;
+    background: #f9fafb;
+}
+
+.scoreCell {
+    font-size: 1.125rem;
+    padding: 1rem 0.75rem;
+}
+
+/* Acknowledgement */
+.acknowledgement {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.acknowledgement p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    text-align: justify;
+}
+
+/* Signature Section */
+.signatureSection {
+    margin-bottom: 1.5rem;
+}
+
+.signatureHeader {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: white;
+    background: #1a1a1a;
+    padding: 0.5rem 0.75rem;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+}
+
+.signatureTable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+}
+
+.signatureTable td {
+    padding: 0.75rem;
+    border: 1px solid #000;
+    font-size: 0.875rem;
+}
+
+.signatureLabel {
+    width: 20%;
+    font-weight: 600;
+    background: #f9fafb;
+}
+
+.signatureColon {
+    width: 3%;
+    text-align: center;
+    background: #f9fafb;
+}
+
+.signatureLine {
+    width: 77%;
+    min-height: 2rem;
 }
 
 /* Print Styles */
 @media print {
-    @page {
-        margin: 0;
-        size: auto;
+
+    /* Hide everything by default using visibility */
+    :global(body *) {
+        visibility: hidden;
     }
 
-    body {
-        margin: 0;
-        padding: 0;
+    /* Only show the report container and its children */
+    .reportContainer,
+    .reportContainer * {
+        visibility: visible;
     }
 
     .reportContainer {
-        padding: 1cm 2cm;
-        max-width: 100%;
+        position: fixed;
+        /* Fixed works better to escape parent layout contexts */
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 2rem;
+        /* Add padding for print margins */
+        background: white;
+        z-index: 9999;
+        font-family: "Times New Roman", Times, serif !important;
+        font-size: 12pt !important;
+        line-height: normal;
     }
 
-    .title {
-        font-size: 16pt;
-        margin-top: 0;
-    }
-
-    .subtitle {
-        font-size: 12pt;
-    }
-
-    .categoryTitle {
-        font-size: 14pt;
-        page-break-after: avoid;
-    }
-
-    .categoryDescription {
-        font-size: 11pt;
-    }
-
-    .criteriaTable {
-        page-break-inside: auto;
-        font-size: 11pt;
-    }
-
-    .criteriaTable thead {
-        display: table-header-group;
-    }
-
-    .criteriaTable tbody {
-        display: table-row-group;
-    }
-
-    .criteriaTable tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
-    }
-
-    .criteriaTable th,
-    .criteriaTable td {
-        padding: 0.5rem;
-        border: 1px solid #999;
-        vertical-align: middle;
-    }
-
-    .criteriaTable thead {
-        background-color: #991b1b !important;
-        color: white !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    button {
+    .actionButtons {
         display: none !important;
+    }
+
+    .section {
+        page-break-inside: avoid;
+    }
+
+    .signatureSection {
+        page-break-inside: avoid;
+    }
+
+    /* Ensure colors print */
+    .sectionTitle,
+    .signatureHeader,
+    .summaryTable thead th {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
     }
 }

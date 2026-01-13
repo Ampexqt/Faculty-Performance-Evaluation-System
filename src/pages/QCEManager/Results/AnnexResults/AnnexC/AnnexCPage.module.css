@@ -258,17 +258,48 @@
 
 /* Print Styles */
 @media print {
+
+    /* Hide everything by default using visibility to avoid layout hangs */
+    :global(body *) {
+        visibility: hidden;
+    }
+
+    /* Only show the report container and its children */
+    .reportContainer,
+    .reportContainer * {
+        visibility: visible;
+    }
+
+    .reportContainer {
+        position: fixed;
+        /* Fixed works better to escape parent layout contexts */
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 2rem;
+        /* Add padding for print margins */
+        background: white;
+        z-index: 9999;
+        font-family: "Times New Roman", Times, serif !important;
+        font-size: 12pt !important;
+        line-height: normal;
+    }
+
     .actionButtons {
         display: none !important;
     }
 
-    .reportContainer {
-        box-shadow: none;
-        padding: 15mm;
+    .section {
+        page-break-inside: avoid;
     }
 
-    @page {
-        size: A4;
-        margin: 15mm;
+    /* Ensure background colors print */
+    .shadedCell,
+    .dataTable th {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
     }
 }

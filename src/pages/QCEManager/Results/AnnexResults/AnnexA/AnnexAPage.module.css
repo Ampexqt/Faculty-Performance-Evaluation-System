@@ -31,7 +31,7 @@
 
 .infoRow {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 140px 1fr;
     gap: 1rem;
     margin-bottom: 0.75rem;
 }
@@ -122,48 +122,144 @@
     color: #991b1b;
 }
 
+/* Scoring Section Styles */
+.scoringSection {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 3px solid #991b1b;
+}
+
+.scoringSection h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.scoringGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.scoringCard {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.scoringCard h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #991b1b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.scoringCard p {
+    margin: 0.5rem 0;
+    color: #4b5563;
+    display: flex;
+    justify-content: space-between;
+}
+
+.scoreResult {
+    margin-top: 1rem !important;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #d1d5db;
+    font-weight: 700;
+    color: #1f2937 !important;
+    font-size: 1.1rem;
+}
+
+.totalScore {
+    background: #991b1b;
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.totalScoreValue {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0.5rem 0;
+}
+
+/* Print Styles */
 /* Print Styles */
 @media print {
-    @page {
-        margin: 0;
-        size: auto;
+    :global(body *) {
+        visibility: hidden;
     }
 
-    body {
-        margin: 0;
-        padding: 0;
+    .reportContainer,
+    .reportContainer * {
+        visibility: visible;
     }
 
     .reportContainer {
-        padding: 1cm 2cm;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 1cm;
+        background-color: white;
         max-width: 100%;
+        z-index: 9999;
     }
 
     .title {
         font-size: 16pt;
         margin-top: 0;
+        color: #1f2937 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     .subtitle {
         font-size: 12pt;
+        color: #6b7280 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     .categoryTitle {
         font-size: 14pt;
         page-break-after: avoid;
+        color: #991b1b !important;
+        border-bottom: 2px solid #991b1b !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     .categoryDescription {
         font-size: 11pt;
+        color: #6b7280 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     .criteriaTable {
         page-break-inside: auto;
         font-size: 11pt;
+        width: 100% !important;
     }
 
     .criteriaTable thead {
         display: table-header-group;
+        background-color: #991b1b !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     .criteriaTable tbody {
@@ -175,20 +271,57 @@
         page-break-after: auto;
     }
 
-    .criteriaTable th,
-    .criteriaTable td {
-        padding: 0.5rem;
-        border: 1px solid #999;
-    }
-
-    .criteriaTable thead {
+    .criteriaTable th {
         background-color: #991b1b !important;
         color: white !important;
+        padding: 0.5rem;
+        border: 1px solid #7f1d1d !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
-    button {
+    .criteriaTable td {
+        padding: 0.5rem;
+        border: 1px solid #d1d5db !important;
+        color: #1f2937 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .averageRow {
+        background-color: #fef2f2 !important;
+        color: #991b1b !important;
+        border: 1px solid #991b1b !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Hide pure UI elements */
+    button,
+    :global(nav),
+    :global(aside),
+    :global(header) {
         display: none !important;
+    }
+
+    /* Print styles for scoring section */
+    .scoringCard {
+        border: 1px solid #d1d5db !important;
+        background-color: #f9fafb !important;
+        break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .scoringSection {
+        border-top: 2px solid #991b1b !important;
+    }
+
+    .totalScore {
+        background-color: #991b1b !important;
+        color: white !important;
+        break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 }

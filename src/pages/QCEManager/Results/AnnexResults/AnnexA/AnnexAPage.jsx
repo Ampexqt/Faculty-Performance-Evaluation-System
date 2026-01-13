@@ -108,7 +108,6 @@ export function AnnexAPage() {
                 {/* Report Content */}
                 <div className={styles.header}>
                     <h1 className={styles.title}>ANNEX A</h1>
-                    <p className={styles.subtitle}>Student Evaluation of Faculty Performance</p>
                 </div>
 
                 <div className={styles.facultyInfo}>

@@ -155,6 +155,18 @@
     text-align: left;
 }
 
+.dataTable th,
+.totalRow td {
+    border-top: 2px solid #000;
+}
+
+.shadedCell {
+    background-color: #e5e7eb !important;
+    /* gray-200 */
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
 .dataTable th {
     background-color: #f3f4f6;
     font-weight: 600;

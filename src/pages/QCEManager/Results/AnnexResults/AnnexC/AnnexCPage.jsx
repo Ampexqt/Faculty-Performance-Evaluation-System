@@ -123,18 +123,18 @@ export function AnnexCPage() {
                         <thead>
                             <tr>
                                 <th rowSpan="2"></th>
-                                <th colSpan="2">(1)</th>
+                                <th>(1)</th>
                                 <th>(2)</th>
-                                <th>(3)</th>
-                                <th>(4)</th>
-                                <th>(3 × 4)</th>
+                                <th className={styles.shadedCell}>(3)</th>
+                                <th className={styles.shadedCell}>(4)</th>
+                                <th className={styles.shadedCell}>(3 × 4)</th>
                             </tr>
                             <tr>
                                 <th>Course Code</th>
                                 <th>Section</th>
-                                <th>No. of Students</th>
-                                <th>Ave. SET Rating</th>
-                                <th>Weighted Value</th>
+                                <th className={styles.shadedCell}>No. of Students</th>
+                                <th className={styles.shadedCell}>Ave. SET Rating</th>
+                                <th className={styles.shadedCell}>Weighted Value</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -149,9 +149,9 @@ export function AnnexCPage() {
                                             <td className={styles.centerText}>{index + 1}</td>
                                             <td>{course.subject_code}</td>
                                             <td>{course.section}</td>
-                                            <td className={styles.centerText}>{numStudents}</td>
-                                            <td className={styles.centerText}>{avgRating > 0 ? avgRating.toFixed(2) : 'N/A'}</td>
-                                            <td className={styles.centerText}>{weightedValue > 0 ? weightedValue.toFixed(0) : 'N/A'}</td>
+                                            <td className={`${styles.centerText} ${styles.shadedCell}`}>{numStudents}</td>
+                                            <td className={`${styles.centerText} ${styles.shadedCell}`}>{avgRating > 0 ? avgRating.toFixed(2) : 'N/A'}</td>
+                                            <td className={`${styles.centerText} ${styles.shadedCell}`}>{weightedValue > 0 ? weightedValue.toFixed(0) : 'N/A'}</td>
                                         </tr>
                                     );
                                 })
@@ -161,10 +161,12 @@ export function AnnexCPage() {
                                 </tr>
                             )}
                             <tr className={styles.totalRow}>
-                                <td colSpan="3" className={styles.rightText}><strong>TOTAL</strong></td>
-                                <td className={styles.centerText}><strong>{data?.totalStudents || 0}</strong></td>
+                                <td></td>
+                                <td></td>
                                 <td className={styles.centerText}><strong>TOTAL</strong></td>
-                                <td className={styles.centerText}><strong>{data?.totalWeightedValue ? data.totalWeightedValue.toFixed(0) : 0}</strong></td>
+                                <td className={`${styles.centerText} ${styles.shadedCell}`}><strong>{data?.totalStudents || 0}</strong></td>
+                                <td className={`${styles.centerText} ${styles.shadedCell}`}><strong>TOTAL</strong></td>
+                                <td className={`${styles.centerText} ${styles.shadedCell}`}><strong>{data?.totalWeightedValue ? data.totalWeightedValue.toFixed(0) : 0}</strong></td>
                             </tr>
                         </tbody>
                     </table>

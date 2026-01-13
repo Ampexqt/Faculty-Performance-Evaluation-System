@@ -147,19 +147,66 @@ export function AnnexReportPage() {
         <DashboardLayout role="QCE Manager" userName={userName}>
             <div className={styles.container}>
                 {/* Header Actions */}
-                <div className="flex justify-between items-center mb-6 print:hidden">
+                <div className="print:hidden" style={{ marginBottom: '1.5rem' }}>
+                    {/* Back Button */}
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center text-gray-600 hover:text-gray-900"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '0.5rem 1rem',
+                            backgroundColor: 'transparent',
+                            color: '#374151',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f3f4f6';
+                            e.currentTarget.style.borderColor = '#9ca3af';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.borderColor = '#d1d5db';
+                        }}
                     >
-                        <ArrowLeft className="w-5 h-5 mr-2" />
+                        <ArrowLeft style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
                         Back to Results
                     </button>
+
+                    {/* Print Button - Top Right */}
                     <button
                         onClick={handlePrint}
-                        className="flex items-center px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
+                        style={{
+                            position: 'absolute',
+                            top: '80px',
+                            right: '2rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '0.5rem 1.25rem',
+                            backgroundColor: '#991b1b',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#7f1d1d';
+                            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#991b1b';
+                            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+                        }}
                     >
-                        <Printer className="w-5 h-5 mr-2" />
+                        <Printer style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
                         Print Report
                     </button>
                 </div>
@@ -250,6 +297,190 @@ export function AnnexReportPage() {
                             </div>
                         </div>
                     ))}
+
+                    {/* NBC 461 Scoring Calculation */}
+                    <div style={{
+                        marginTop: '3rem',
+                        padding: '2rem',
+                        backgroundColor: '#f9fafb',
+                        borderRadius: '0.5rem',
+                        border: '1px solid #e5e7eb'
+                    }}>
+                        <h3 style={{
+                            fontSize: '1.125rem',
+                            fontWeight: '700',
+                            color: '#991b1b',
+                            marginBottom: '1.5rem',
+                            borderBottom: '2px solid #991b1b',
+                            paddingBottom: '0.5rem'
+                        }}>
+                            NBC 461 Scoring Computation
+                        </h3>
+
+                        {(() => {
+                            // Calculate overall student average (all categories combined)
+                            const allRatings = Object.values(data.ratings).filter(r => r > 0);
+                            const studentAvg = allRatings.length > 0
+                                ? allRatings.reduce((a, b) => a + b, 0) / allRatings.length
+                                : 0;
+
+                            // Convert to 0-100 scale (ratings are 1-5, so multiply by 20)
+                            const studentPercentage = studentAvg * 20;
+
+                            // For now, we'll use a placeholder for supervisor data
+                            // In a real scenario, this would come from the API
+                            const supervisorPercentage = 0; // Will be fetched from API
+
+                            // Calculate scores
+                            const studentScore = (studentPercentage / 100) * 36;
+                            const supervisorScore = (supervisorPercentage / 100) * 24;
+                            const totalScore = studentScore + supervisorScore;
+
+                            return (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {/* Formula Reference */}
+                                    <div style={{
+                                        padding: '1rem',
+                                        backgroundColor: '#fef3c7',
+                                        borderLeft: '4px solid #f59e0b',
+                                        borderRadius: '0.25rem',
+                                        marginBottom: '1rem'
+                                    }}>
+                                        <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#92400e', marginBottom: '0.5rem' }}>
+                                            Scoring Formula:
+                                        </p>
+                                        <p style={{ fontSize: '0.875rem', color: '#78350f', marginBottom: '0.25rem' }}>
+                                            • Student Evaluation Score = (Average Student Rating ÷ 100) × 36
+                                        </p>
+                                        <p style={{ fontSize: '0.875rem', color: '#78350f', marginBottom: '0.25rem' }}>
+                                            • Supervisor Evaluation Score = (Average Supervisor Rating ÷ 100) × 24
+                                        </p>
+                                        <p style={{ fontSize: '0.875rem', color: '#78350f' }}>
+                                            • Total Score = Student Score + Supervisor Score
+                                        </p>
+                                    </div>
+
+                                    {/* Calculations */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                        {/* Student Calculation */}
+                                        <div style={{
+                                            padding: '1.5rem',
+                                            backgroundColor: 'white',
+                                            borderRadius: '0.5rem',
+                                            border: '1px solid #e5e7eb'
+                                        }}>
+                                            <h4 style={{
+                                                fontSize: '0.875rem',
+                                                fontWeight: '600',
+                                                color: '#374151',
+                                                marginBottom: '1rem'
+                                            }}>
+                                                Student Evaluation
+                                            </h4>
+                                            <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                                                Average Rating: <strong style={{ color: '#111827' }}>{studentAvg.toFixed(2)} / 5.00</strong>
+                                            </div>
+                                            <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                                                Percentage: <strong style={{ color: '#111827' }}>{studentPercentage.toFixed(2)}%</strong>
+                                            </div>
+                                            <div style={{
+                                                fontSize: '0.875rem',
+                                                color: '#6b7280',
+                                                padding: '0.75rem',
+                                                backgroundColor: '#f9fafb',
+                                                borderRadius: '0.25rem',
+                                                marginTop: '0.75rem'
+                                            }}>
+                                                Calculation: ({studentPercentage.toFixed(2)} ÷ 100) × 36
+                                            </div>
+                                            <div style={{
+                                                fontSize: '1.25rem',
+                                                fontWeight: '700',
+                                                color: '#991b1b',
+                                                marginTop: '1rem',
+                                                paddingTop: '1rem',
+                                                borderTop: '2px solid #e5e7eb'
+                                            }}>
+                                                = {studentScore.toFixed(2)} points
+                                            </div>
+                                        </div>
+
+                                        {/* Supervisor Calculation */}
+                                        <div style={{
+                                            padding: '1.5rem',
+                                            backgroundColor: 'white',
+                                            borderRadius: '0.5rem',
+                                            border: '1px solid #e5e7eb'
+                                        }}>
+                                            <h4 style={{
+                                                fontSize: '0.875rem',
+                                                fontWeight: '600',
+                                                color: '#374151',
+                                                marginBottom: '1rem'
+                                            }}>
+                                                Supervisor Evaluation
+                                            </h4>
+                                            <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                                                {supervisorPercentage > 0 ? (
+                                                    <>
+                                                        Average Rating: <strong style={{ color: '#111827' }}>{(supervisorPercentage / 20).toFixed(2)} / 5.00</strong>
+                                                    </>
+                                                ) : (
+                                                    <em style={{ color: '#9ca3af' }}>No supervisor evaluation data available</em>
+                                                )}
+                                            </div>
+                                            {supervisorPercentage > 0 && (
+                                                <>
+                                                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                                                        Percentage: <strong style={{ color: '#111827' }}>{supervisorPercentage.toFixed(2)}%</strong>
+                                                    </div>
+                                                    <div style={{
+                                                        fontSize: '0.875rem',
+                                                        color: '#6b7280',
+                                                        padding: '0.75rem',
+                                                        backgroundColor: '#f9fafb',
+                                                        borderRadius: '0.25rem',
+                                                        marginTop: '0.75rem'
+                                                    }}>
+                                                        Calculation: ({supervisorPercentage.toFixed(2)} ÷ 100) × 24
+                                                    </div>
+                                                    <div style={{
+                                                        fontSize: '1.25rem',
+                                                        fontWeight: '700',
+                                                        color: '#991b1b',
+                                                        marginTop: '1rem',
+                                                        paddingTop: '1rem',
+                                                        borderTop: '2px solid #e5e7eb'
+                                                    }}>
+                                                        = {supervisorScore.toFixed(2)} points
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Total Score */}
+                                    <div style={{
+                                        padding: '1.5rem',
+                                        backgroundColor: '#991b1b',
+                                        borderRadius: '0.5rem',
+                                        marginTop: '1rem',
+                                        textAlign: 'center'
+                                    }}>
+                                        <div style={{ fontSize: '0.875rem', color: '#fecaca', marginBottom: '0.5rem' }}>
+                                            Total Criterion Score
+                                        </div>
+                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: 'white' }}>
+                                            {totalScore.toFixed(2)} points
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', color: '#fecaca', marginTop: '0.5rem' }}>
+                                            (Maximum: 60 points)
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </div>
                 </div>
             </div>
         </DashboardLayout>

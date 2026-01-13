@@ -293,11 +293,38 @@ router.get('/evaluation-results/faculty/:facultyId/annex/:annexType', async (req
             criteriaType = 'new';
         }
 
+        // Fetch overall average score based on total_score in evaluation tables
+        let avgQuery = '';
+        if (type === 'annex-a') {
+            avgQuery = `
+                SELECT AVG(se.total_score) as overall_avg
+                FROM student_evaluations se
+                JOIN faculty_assignments fa ON se.faculty_assignment_id = fa.id
+                WHERE fa.faculty_id = ? AND se.status = 'completed'
+            `;
+        } else if (type === 'annex-b' || type === 'annex-d') {
+            const position = type === 'annex-b' ? 'Department Chair' : 'Supervisor';
+            avgQuery = `
+                SELECT AVG(se.total_score) as overall_avg
+                FROM supervisor_evaluations se
+                WHERE se.evaluatee_id = ? 
+                AND se.status = 'completed' 
+                AND se.evaluator_position = ?
+            `;
+        }
+
+        let averageScore = 0;
+        if (avgQuery) {
+            const [avgRows] = await promisePool.query(avgQuery, params); // params are same as main query ([facultyId] or [facultyId, position])
+            averageScore = parseFloat(avgRows[0]?.overall_avg || 0);
+        }
+
         res.json({
             success: true,
             data: {
                 ratings,
-                criteriaType
+                criteriaType,
+                averageScore
             }
         });
 

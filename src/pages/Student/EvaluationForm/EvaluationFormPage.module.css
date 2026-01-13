@@ -302,6 +302,7 @@
     color: #6b7280;
     border: 1px solid #d1d5db;
     padding: 1rem 0.5rem;
+    vertical-align: middle !important;
 }
 
 .indicatorCell {
@@ -309,12 +310,14 @@
     color: #374151;
     line-height: 1.5;
     border: 1px solid #d1d5db;
+    vertical-align: middle !important;
 }
 
 .ratingCell {
     text-align: center;
     padding: 1rem 0.5rem;
     border: 1px solid #d1d5db;
+    vertical-align: middle !important;
 }
 
 .radioLabel {

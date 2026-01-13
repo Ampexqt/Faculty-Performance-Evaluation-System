@@ -1,0 +1,196 @@
+/* Annex C Report Styles - Same as A and B */
+
+.reportContainer {
+    background: white;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.facultyInfo {
+    margin-bottom: 2rem;
+}
+
+.infoRow {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.infoLabel {
+    font-weight: 600;
+    color: #374151;
+}
+
+.infoValue {
+    color: #1f2937;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid #d1d5db;
+}
+
+.categorySection {
+    margin-bottom: 3rem;
+}
+
+.categoryTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #991b1b;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #991b1b;
+}
+
+.categoryDescription {
+    font-style: italic;
+    color: #6b7280;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.criteriaTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.criteriaTable thead {
+    background-color: #991b1b;
+    color: white;
+}
+
+.criteriaTable th {
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #7f1d1d;
+    vertical-align: middle;
+}
+
+.criteriaTable tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.criteriaTable tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.criteriaTable td {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    vertical-align: middle;
+}
+
+.numberCol {
+    width: 60px;
+    text-align: center;
+}
+
+.indicatorCol {
+    text-align: left;
+}
+
+.ratingCol {
+    width: 120px;
+    text-align: center;
+}
+
+.averageRow {
+    text-align: right;
+    padding: 1rem;
+    background-color: #fef2f2;
+    border: 1px solid #991b1b;
+    font-weight: 600;
+    color: #991b1b;
+}
+
+/* Print Styles */
+@media print {
+    @page {
+        margin: 0;
+        size: auto;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .reportContainer {
+        padding: 1cm 2cm;
+        max-width: 100%;
+    }
+
+    .title {
+        font-size: 16pt;
+        margin-top: 0;
+    }
+
+    .subtitle {
+        font-size: 12pt;
+    }
+
+    .categoryTitle {
+        font-size: 14pt;
+        page-break-after: avoid;
+    }
+
+    .categoryDescription {
+        font-size: 11pt;
+    }
+
+    .criteriaTable {
+        page-break-inside: auto;
+        font-size: 11pt;
+    }
+
+    .criteriaTable thead {
+        display: table-header-group;
+    }
+
+    .criteriaTable tbody {
+        display: table-row-group;
+    }
+
+    .criteriaTable tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    .criteriaTable th,
+    .criteriaTable td {
+        padding: 0.5rem;
+        border: 1px solid #999;
+        vertical-align: middle;
+    }
+
+    .criteriaTable thead {
+        background-color: #991b1b !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    button {
+        display: none !important;
+    }
+}

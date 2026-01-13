@@ -15,7 +15,10 @@ import { ProgramsPage } from './pages/QCEManager/Programs/ProgramsPage';
 import { EvaluationsPage } from './pages/QCEManager/Evaluations/EvaluationsPage';
 import { FacultyEvaluationDetail } from './pages/QCEManager/Evaluations/FacultyEvaluationDetail';
 import { EvaluationResultsPage as QCEEvaluationResultsPage } from './pages/QCEManager/Results/EvaluationResultsPage';
-import { AnnexReportPage } from './pages/QCEManager/Results/AnnexReportPage';
+import { AnnexAPage } from './pages/QCEManager/Results/AnnexResults/AnnexA/AnnexAPage';
+import { AnnexBPage } from './pages/QCEManager/Results/AnnexResults/AnnexB/AnnexBPage';
+import { AnnexCPage } from './pages/QCEManager/Results/AnnexResults/AnnexC/AnnexCPage';
+import { AnnexDPage } from './pages/QCEManager/Results/AnnexResults/AnnexD/AnnexDPage';
 import { DeanOverviewPage } from './pages/Dean/Overview/DeanOverviewPage';
 import { FacultyAccountsPage as DeanFacultyAccountsPage } from './pages/Dean/FacultyAccounts/FacultyAccountsPage';
 import { DeptChairsPage } from './pages/Dean/DeptChairs/DeptChairsPage';
@@ -71,7 +74,10 @@ export function App() {
             <Route path="/qce/evaluations" element={<EvaluationsPage />} />
             <Route path="/qce/evaluations/:facultyId" element={<FacultyEvaluationDetail />} />
             <Route path="/qce/results" element={<QCEEvaluationResultsPage />} />
-            <Route path="/qce/results/:facultyId/:annexType" element={<AnnexReportPage />} />
+            <Route path="/qce/results/:facultyId/annex-a" element={<AnnexAPage />} />
+            <Route path="/qce/results/:facultyId/annex-b" element={<AnnexBPage />} />
+            <Route path="/qce/results/:facultyId/annex-c" element={<AnnexCPage />} />
+            <Route path="/qce/results/:facultyId/annex-d" element={<AnnexDPage />} />
           </Route>
 
           {/* Dean Routes */}

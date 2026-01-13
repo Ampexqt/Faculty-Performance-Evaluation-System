@@ -225,7 +225,6 @@ router.get('/evaluation-results/faculty/:facultyId/annex/:annexType', async (req
 
         if (type === 'annex-a') {
             // Annex A: Student Evaluations
-            // Using evaluation_ratings_detail and student_evaluations
             query = `
                 SELECT 
                     erd.category,
@@ -240,10 +239,51 @@ router.get('/evaluation-results/faculty/:facultyId/annex/:annexType', async (req
             `;
             params = [facultyId];
 
-        } else if (type === 'annex-b' || type === 'annex-d') {
-            // Annex B: Peer (Dept Chair), Annex D: Supervisor (Dean)
-            // Using supervisor_evaluation_ratings and supervisor_evaluations
-            const position = type === 'annex-b' ? 'Department Chair' : 'Supervisor';
+        } else if (type === 'annex-b') {
+            // Annex B: Computation Summary (Student + Supervisor History)
+
+            // 1. Get Active Academic Year as base
+            const [activeYearRows] = await promisePool.query("SELECT year_label FROM academic_years WHERE status = 'active' LIMIT 1");
+            const activeYear = activeYearRows[0]?.year_label || '2025-2026';
+
+            // 2. Get Student Evaluation History
+            const [studentStats] = await promisePool.query(`
+                SELECT 
+                    ay.year_label, 
+                    ay.semester, 
+                    AVG(se.total_score) as avg_score
+                FROM student_evaluations se
+                JOIN faculty_assignments fa ON se.faculty_assignment_id = fa.id
+                JOIN academic_years ay ON fa.academic_year_id = ay.id
+                WHERE fa.faculty_id = ? AND se.status = 'completed'
+                GROUP BY ay.year_label, ay.semester
+            `, [facultyId]);
+
+            // 3. Get Supervisor Evaluation History
+            const [supervisorStats] = await promisePool.query(`
+                SELECT 
+                    ay.year_label, 
+                    ay.semester, 
+                    AVG(sup.total_score) as avg_score
+                FROM supervisor_evaluations sup
+                JOIN evaluation_periods ep ON sup.evaluation_period_id = ep.id
+                JOIN academic_years ay ON ep.academic_year_id = ay.id
+                WHERE sup.evaluatee_id = ? AND sup.status = 'completed'
+                GROUP BY ay.year_label, ay.semester
+            `, [facultyId]);
+
+            return res.json({
+                success: true,
+                data: {
+                    activeYear,
+                    studentStats,
+                    supervisorStats
+                }
+            });
+
+        } else if (type === 'annex-d') {
+            // Annex D: Supervisor (Dean) Detailed Ratings
+            const position = 'Supervisor';
 
             query = `
                 SELECT 

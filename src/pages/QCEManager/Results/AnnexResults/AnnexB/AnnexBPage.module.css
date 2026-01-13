@@ -46,81 +46,6 @@
     padding-bottom: 0.25rem;
 }
 
-.categorySection {
-    margin-bottom: 3rem;
-}
-
-.categoryTitle {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #991b1b;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #991b1b;
-}
-
-.categoryDescription {
-    font-style: italic;
-    color: #6b7280;
-    margin-bottom: 1rem;
-    line-height: 1.6;
-}
-
-.criteriaTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-}
-
-.criteriaTable thead {
-    background-color: #991b1b;
-    color: white;
-}
-
-.criteriaTable th {
-    padding: 0.75rem;
-    text-align: center;
-    font-weight: 600;
-    border: 1px solid #7f1d1d;
-}
-
-.criteriaTable tbody tr {
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.criteriaTable tbody tr:hover {
-    background-color: #f9fafb;
-}
-
-.criteriaTable td {
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    vertical-align: middle;
-}
-
-.numberCol {
-    width: 60px;
-    text-align: center;
-}
-
-.indicatorCol {
-    text-align: left;
-}
-
-.ratingCol {
-    width: 120px;
-    text-align: center;
-}
-
-.averageRow {
-    text-align: right;
-    padding: 1rem;
-    background-color: #fef2f2;
-    border: 1px solid #991b1b;
-    font-weight: 600;
-    color: #991b1b;
-}
-
 /* Action Buttons */
 .actionButtons {
     display: flex;
@@ -172,6 +97,101 @@
     height: 1rem;
 }
 
+/* Computation Section */
+.computationSection {
+    margin-top: 2rem;
+}
+
+.computationTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.tableSection {
+    margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.computationTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.computationTable th {
+    background-color: #f3f4f6;
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.computationTable td {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    text-align: center;
+}
+
+.computationTable tbody tr:first-child td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+.computationTable tbody tr:nth-child(2) td:first-child,
+.computationTable tbody tr:nth-child(3) td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+.centerText {
+    text-align: center !important;
+}
+
+.summaryTable {
+    width: 100%;
+    max-width: 600px;
+    border-collapse: collapse;
+    margin: 0 auto;
+}
+
+.summaryTable th {
+    background-color: #f3f4f6;
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.summaryTable td {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+}
+
+.summaryTable td:last-child {
+    text-align: right;
+    font-weight: 500;
+}
+
+.totalRow {
+    background-color: #fef2f2;
+}
+
+.totalRow td {
+    color: #991b1b;
+    font-weight: 700 !important;
+}
+
 /* Print Styles */
 @media print {
     :global(body *) {
@@ -213,66 +233,39 @@
         print-color-adjust: exact;
     }
 
-    .categoryTitle {
+    .computationTitle {
         font-size: 14pt;
-        page-break-after: avoid;
-        color: #991b1b !important;
-        border-bottom: 2px solid #991b1b !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
-    .categoryDescription {
+    .sectionTitle {
+        font-size: 13pt;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .computationTable,
+    .summaryTable {
         font-size: 12pt;
-        color: #6b7280 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    .criteriaTable {
-        page-break-inside: auto;
-        font-size: 12pt;
-        width: 100% !important;
-    }
-
-    .criteriaTable thead {
-        display: table-header-group;
-        background-color: #991b1b !important;
-        color: white !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    .criteriaTable tbody {
-        display: table-row-group;
-    }
-
-    .criteriaTable tr {
         page-break-inside: avoid;
-        page-break-after: auto;
     }
 
-    .criteriaTable th {
-        background-color: #991b1b !important;
-        color: white !important;
-        padding: 0.5rem;
-        border: 1px solid #7f1d1d !important;
+    .computationTable th,
+    .summaryTable th {
+        background-color: #f3f4f6 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
-    .criteriaTable td {
-        padding: 0.5rem;
-        border: 1px solid #d1d5db !important;
-        color: #1f2937 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    .averageRow {
+    .totalRow {
         background-color: #fef2f2 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .totalRow td {
         color: #991b1b !important;
-        border: 1px solid #991b1b !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
@@ -286,9 +279,7 @@
         display: none !important;
     }
 
-    /* Force Page Breaks */
-    :global(#category-B) {
-        break-before: page;
-        page-break-before: always;
+    .tableSection {
+        page-break-inside: avoid;
     }
 }

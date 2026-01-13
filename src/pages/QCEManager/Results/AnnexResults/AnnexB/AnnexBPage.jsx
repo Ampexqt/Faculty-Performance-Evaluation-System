@@ -5,48 +5,19 @@ import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { useToast } from '@/hooks/useToast';
 import styles from './AnnexBPage.module.css';
 
-const NEW_CRITERIA = {
-    'A. Management of Teaching and Learning': [
-        'Comes to class on time.',
-        'Explains learning outcomes, expectations, grading system, and various requirements of the subject/course.',
-        'Maximizes the allocated teaching hours effectively.',
-        'Facilitates students to think critically and creatively by providing appropriate learning activities.',
-        'Guides students to learn on their own, reflect on their learning and monitor their own progress.',
-        'Provides timely and constructive feedback on student performance to improve learning.'
-    ],
-    'B. Content Knowledge, Pedagogy, and Technology': [
-        'Demonstrates extensive and broad knowledge of the subject/course.',
-        'Simplifies complex ideas in the lesson for ease of understanding.',
-        'Relates the subject matter to contemporary issues and developments in the discipline and daily life activities.',
-        'Promotes active learning and student engagement by using appropriate teaching and learning resources, including ICT tools and platforms.',
-        'Uses appropriate assessments (projects, exams, quizzes, assignments, etc.) aligned with the learning outcomes.'
-    ],
-    'C. Commitment and Transparency': [
-        'Recognizes and values the unique diversity and individual differences among students.',
-        'Assists students with their learning challenges during consultation hours.',
-        'Provides immediate feedback on student outputs and performance.',
-        'Provides transparent and clear criteria in rating student performance.'
-    ]
-};
-
-const CRITERIA_DESCRIPTIONS = {
-    'A. Management of Teaching and Learning': 'Management of Teaching and Learning refers to the standard and organized planning of instructional activities, clear communication of academic expectations, efficient use of time, and the successful use of student-centered activities that promote critical thinking, collaborative learning, individual decision making, and continuous academic improvement through constructive feedback.',
-    'B. Content Knowledge, Pedagogy, and Technology': 'Content knowledge, pedagogy, and technology refer to teachers\' ability to demonstrate a strong grasp of subject matter, present concepts in a clear and accessible way, relate content to relevant and current developments, engage students through appropriate instructional strategies and digital tools, and apply assessment methods aligned with intended learning outcomes.',
-    'C. Commitment and Transparency': 'Commitment and transparency refer to the teacher\'s consistent dedication to supporting student learning by demonstrating professionalism, providing timely academic support and feedback, and upholding fairness and accountability through the use of clear and openly communicated performance criteria.'
-};
-
 export function AnnexBPage() {
     const { facultyId } = useParams();
     const navigate = useNavigate();
     const { error: showError } = useToast();
     const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState({ ratings: {} });
+    const [data, setData] = useState(null);
     const [facultyInfo, setFacultyInfo] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                // Fetch Annex B (Computation Summary) data
                 const response = await fetch(`http://localhost:5000/api/qce/evaluation-results/faculty/${facultyId}/annex/annex-b`);
                 const result = await response.json();
 
@@ -54,6 +25,7 @@ export function AnnexBPage() {
                     setData(result.data);
                 }
 
+                // Fetch Basic Faculty Info
                 const facResponse = await fetch(`http://localhost:5000/api/qce/evaluation-results/faculty/${facultyId}`);
                 const facResult = await facResponse.json();
                 if (facResult.success) {
@@ -70,6 +42,36 @@ export function AnnexBPage() {
         if (facultyId) fetchData();
     }, [facultyId]);
 
+    const getProjectedYears = (baseYearLabel) => {
+        if (!baseYearLabel) return [];
+        try {
+            const [start, end] = baseYearLabel.split('-').map(Number);
+            return [
+                baseYearLabel,
+                `${start + 1}-${end + 1}`,
+                `${start + 2}-${end + 2}`
+            ];
+        } catch (e) {
+            return [baseYearLabel, 'N/A', 'N/A'];
+        }
+    };
+
+    const getScore = (stats, year, semIndex) => {
+        if (!stats) return null;
+        // semIndex: 0 = 1st Sem, 1 = 2nd Sem
+        const found = stats.find(s => {
+            const sYear = s.year_label.trim();
+            const sSem = s.semester.toLowerCase();
+            const isTargetYear = sYear === year;
+            const isTargetSem = semIndex === 0
+                ? (sSem.includes('1st') || sSem.includes('first'))
+                : (sSem.includes('2nd') || sSem.includes('second'));
+
+            return isTargetYear && isTargetSem;
+        });
+        return found ? parseFloat(found.avg_score) : null;
+    };
+
     if (isLoading) {
         return (
             <DashboardLayout role="QCE Manager">
@@ -81,12 +83,45 @@ export function AnnexBPage() {
     }
 
     const userName = sessionStorage.getItem('fullName') || 'Administrator';
-    let currentOffset = 0;
-    const categoryOffsets = {};
-    Object.entries(NEW_CRITERIA).forEach(([key, items]) => {
-        categoryOffsets[key] = currentOffset;
-        currentOffset += items.length;
-    });
+    const years = data ? getProjectedYears(data.activeYear) : ['-', '-', '-'];
+
+    // Calculation Helper
+    const calculateSection = (stats, multiplier) => {
+        let total = 0;
+        let count = 0;
+        const values = [];
+
+        years.forEach(year => {
+            [0, 1].forEach(semIndex => {
+                const val = getScore(stats, year, semIndex);
+                values.push(val); // push raw value or null
+                if (val !== null) {
+                    total += val;
+                    count++;
+                }
+            });
+        });
+
+        // The divisor is typically fixed (6) in the template or based on COUNT?
+        // Sample image shows "97.00 / 6 = 16.17", implying divisor is ALWAYS 6 (3 years * 2 sems).
+        // If data is missing (N/A), count is effectively treating them as 0 for the dividend? 
+        // Wait, "N/A" usually means 0 in summation? 
+        // In the sample: One value is 97.00, others N/A. Average is 16.17 (97/6).
+        // So yes, divisor is fixed at 6.
+        const average = total / 6;
+        const points = average * multiplier;
+
+        return {
+            values, // Array of 6 values [y1s1, y1s2, y2s1, y2s2, y3s1, y3s2]
+            average,
+            points
+        };
+    };
+
+    const studentCalc = calculateSection(data?.studentStats, 0.36);
+    const supervisorCalc = calculateSection(data?.supervisorStats, 0.24);
+
+    const totalPoints = studentCalc.points + supervisorCalc.points;
 
     return (
         <DashboardLayout role="QCE Manager" userName={userName}>
@@ -124,53 +159,123 @@ export function AnnexBPage() {
                     )}
                 </div>
 
-                {/* Criteria Tables */}
-                {Object.entries(NEW_CRITERIA).map(([category, criteria]) => (
-                    <div key={category} id={`category-${category.charAt(0)}`} className={styles.categorySection}>
-                        <h3 className={styles.categoryTitle}>{category}</h3>
-                        <p className={styles.categoryDescription}>({CRITERIA_DESCRIPTIONS[category]})</p>
+                {/* Sample Computation Section */}
+                <div className={styles.computationSection}>
+                    <h2 className={styles.computationTitle}>Sample Computation</h2>
 
-                        <table className={styles.criteriaTable}>
+                    {/* 1. Points for Student Evaluation */}
+                    <div className={styles.tableSection}>
+                        <h3 className={styles.sectionTitle}>1. Points for Student Evaluation</h3>
+                        <table className={styles.computationTable}>
                             <thead>
                                 <tr>
-                                    <th className={styles.numberCol}>#</th>
-                                    <th className={styles.indicatorCol}>Indicators</th>
-                                    <th className={styles.ratingCol}>Average Rating</th>
+                                    <th rowSpan="2">Semester</th>
+                                    {years.map(year => (
+                                        <th key={year} colSpan="2">{year}</th>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th>1st Sem</th>
+                                    <th>2nd Sem</th>
+                                    <th>1st Sem</th>
+                                    <th>2nd Sem</th>
+                                    <th>1st Sem</th>
+                                    <th>2nd Sem</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {criteria.map((criterion, index) => {
-                                    const shortCode = category.charAt(0);
-                                    const ratingKey = `${shortCode}-${index}`;
-                                    const rating = data.ratings[ratingKey] || 0;
-
-                                    return (
-                                        <tr key={index}>
-                                            <td className={styles.numberCol}>
-                                                {categoryOffsets[category] + index + 1}
-                                            </td>
-                                            <td className={styles.indicatorCol}>{criterion}</td>
-                                            <td className={styles.ratingCol}>
-                                                {rating > 0 ? rating.toFixed(2) : '-'}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                <tr>
+                                    <td>Ave. Student Eval. Ratings</td>
+                                    {studentCalc.values.map((val, idx) => (
+                                        <td key={idx}>{val !== null ? val.toFixed(2) : 'N/A'}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <td>Average</td>
+                                    <td colSpan="6" className={styles.centerText}>
+                                        ({studentCalc.values.reduce((a, b) => a + (b || 0), 0).toFixed(2)}) / 6 = {studentCalc.average.toFixed(2)}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Points (x 0.36)</td>
+                                    <td colSpan="6" className={styles.centerText}>
+                                        <strong>{studentCalc.points.toFixed(2)}</strong>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
-
-                        <div className={styles.averageRow}>
-                            <strong>Average ({category.split('.')[0]}):</strong>
-                            {(() => {
-                                const shortCode = category.charAt(0);
-                                const catRatings = criteria.map((_, i) => data.ratings[`${shortCode}-${i}`] || 0).filter(r => r > 0);
-                                const sum = catRatings.reduce((a, b) => a + b, 0);
-                                const avg = catRatings.length ? sum / catRatings.length : 0;
-                                return avg.toFixed(2);
-                            })()}
-                        </div>
                     </div>
-                ))}
+
+                    {/* 2. Points for Supervisor's Evaluation */}
+                    <div className={styles.tableSection}>
+                        <h3 className={styles.sectionTitle}>2. Points for Supervisor's Evaluation</h3>
+                        <table className={styles.computationTable}>
+                            <thead>
+                                <tr>
+                                    <th rowSpan="2">Semester</th>
+                                    {years.map(year => (
+                                        <th key={year} colSpan="2">{year}</th>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th>1st Sem</th>
+                                    <th>2nd Sem</th>
+                                    <th>1st Sem</th>
+                                    <th>2nd Sem</th>
+                                    <th>1st Sem</th>
+                                    <th>2nd Sem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Supervisor's Rating</td>
+                                    {supervisorCalc.values.map((val, idx) => (
+                                        <td key={idx}>{val !== null ? val.toFixed(2) : 'N/A'}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <td>Average</td>
+                                    <td colSpan="6" className={styles.centerText}>
+                                        ({supervisorCalc.values.reduce((a, b) => a + (b || 0), 0).toFixed(2)}) / 6 = {supervisorCalc.average.toFixed(2)}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Points (x 0.24)</td>
+                                    <td colSpan="6" className={styles.centerText}>
+                                        <strong>{supervisorCalc.points.toFixed(2)}</strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* 3. Faculty Performance Evaluation */}
+                    <div className={styles.tableSection}>
+                        <h3 className={styles.sectionTitle}>3. Faculty Performance Evaluation</h3>
+                        <table className={styles.summaryTable}>
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Student Evaluation</td>
+                                    <td>{studentCalc.points.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Supervisor's Evaluation</td>
+                                    <td>{supervisorCalc.points.toFixed(2)}</td>
+                                </tr>
+                                <tr className={styles.totalRow}>
+                                    <td><strong>Total Points</strong></td>
+                                    <td><strong>{totalPoints.toFixed(2)}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </DashboardLayout>
     );

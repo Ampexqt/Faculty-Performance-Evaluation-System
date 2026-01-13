@@ -281,6 +281,86 @@ router.get('/evaluation-results/faculty/:facultyId/annex/:annexType', async (req
                 }
             });
 
+        } else if (type === 'annex-c') {
+            // Annex C: Individual Faculty Evaluation Report
+
+            // 1. Get Active Academic Year
+            const [activeYearRows] = await promisePool.query("SELECT id, year_label, semester FROM academic_years WHERE status = 'active' LIMIT 1");
+            const activeYear = activeYearRows[0] || { year_label: '2025-2026', semester: '1st Semester' };
+
+            // 2. Get Course-level Student Evaluation Data
+            const [courseData] = await promisePool.query(`
+                SELECT 
+                    s.subject_code,
+                    s.subject_name,
+                    fa.section,
+                    COUNT(DISTINCT se.id) as num_students,
+                    AVG(se.total_score) as avg_rating
+                FROM faculty_assignments fa
+                JOIN subjects s ON fa.subject_id = s.id
+                JOIN academic_years ay ON fa.academic_year_id = ay.id
+                LEFT JOIN student_evaluations se ON se.faculty_assignment_id = fa.id AND se.status = 'completed'
+                WHERE fa.faculty_id = ? AND ay.id = ?
+                GROUP BY s.subject_code, s.subject_name, fa.section
+                ORDER BY s.subject_code
+            `, [facultyId, activeYear.id]);
+
+            // 3. Get Qualitative Comments from Students
+            const [comments] = await promisePool.query(`
+                SELECT DISTINCT
+                    se.comments,
+                    se.evaluation_date
+                FROM student_evaluations se
+                JOIN faculty_assignments fa ON se.faculty_assignment_id = fa.id
+                JOIN academic_years ay ON fa.academic_year_id = ay.id
+                WHERE fa.faculty_id = ? 
+                AND ay.id = ?
+                AND se.status = 'completed'
+                AND (se.comments IS NOT NULL AND se.comments != '')
+                ORDER BY se.evaluation_date DESC
+                LIMIT 10
+            `, [facultyId, activeYear.id]);
+
+            // 4. Calculate Overall SET Rating
+            const totalStudents = courseData.reduce((sum, course) => sum + (course.num_students || 0), 0);
+            const totalWeightedValue = courseData.reduce((sum, course) => {
+                const students = course.num_students || 0;
+                const rating = parseFloat(course.avg_rating) || 0;
+                return sum + (students * rating);
+            }, 0);
+
+            const overallSETRating = totalStudents > 0 ? totalWeightedValue / totalStudents : 0;
+
+            // 5. Get Supervisor (SEF) Rating for the same period
+            const [supervisorRating] = await promisePool.query(`
+                SELECT AVG(sup.total_score) as avg_sef_rating
+                FROM supervisor_evaluations sup
+                JOIN evaluation_periods ep ON sup.evaluation_period_id = ep.id
+                JOIN academic_years ay ON ep.academic_year_id = ay.id
+                WHERE sup.evaluatee_id = ? 
+                AND ay.id = ?
+                AND sup.status = 'completed'
+            `, [facultyId, activeYear.id]);
+
+            const sefRating = parseFloat(supervisorRating[0]?.avg_sef_rating) || 0;
+
+            return res.json({
+                success: true,
+                data: {
+                    academicYear: activeYear.year_label,
+                    semester: activeYear.semester,
+                    courses: courseData,
+                    totalStudents,
+                    totalWeightedValue,
+                    overallSETRating,
+                    sefRating,
+                    comments: comments.map(c => ({
+                        text: c.comments,
+                        date: c.evaluation_date
+                    })).filter(c => c.text)
+                }
+            });
+
         } else if (type === 'annex-d') {
             // Annex D: Supervisor (Dean) Detailed Ratings
             const position = 'Supervisor';

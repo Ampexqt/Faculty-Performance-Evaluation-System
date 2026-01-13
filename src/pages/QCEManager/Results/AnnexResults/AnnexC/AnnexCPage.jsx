@@ -5,48 +5,19 @@ import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { useToast } from '@/hooks/useToast';
 import styles from './AnnexCPage.module.css';
 
-const NEW_CRITERIA = {
-    'A. Management of Teaching and Learning': [
-        'Comes to class on time.',
-        'Explains learning outcomes, expectations, grading system, and various requirements of the subject/course.',
-        'Maximizes the allocated teaching hours effectively.',
-        'Facilitates students to think critically and creatively by providing appropriate learning activities.',
-        'Guides students to learn on their own, reflect on their learning and monitor their own progress.',
-        'Provides timely and constructive feedback on student performance to improve learning.'
-    ],
-    'B. Content Knowledge, Pedagogy, and Technology': [
-        'Demonstrates extensive and broad knowledge of the subject/course.',
-        'Simplifies complex ideas in the lesson for ease of understanding.',
-        'Relates the subject matter to contemporary issues and developments in the discipline and daily life activities.',
-        'Promotes active learning and student engagement by using appropriate teaching and learning resources, including ICT tools and platforms.',
-        'Uses appropriate assessments (projects, exams, quizzes, assignments, etc.) aligned with the learning outcomes.'
-    ],
-    'C. Commitment and Transparency': [
-        'Recognizes and values the unique diversity and individual differences among students.',
-        'Assists students with their learning challenges during consultation hours.',
-        'Provides immediate feedback on student outputs and performance.',
-        'Provides transparent and clear criteria in rating student performance.'
-    ]
-};
-
-const CRITERIA_DESCRIPTIONS = {
-    'A. Management of Teaching and Learning': 'Management of Teaching and Learning refers to the standard and organized planning of instructional activities, clear communication of academic expectations, efficient use of time, and the successful use of student-centered activities that promote critical thinking, collaborative learning, individual decision making, and continuous academic improvement through constructive feedback.',
-    'B. Content Knowledge, Pedagogy, and Technology': 'Content knowledge, pedagogy, and technology refer to teachers\' ability to demonstrate a strong grasp of subject matter, present concepts in a clear and accessible way, relate content to relevant and current developments, engage students through appropriate instructional strategies and digital tools, and apply assessment methods aligned with intended learning outcomes.',
-    'C. Commitment and Transparency': 'Commitment and transparency refer to the teacher\'s consistent dedication to supporting student learning by demonstrating professionalism, providing timely academic support and feedback, and upholding fairness and accountability through the use of clear and openly communicated performance criteria.'
-};
-
 export function AnnexCPage() {
     const { facultyId } = useParams();
     const navigate = useNavigate();
     const { error: showError } = useToast();
     const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState({ ratings: {} });
+    const [data, setData] = useState(null);
     const [facultyInfo, setFacultyInfo] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                // Fetch Annex C (Individual Faculty Evaluation Report) data
                 const response = await fetch(`http://localhost:5000/api/qce/evaluation-results/faculty/${facultyId}/annex/annex-c`);
                 const result = await response.json();
 
@@ -54,6 +25,7 @@ export function AnnexCPage() {
                     setData(result.data);
                 }
 
+                // Fetch Basic Faculty Info
                 const facResponse = await fetch(`http://localhost:5000/api/qce/evaluation-results/faculty/${facultyId}`);
                 const facResult = await facResponse.json();
                 if (facResult.success) {
@@ -81,97 +53,179 @@ export function AnnexCPage() {
     }
 
     const userName = sessionStorage.getItem('fullName') || 'Administrator';
-    let currentOffset = 0;
-    const categoryOffsets = {};
-    Object.entries(NEW_CRITERIA).forEach(([key, items]) => {
-        categoryOffsets[key] = currentOffset;
-        currentOffset += items.length;
-    });
 
     return (
         <DashboardLayout role="QCE Manager" userName={userName}>
             <div className={styles.reportContainer}>
                 {/* Header Actions */}
-                <div className="print:hidden" style={{ marginBottom: '1.5rem' }}>
-                    <button onClick={() => navigate(-1)} className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
+                <div className={styles.actionButtons}>
+                    <button onClick={() => navigate(-1)} className={styles.backButton}>
+                        <ArrowLeft className={styles.buttonIcon} />
                         Back to Results
                     </button>
-                    <button onClick={() => window.print()} className="float-right inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-800 hover:bg-red-900">
-                        <Printer className="w-4 h-4 mr-2" />
+                    <button onClick={() => window.print()} className={styles.printButton}>
+                        <Printer className={styles.buttonIcon} />
                         Print Report
                     </button>
                 </div>
 
                 {/* Report Content */}
                 <div className={styles.header}>
-                    <h1 className={styles.title}>ANNEX C</h1>
-                    <p className={styles.subtitle}>Peer Evaluation (Program Chair)</p>
+                    <h1 className={styles.mainTitle}>ANNEX C – Individual Faculty Evaluation Report</h1>
                 </div>
 
-                <div className={styles.facultyInfo}>
-                    <div className={styles.subtitle}>The QCE of the NBC No. 461</div>
-                    {facultyInfo && (
-                        <>
-                            <div className={styles.infoRow}>
-                                <span className={styles.infoLabel}>Name of Faculty:</span>
-                                <span className={styles.infoValue}>{facultyInfo.name}</span>
-                            </div>
-                            <div className={styles.infoRow}>
-                                <span className={styles.infoLabel}>Academic Rank:</span>
-                                <span className={styles.infoValue}>{facultyInfo.position}</span>
-                            </div>
-                        </>
-                    )}
+                <div className={styles.reportTitle}>
+                    <h2>INDIVIDUAL FACULTY EVALUATION REPORT</h2>
                 </div>
 
-                {/* Criteria Tables */}
-                {Object.entries(NEW_CRITERIA).map(([category, criteria]) => (
-                    <div key={category} className={styles.categorySection}>
-                        <h3 className={styles.categoryTitle}>{category}</h3>
-                        <p className={styles.categoryDescription}>({CRITERIA_DESCRIPTIONS[category]})</p>
+                {/* A. Faculty Information */}
+                <div className={styles.section}>
+                    <h3 className={styles.sectionTitle}>A. Faculty Information</h3>
+                    <table className={styles.infoTable}>
+                        <tbody>
+                            <tr>
+                                <td className={styles.labelCell}>Name of Faculty Evaluated</td>
+                                <td className={styles.colonCell}>:</td>
+                                <td className={styles.valueCell}>{facultyInfo?.name || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td className={styles.labelCell}>Department/College</td>
+                                <td className={styles.colonCell}>:</td>
+                                <td className={styles.valueCell}>{facultyInfo?.college_name || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td className={styles.labelCell}>Current Faculty Rank</td>
+                                <td className={styles.colonCell}>:</td>
+                                <td className={styles.valueCell}>{facultyInfo?.position || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td className={styles.labelCell}>Semester/Term & Academic Year</td>
+                                <td className={styles.colonCell}>:</td>
+                                <td className={styles.valueCell}>
+                                    {data?.semester || '1st Semester'} / {data?.academicYear || '2025-2026'}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                        <table className={styles.criteriaTable}>
-                            <thead>
-                                <tr>
-                                    <th className={styles.numberCol}>#</th>
-                                    <th className={styles.indicatorCol}>Indicators</th>
-                                    <th className={styles.ratingCol}>Average Rating</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {criteria.map((criterion, index) => {
-                                    const shortCode = category.charAt(0);
-                                    const ratingKey = `${shortCode}-${index}`;
-                                    const rating = data.ratings[ratingKey] || 0;
+                {/* B. Summary of Average SET Rating */}
+                <div className={styles.section}>
+                    <h3 className={styles.sectionTitle}>B. Summary of Average SET Rating</h3>
+                    <div className={styles.computation}>
+                        <p><strong>Computation:</strong></p>
+                        <p className={styles.step}>Step 1: Get the average SET rating for each class.</p>
+                        <p className={styles.step}>Step 2: Multiply the number of students in each class with its average SET rating to get the Weighted Value per class.</p>
+                        <p className={styles.step}>Step 3: Get the total number of students and the total weighted value.</p>
+                    </div>
+
+                    <table className={styles.dataTable}>
+                        <thead>
+                            <tr>
+                                <th rowSpan="2"></th>
+                                <th colSpan="2">(1)</th>
+                                <th>(2)</th>
+                                <th>(3)</th>
+                                <th>(4)</th>
+                                <th>(3 × 4)</th>
+                            </tr>
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Section</th>
+                                <th>No. of Students</th>
+                                <th>Ave. SET Rating</th>
+                                <th>Weighted Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data?.courses && data.courses.length > 0 ? (
+                                data.courses.map((course, index) => {
+                                    const numStudents = course.num_students || 0;
+                                    const avgRating = parseFloat(course.avg_rating) || 0;
+                                    const weightedValue = numStudents * avgRating;
 
                                     return (
                                         <tr key={index}>
-                                            <td className={styles.numberCol}>
-                                                {categoryOffsets[category] + index + 1}
-                                            </td>
-                                            <td className={styles.indicatorCol}>{criterion}</td>
-                                            <td className={styles.ratingCol}>
-                                                {rating > 0 ? rating.toFixed(2) : '-'}
-                                            </td>
+                                            <td className={styles.centerText}>{index + 1}</td>
+                                            <td>{course.subject_code}</td>
+                                            <td>{course.section}</td>
+                                            <td className={styles.centerText}>{numStudents}</td>
+                                            <td className={styles.centerText}>{avgRating > 0 ? avgRating.toFixed(2) : 'N/A'}</td>
+                                            <td className={styles.centerText}>{weightedValue > 0 ? weightedValue.toFixed(0) : 'N/A'}</td>
                                         </tr>
                                     );
-                                })}
-                            </tbody>
-                        </table>
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan="6" className={styles.centerText}>No course data available</td>
+                                </tr>
+                            )}
+                            <tr className={styles.totalRow}>
+                                <td colSpan="3" className={styles.rightText}><strong>TOTAL</strong></td>
+                                <td className={styles.centerText}><strong>{data?.totalStudents || 0}</strong></td>
+                                <td className={styles.centerText}><strong>TOTAL</strong></td>
+                                <td className={styles.centerText}><strong>{data?.totalWeightedValue ? data.totalWeightedValue.toFixed(0) : 0}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                        <div className={styles.averageRow}>
-                            <strong>Average ({category.split('.')[0]}):</strong>
-                            {(() => {
-                                const shortCode = category.charAt(0);
-                                const catRatings = criteria.map((_, i) => data.ratings[`${shortCode}-${i}`] || 0).filter(r => r > 0);
-                                const sum = catRatings.reduce((a, b) => a + b, 0);
-                                const avg = catRatings.length ? sum / catRatings.length : 0;
-                                return avg.toFixed(2);
-                            })()}
-                        </div>
+                {/* C. SET and SEF Ratings */}
+                <div className={styles.section}>
+                    <h3 className={styles.sectionTitle}>C. SET and SEF Ratings</h3>
+                    <div className={styles.computation}>
+                        <p><strong>Computation:</strong> Calculate the Overall SET Rating by dividing the total weighted value by the total number of students. In the example above, the total weighted value is {data?.totalWeightedValue ? data.totalWeightedValue.toFixed(2) : '0.00'} while the total number of students is {data?.totalStudents || 0}. Therefore, {data?.totalWeightedValue ? data.totalWeightedValue.toFixed(2) : '0.00'} ÷ {data?.totalStudents || 0} = {data?.overallSETRating ? data.overallSETRating.toFixed(2) : '0.00'}.</p>
                     </div>
-                ))}
+
+                    <table className={styles.ratingsTable}>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>SET Rating</th>
+                                <th>*SEF Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>OVERALL RATING</strong></td>
+                                <td className={styles.centerText}><strong>{data?.overallSETRating ? data.overallSETRating.toFixed(2) : '0.00'}</strong></td>
+                                <td className={styles.centerText}><strong>{data?.sefRating ? data.sefRating.toFixed(2) : '0.00'}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p className={styles.note}><em>Note: rating given by the supervisor using the SEF instrument</em></p>
+                </div>
+
+                {/* D. Summary of Qualitative Comments and Suggestions */}
+                <div className={styles.section}>
+                    <h3 className={styles.sectionTitle}>D. Summary of Qualitative Comments and Suggestions</h3>
+                    <p className={styles.subsectionTitle}>Comments and Suggestions from the Students</p>
+
+                    <table className={styles.commentsTable}>
+                        <tbody>
+                            {data?.comments && data.comments.length > 0 ? (
+                                data.comments.slice(0, 5).map((comment, index) => (
+                                    <tr key={index}>
+                                        <td className={styles.numberCell}>{index + 1}</td>
+                                        <td className={styles.commentCell}>{comment.text}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                Array.from({ length: 5 }).map((_, index) => (
+                                    <tr key={index}>
+                                        <td className={styles.numberCell}>{index + 1}</td>
+                                        <td className={styles.commentCell}></td>
+                                    </tr>
+                                ))
+                            )}
+                            <tr>
+                                <td colSpan="2" className={styles.additionalRow}>
+                                    <em>(add additional rows if necessary)</em>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </DashboardLayout>
     );

@@ -1,196 +1,262 @@
-/* Annex C Report Styles - Same as A and B */
-
+/* Report Container */
 .reportContainer {
-    background: white;
-    padding: 2rem;
-    max-width: 1200px;
+    max-width: 210mm;
     margin: 0 auto;
+    padding: 20mm;
+    background: white;
+    min-height: 297mm;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.header {
-    text-align: center;
+/* Action Buttons */
+.actionButtons {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 2rem;
 }
 
-.title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 1rem;
+.backButton,
+.printButton {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
-.subtitle {
-    font-size: 1rem;
-    color: #6b7280;
-    margin-bottom: 0.5rem;
-}
-
-.facultyInfo {
-    margin-bottom: 2rem;
-}
-
-.infoRow {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-}
-
-.infoLabel {
-    font-weight: 600;
+.backButton {
+    border: 1px solid #d1d5db;
+    background: white;
     color: #374151;
 }
 
-.infoValue {
-    color: #1f2937;
-    padding-bottom: 0.25rem;
-    border-bottom: 1px solid #d1d5db;
+.backButton:hover {
+    background: #f9fafb;
 }
 
-.categorySection {
-    margin-bottom: 3rem;
-}
-
-.categoryTitle {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #991b1b;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #991b1b;
-}
-
-.categoryDescription {
-    font-style: italic;
-    color: #6b7280;
-    margin-bottom: 1rem;
-    line-height: 1.6;
-}
-
-.criteriaTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-}
-
-.criteriaTable thead {
-    background-color: #991b1b;
+.printButton {
+    border: none;
+    background: #991b1b;
     color: white;
 }
 
-.criteriaTable th {
-    padding: 0.75rem;
+.printButton:hover {
+    background: #7f1d1d;
+}
+
+.buttonIcon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+/* Header */
+.header {
     text-align: center;
+    margin-bottom: 1rem;
+}
+
+.mainTitle {
+    font-size: 0.875rem;
+    font-weight: bold;
+    margin: 0;
+    text-align: right;
+}
+
+.reportTitle {
+    text-align: center;
+    margin: 2rem 0 1.5rem;
+}
+
+.reportTitle h2 {
+    font-size: 1.125rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Sections */
+.section {
+    margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.subsectionTitle {
+    font-size: 0.85rem;
     font-weight: 600;
-    border: 1px solid #7f1d1d;
-    vertical-align: middle;
-}
-
-.criteriaTable tbody tr {
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.criteriaTable tbody tr:hover {
-    background-color: #f9fafb;
-}
-
-.criteriaTable td {
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    vertical-align: middle;
-}
-
-.numberCol {
-    width: 60px;
+    margin: 0.5rem 0;
     text-align: center;
 }
 
-.indicatorCol {
+/* Faculty Info Table */
+.infoTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    border: 1px solid #000;
+}
+
+.infoTable td {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid #000;
+    font-size: 0.85rem;
+}
+
+.labelCell {
+    width: 35%;
+    font-weight: 500;
+}
+
+.colonCell {
+    width: 3%;
+    text-align: center;
+    font-weight: bold;
+}
+
+.valueCell {
+    width: 62%;
+    font-weight: bold;
+}
+
+/* Computation Instructions */
+.computation {
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.computation p {
+    margin: 0.25rem 0;
+}
+
+.step {
+    margin-left: 1rem;
+}
+
+/* Data Table */
+.dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    border: 1px solid #000;
+    font-size: 0.8rem;
+}
+
+.dataTable th,
+.dataTable td {
+    border: 1px solid #000;
+    padding: 0.4rem 0.5rem;
     text-align: left;
 }
 
-.ratingCol {
-    width: 120px;
+.dataTable th {
+    background-color: #f3f4f6;
+    font-weight: 600;
     text-align: center;
 }
 
-.averageRow {
-    text-align: right;
-    padding: 1rem;
-    background-color: #fef2f2;
-    border: 1px solid #991b1b;
+.dataTable thead tr:first-child th {
+    font-weight: bold;
+}
+
+.centerText {
+    text-align: center !important;
+}
+
+.rightText {
+    text-align: right !important;
+}
+
+.totalRow {
+    background-color: #f9fafb;
     font-weight: 600;
-    color: #991b1b;
+}
+
+/* Ratings Table */
+.ratingsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.5rem;
+    border: 1px solid #000;
+    font-size: 0.85rem;
+}
+
+.ratingsTable th,
+.ratingsTable td {
+    border: 1px solid #000;
+    padding: 0.5rem;
+}
+
+.ratingsTable th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+    text-align: center;
+}
+
+.ratingsTable td:first-child {
+    width: 40%;
+}
+
+.ratingsTable td:not(:first-child) {
+    text-align: center;
+}
+
+.note {
+    font-size: 0.75rem;
+    font-style: italic;
+    margin: 0.25rem 0;
+}
+
+/* Comments Table */
+.commentsTable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+    font-size: 0.8rem;
+}
+
+.commentsTable td {
+    border: 1px solid #000;
+    padding: 0.5rem;
+}
+
+.numberCell {
+    width: 5%;
+    text-align: center;
+    vertical-align: top;
+}
+
+.commentCell {
+    width: 95%;
+    min-height: 2rem;
+    vertical-align: top;
+}
+
+.additionalRow {
+    text-align: center;
+    font-style: italic;
+    background-color: #f9fafb;
 }
 
 /* Print Styles */
 @media print {
-    @page {
-        margin: 0;
-        size: auto;
-    }
-
-    body {
-        margin: 0;
-        padding: 0;
+    .actionButtons {
+        display: none !important;
     }
 
     .reportContainer {
-        padding: 1cm 2cm;
-        max-width: 100%;
+        box-shadow: none;
+        padding: 15mm;
     }
 
-    .title {
-        font-size: 16pt;
-        margin-top: 0;
-    }
-
-    .subtitle {
-        font-size: 12pt;
-    }
-
-    .categoryTitle {
-        font-size: 14pt;
-        page-break-after: avoid;
-    }
-
-    .categoryDescription {
-        font-size: 11pt;
-    }
-
-    .criteriaTable {
-        page-break-inside: auto;
-        font-size: 11pt;
-    }
-
-    .criteriaTable thead {
-        display: table-header-group;
-    }
-
-    .criteriaTable tbody {
-        display: table-row-group;
-    }
-
-    .criteriaTable tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
-    }
-
-    .criteriaTable th,
-    .criteriaTable td {
-        padding: 0.5rem;
-        border: 1px solid #999;
-        vertical-align: middle;
-    }
-
-    .criteriaTable thead {
-        background-color: #991b1b !important;
-        color: white !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    button {
-        display: none !important;
+    @page {
+        size: A4;
+        margin: 15mm;
     }
 }

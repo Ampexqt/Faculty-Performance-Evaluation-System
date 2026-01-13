@@ -348,13 +348,7 @@ export function EvaluationResultsPage() {
                                     </div>
                                     <div className={styles.scoresRow}>
                                         <div className={styles.scoreBoxPrimary}>
-                                            <span className={styles.scoreBoxLabel}>OVERALL RATING</span>
-                                            <span className={styles.scoreBoxValue}>
-                                                {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) : '---'}
-                                            </span>
-                                        </div>
-                                        <div className={styles.scoreBoxPrimary}>
-                                            <span className={styles.scoreBoxLabel}>NBC 461 - POINTS</span>
+                                            <span className={styles.scoreBoxLabel}>NBC 461 POINTS</span>
                                             <span className={styles.scoreBoxValue}>
                                                 {(() => {
                                                     const sAvg = facultyDetails.statistics.studentAverage || 0;
@@ -369,6 +363,13 @@ export function EvaluationResultsPage() {
                                                     );
                                                 })()}
                                             </span>
+                                        </div>
+                                        <div className={styles.scoreBoxSecondary}>
+                                            <span className={styles.scoreBoxLabelSecondary}>PERCENTAGE RATING</span>
+                                            <span className={styles.scoreBoxValueSecondary}>
+                                                {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) + '%' : '---'}
+                                            </span>
+                                            <span style={{ fontSize: '0.6rem', color: '#9ca3af', marginTop: '2px' }}>(Informational Only)</span>
                                         </div>
                                     </div>
                                     <div className={styles.performanceCategory}>

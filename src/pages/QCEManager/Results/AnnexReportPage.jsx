@@ -141,8 +141,10 @@ export function AnnexReportPage() {
         );
     }
 
+    const userName = sessionStorage.getItem('fullName') || 'Administrator';
+
     return (
-        <DashboardLayout role="QCE Manager">
+        <DashboardLayout role="QCE Manager" userName={userName}>
             <div className={styles.container}>
                 {/* Header Actions */}
                 <div className="flex justify-between items-center mb-6 print:hidden">
@@ -169,26 +171,23 @@ export function AnnexReportPage() {
                         <h2 className="text-2xl font-bold text-gray-900">{annexLabel}</h2>
                     </div>
 
-                    {/* Left-aligned Faculty Information */}
-                    <div className="mb-8 pb-6 border-b">
-                        <div className="mb-4">
-                            <p className="text-sm font-semibold text-gray-700 mb-2">The QCE of the NBC No. 461</p>
+                    {/* Faculty Information Table */}
+                    <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #e5e7eb' }}>
+                        <div style={{ marginBottom: '1rem', fontSize: '0.875rem', fontWeight: '500', color: '#4b5563' }}>
+                            The QCE of the NBC No. 461
                         </div>
                         {facultyInfo && (
-                            <div className="space-y-3">
-                                <div className="flex items-start">
-                                    <span className="font-semibold text-gray-700 min-w-[160px]">Name of Faculty:</span>
-                                    <span className="text-gray-900">{facultyInfo.name}</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                <div style={{ display: 'flex', borderBottom: '1px solid #d1d5db', paddingBottom: '0.75rem' }}>
+                                    <div style={{ fontWeight: '600', color: '#374151', width: '180px' }}>Name of Faculty:</div>
+                                    <div style={{ color: '#111827', flex: '1' }}>{facultyInfo.name}</div>
                                 </div>
-                                <div className="flex items-start">
-                                    <span className="font-semibold text-gray-700 min-w-[160px]">Academic Rank:</span>
-                                    <span className="text-gray-900">{facultyInfo.position}</span>
+                                <div style={{ display: 'flex', borderBottom: '1px solid #d1d5db', paddingBottom: '0.75rem', paddingTop: '0.5rem' }}>
+                                    <div style={{ fontWeight: '600', color: '#374151', width: '180px' }}>Academic Rank:</div>
+                                    <div style={{ color: '#111827', flex: '1' }}>{facultyInfo.position}</div>
                                 </div>
                             </div>
                         )}
-                        <div className="mt-4 text-sm text-gray-500 italic">
-                            Criteria Used: {data.criteriaType === 'new' ? 'New Criteria (Result-Based)' : 'Old Criteria (NBC 461)'}
-                        </div>
                     </div>
 
 

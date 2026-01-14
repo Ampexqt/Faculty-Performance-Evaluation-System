@@ -184,19 +184,34 @@ export const VPAAResultsPage = () => {
                     </div>
                 </div>
 
-                {/* Search Bar */}
-                <div className={styles.searchSection}>
-                    <div className={styles.searchContainer}>
-                        <Search size={20} className={styles.searchIcon} />
-                        <Input
-                            type="text"
-                            placeholder="Search VPAA by name..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className={styles.searchInput}
-                        />
+                {/* Performance Category Legend */}
+                {!isLoading && filteredResults.length > 0 && (
+                    <div className={styles.legendSection}>
+                        <h3 className={styles.legendTitle}>NBC 461 Performance Category Guide</h3>
+                        <div className={styles.legendGrid}>
+                            <div className={styles.legendItem}>
+                                <span className={styles.legendLabel}>OUTSTANDING:</span>
+                                <span className={styles.legendValue}>4.50 - 5.00 (90% - 100%)</span>
+                            </div>
+                            <div className={styles.legendItem}>
+                                <span className={styles.legendLabel}>VERY SATISFACTORY:</span>
+                                <span className={styles.legendValue}>4.00 - 4.49 (80% - 89%)</span>
+                            </div>
+                            <div className={styles.legendItem}>
+                                <span className={styles.legendLabel}>SATISFACTORY:</span>
+                                <span className={styles.legendValue}>3.50 - 3.99 (70% - 79%)</span>
+                            </div>
+                            <div className={styles.legendItem}>
+                                <span className={styles.legendLabel}>FAIR:</span>
+                                <span className={styles.legendValue}>3.00 - 3.49 (60% - 69%)</span>
+                            </div>
+                            <div className={styles.legendItem}>
+                                <span className={styles.legendLabel}>NEEDS IMPROVEMENT:</span>
+                                <span className={styles.legendValue}>Below 3.00 (Below 60%)</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Results Table */}
                 <div className={styles.tableSection}>

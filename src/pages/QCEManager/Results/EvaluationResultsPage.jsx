@@ -438,22 +438,48 @@ export function EvaluationResultsPage() {
                                 {/* Metrics Container */}
                                 <div className={styles.metricsContainer}>
                                     <div className={styles.metricsRow}>
-                                        <div className={styles.metricBox}>
-                                            <span className={styles.metricLabel}>STUDENT EVALUATIONS</span>
-                                            <span className={styles.metricValue}>{facultyDetails.statistics.studentCount}</span>
-                                        </div>
+                                        {(() => {
+                                            const position = facultyDetails.faculty.position ? facultyDetails.faculty.position.toLowerCase() : '';
+                                            const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa') || position.includes('department chair');
+
+                                            return isSupervisorOnly ? (
+                                                <div className={styles.metricBox} style={{ opacity: 0.5 }}>
+                                                    <span className={styles.metricLabel}>STUDENT EVALUATIONS</span>
+                                                    <span className={styles.metricValue}>N/A</span>
+                                                </div>
+                                            ) : (
+                                                <div className={styles.metricBox}>
+                                                    <span className={styles.metricLabel}>STUDENT EVALUATIONS</span>
+                                                    <span className={styles.metricValue}>{facultyDetails.statistics.studentCount}</span>
+                                                </div>
+                                            );
+                                        })()}
+
                                         <div className={styles.metricBox}>
                                             <span className={styles.metricLabel}>SUPERVISOR EVALUATIONS</span>
                                             <span className={styles.metricValue}>{facultyDetails.statistics.supervisorCount}</span>
                                         </div>
                                     </div>
                                     <div className={styles.metricsRow}>
-                                        <div className={styles.metricBox}>
-                                            <span className={styles.metricLabel}>STUDENT AVERAGE</span>
-                                            <span className={styles.metricValue}>
-                                                {facultyDetails.statistics.studentAverage ? facultyDetails.statistics.studentAverage.toFixed(2) : '---'}
-                                            </span>
-                                        </div>
+                                        {(() => {
+                                            const position = facultyDetails.faculty.position ? facultyDetails.faculty.position.toLowerCase() : '';
+                                            const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa') || position.includes('department chair');
+
+                                            return isSupervisorOnly ? (
+                                                <div className={styles.metricBox} style={{ opacity: 0.5 }}>
+                                                    <span className={styles.metricLabel}>STUDENT AVERAGE</span>
+                                                    <span className={styles.metricValue}>N/A</span>
+                                                </div>
+                                            ) : (
+                                                <div className={styles.metricBox}>
+                                                    <span className={styles.metricLabel}>STUDENT AVERAGE</span>
+                                                    <span className={styles.metricValue}>
+                                                        {facultyDetails.statistics.studentAverage ? facultyDetails.statistics.studentAverage.toFixed(2) : '---'}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })()}
+
                                         <div className={styles.metricBox}>
                                             <span className={styles.metricLabel}>SUPERVISOR AVERAGE</span>
                                             <span className={styles.metricValue}>
@@ -489,7 +515,8 @@ export function EvaluationResultsPage() {
                                                     let maxScore = 60;
 
                                                     if (isSupervisorOnly) {
-                                                        // Formula for Dean/VPAA/President
+                                                        // Formula for Dean/VPAA/President/Chair
+                                                        // Locked to 24 points
                                                         nbcScore = (pScore100 / 100) * 24;
                                                         maxScore = 24;
                                                     } else {
@@ -510,9 +537,11 @@ export function EvaluationResultsPage() {
                                             <span className={styles.scoreBoxLabelSecondary}>PERCENTAGE RATING</span>
                                             <span className={styles.scoreBoxValueSecondary}>
                                                 {(() => {
-                                                    // Re-calculate overall score locally
                                                     const sAvg = facultyDetails.statistics.studentAverage || 0;
                                                     const pAvg = facultyDetails.statistics.supervisorAverage || 0;
+
+                                                    const position = facultyDetails.faculty.position ? facultyDetails.faculty.position.toLowerCase() : '';
+                                                    const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa') || position.includes('department chair');
 
                                                     const normalizeToPercentage = (val) => {
                                                         if (!val) return 0;
@@ -525,12 +554,19 @@ export function EvaluationResultsPage() {
                                                     const pPerc = normalizeToPercentage(pAvg);
 
                                                     let percentage = 0;
-                                                    if (sPerc > 0 && pPerc > 0) {
-                                                        percentage = (sPerc * 0.6) + (pPerc * 0.4);
-                                                    } else if (sPerc > 0) {
-                                                        percentage = sPerc;
-                                                    } else if (pPerc > 0) {
+
+                                                    if (isSupervisorOnly) {
+                                                        // For Supervisor Only roles, Percentage is just the Supervisor Percentage
                                                         percentage = pPerc;
+                                                    } else {
+                                                        // Standard weighted percentage
+                                                        if (sPerc > 0 && pPerc > 0) {
+                                                            percentage = (sPerc * 0.6) + (pPerc * 0.4);
+                                                        } else if (sPerc > 0) {
+                                                            percentage = sPerc;
+                                                        } else if (pPerc > 0) {
+                                                            percentage = pPerc;
+                                                        }
                                                     }
 
                                                     return percentage > 0 ? percentage.toFixed(2) + '%' : '---';
@@ -543,9 +579,11 @@ export function EvaluationResultsPage() {
                                         <span className={styles.performanceLabel}>PERFORMANCE CATEGORY</span>
                                         <span className={styles.performanceRating}>
                                             {(() => {
-                                                // Re-calculate rating locally
                                                 const sAvg = facultyDetails.statistics.studentAverage || 0;
                                                 const pAvg = facultyDetails.statistics.supervisorAverage || 0;
+
+                                                const position = facultyDetails.faculty.position ? facultyDetails.faculty.position.toLowerCase() : '';
+                                                const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa') || position.includes('department chair');
 
                                                 const normalizeToPercentage = (val) => {
                                                     if (!val) return 0;
@@ -558,12 +596,17 @@ export function EvaluationResultsPage() {
                                                 const pPerc = normalizeToPercentage(pAvg);
 
                                                 let percentage = 0;
-                                                if (sPerc > 0 && pPerc > 0) {
-                                                    percentage = (sPerc * 0.6) + (pPerc * 0.4);
-                                                } else if (sPerc > 0) {
-                                                    percentage = sPerc;
-                                                } else if (pPerc > 0) {
+
+                                                if (isSupervisorOnly) {
                                                     percentage = pPerc;
+                                                } else {
+                                                    if (sPerc > 0 && pPerc > 0) {
+                                                        percentage = (sPerc * 0.6) + (pPerc * 0.4);
+                                                    } else if (sPerc > 0) {
+                                                        percentage = sPerc;
+                                                    } else if (pPerc > 0) {
+                                                        percentage = pPerc;
+                                                    }
                                                 }
 
                                                 if (percentage >= 90) return 'Outstanding';
@@ -579,11 +622,15 @@ export function EvaluationResultsPage() {
 
                                 {/* Computation Tables */}
                                 {(facultyDetails.studentEvaluations.length > 0 || facultyDetails.supervisorEvaluations.length > 0) && (() => {
+                                    const position = facultyDetails.faculty.position ? facultyDetails.faculty.position.toLowerCase() : '';
+                                    const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa') || position.includes('department chair');
+
                                     return (
                                         <div className={styles.annexSection}>
                                             <h3 className={styles.annexTitle}>Detailed Evaluation Reports</h3>
                                             <div className={styles.annexGrid}>
                                                 {['A', 'B', 'C', 'D'].map((annex) => {
+
                                                     let actionText = 'View Report';
                                                     if (annex === 'A') actionText = 'Student Evaluation of Teachers (SET)';
                                                     if (annex === 'B') actionText = 'Supervisor’s Evaluation of Teachers (SEF)';

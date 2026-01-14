@@ -54,6 +54,23 @@ export function AnnexDPage() {
 
     const userName = sessionStorage.getItem('fullName') || 'Administrator';
 
+    const isSupervisorOnly = facultyInfo && ['dean', 'president', 'vpaa', 'department chair', 'department chairman'].some(role => facultyInfo.position && facultyInfo.position.toLowerCase().includes(role));
+
+    // Calculations for Supervisor-Only View
+    const safScore = data?.safScore ? parseFloat(data.safScore) : 0;
+    const rawScore100 = (safScore / 5) * 100;
+    const nbcPoints = rawScore100 * 0.24;
+
+    const getPerformanceRating = (score) => {
+        if (score >= 95) return 'Outstanding';
+        if (score >= 90) return 'Very Satisfactory';
+        if (score >= 85) return 'Satisfactory';
+        if (score >= 80) return 'Moderately Satisfactory';
+        if (score >= 75) return 'Fair';
+        return 'Poor';
+    };
+    const performanceRating = getPerformanceRating(rawScore100);
+
     return (
         <DashboardLayout role="QCE Manager" userName={userName}>
             <div className={styles.reportContainer}>
@@ -84,7 +101,7 @@ export function AnnexDPage() {
                     <table className={styles.infoTable}>
                         <tbody>
                             <tr>
-                                <td className={styles.labelCell}>Name of Faculty</td>
+                                <td className={styles.labelCell}>{isSupervisorOnly ? 'Evaluatee' : 'Name of Faculty'}</td>
                                 <td className={styles.colonCell}>:</td>
                                 <td className={styles.valueCell}>{facultyInfo?.name || 'N/A'}</td>
                             </tr>
@@ -112,27 +129,51 @@ export function AnnexDPage() {
                 {/* Faculty Evaluation Summary */}
                 <div className={styles.section}>
                     <h3 className={styles.sectionTitle}>FACULTY EVALUATION SUMMARY</h3>
-                    <table className={styles.summaryTable}>
-                        <thead>
-                            <tr>
-                                <th colSpan="2">Overall Rating</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Student Evaluation of Teachers (SET)</td>
-                                <td>Supervisor's Evaluation of Faculty (SAF)</td>
-                            </tr>
-                            <tr>
-                                <td className={styles.scoreCell}>
-                                    <strong>{data?.setScore ? data.setScore.toFixed(2) : '0.00'}</strong>
-                                </td>
-                                <td className={styles.scoreCell}>
-                                    <strong>{data?.safScore ? data.safScore.toFixed(2) : '0.00'}</strong>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    {isSupervisorOnly ? (
+                        <table className={styles.infoTable}>
+                            <tbody>
+                                <tr>
+                                    <td className={styles.labelCell}>Teaching Effectiveness (KRA I)</td>
+                                    <td className={styles.colonCell}>:</td>
+                                    <td className={styles.valueCell}>{nbcPoints.toFixed(2)} / 24</td>
+                                </tr>
+                                <tr>
+                                    <td className={styles.labelCell}>Equivalent Percentage</td>
+                                    <td className={styles.colonCell}>:</td>
+                                    <td className={styles.valueCell}>{rawScore100.toFixed(2)}%</td>
+                                </tr>
+                                <tr>
+                                    <td className={styles.labelCell}>Performance Rating</td>
+                                    <td className={styles.colonCell}>:</td>
+                                    <td className={styles.valueCell}>
+                                        <strong>{performanceRating.toUpperCase()}</strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    ) : (
+                        <table className={styles.summaryTable}>
+                            <thead>
+                                <tr>
+                                    <th colSpan={2}>Overall Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Student Evaluation of Teachers (SET)</td>
+                                    <td>Supervisor's Evaluation of Faculty (SAF)</td>
+                                </tr>
+                                <tr>
+                                    <td className={styles.scoreCell}>
+                                        <strong>{data?.setScore ? data.setScore.toFixed(2) : '0.00'}</strong>
+                                    </td>
+                                    <td className={styles.scoreCell}>
+                                        <strong>{data?.safScore ? data.safScore.toFixed(2) : '0.00'}</strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
                 {/* Acknowledgement Text */}

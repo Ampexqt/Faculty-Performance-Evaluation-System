@@ -278,12 +278,12 @@
         width: 100%;
         height: auto;
         margin: 0;
-        padding: 2rem;
-        /* Add padding for print margins */
+        padding: 1.5rem;
+        /* Reduced padding for print */
         background: white;
         z-index: 9999;
-        font-family: "Times New Roman", Times, serif !important;
-        font-size: 12pt !important;
+        /* Use default font instead of Times New Roman to match web view */
+        font-size: 10pt !important;
         line-height: normal;
     }
 
@@ -293,6 +293,40 @@
 
     .section {
         page-break-inside: avoid;
+        margin-bottom: 0.75rem !important;
+        /* Reduced margin */
+    }
+
+    .sectionTitle {
+        font-size: 0.85rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+
+    .reportTitle {
+        margin: 1rem 0 0.75rem !important;
+    }
+
+    .reportTitle h2 {
+        font-size: 1rem !important;
+    }
+
+    /* Compact table styles for print */
+    .infoTable td {
+        padding: 0.25rem 0.4rem !important;
+        /* Reduced padding */
+        font-size: 0.8rem !important;
+    }
+
+    .dataTable th,
+    .dataTable td {
+        padding: 0.25rem 0.4rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .ratingsTable th,
+    .ratingsTable td {
+        padding: 0.3rem 0.4rem !important;
+        font-size: 0.8rem !important;
     }
 
     /* Ensure background colors print */

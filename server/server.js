@@ -80,6 +80,9 @@ app.use('/api/zonal/academic-years', zonalAcademicYearsRoutes);
 const zonalEvaluatorsRoutes = require('./routes/zonal/evaluators');
 app.use('/api/zonal/evaluators', zonalEvaluatorsRoutes);
 
+const zonalVPAAResultsRoutes = require('./routes/zonal/vpaa-results');
+app.use('/api/zonal', zonalVPAAResultsRoutes);
+
 // QCE Manager routes
 const qceFacultyRoutes = require('./routes/qce/faculty');
 const qceDepartmentsRoutes = require('./routes/qce/departments');

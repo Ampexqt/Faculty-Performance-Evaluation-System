@@ -8,6 +8,7 @@ import { CollegesPage } from './pages/ZonalAdmin/Colleges/CollegesPage';
 import { QCEManagementPage } from './pages/ZonalAdmin/QCEManagement/QCEManagementPage';
 import { EvaluatorAccountsPage } from './pages/ZonalAdmin/Evaluators/EvaluatorAccountsPage';
 import { AcademicYearsPage } from './pages/ZonalAdmin/AcademicYears/AcademicYearsPage';
+import { VPAAResultsPage } from './pages/ZonalAdmin/VPAAResults/VPAAResultsPage';
 
 import { QCEDashboardPage } from './pages/QCEManager/Dashboard/QCEDashboardPage';
 import { FacultyPage } from './pages/QCEManager/Faculty/FacultyPage';
@@ -64,6 +65,7 @@ export function App() {
             <Route path="/zonal/qce-management" element={<QCEManagementPage />} />
             <Route path="/zonal/academic-years" element={<AcademicYearsPage />} />
             <Route path="/zonal/evaluator-accounts" element={<EvaluatorAccountsPage />} />
+            <Route path="/zonal/vpaa-results" element={<VPAAResultsPage />} />
           </Route>
 
           {/* QCE Manager Routes */}

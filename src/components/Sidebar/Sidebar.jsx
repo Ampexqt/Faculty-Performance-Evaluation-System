@@ -24,6 +24,7 @@ const zonalAdminMenuItems = [
     { icon: Calendar, label: 'Academic Years', path: '/zonal/academic-years' },
     { icon: UserCog, label: 'QCE Accounts', path: '/zonal/qce-management' },
     { icon: ShieldCheck, label: 'Evaluator Accounts', path: '/zonal/evaluator-accounts' },
+    { icon: BarChart3, label: 'VPAA Result', path: '/zonal/vpaa-results' },
 ];
 
 const qceMenuItems = [

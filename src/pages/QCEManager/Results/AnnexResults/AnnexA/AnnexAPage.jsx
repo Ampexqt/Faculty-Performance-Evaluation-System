@@ -90,6 +90,8 @@ export function AnnexAPage() {
         currentOffset += items.length;
     });
 
+    const isSupervisorOnly = facultyInfo && ['dean', 'president', 'vpaa', 'department chair', 'department chairman'].some(role => facultyInfo.position && facultyInfo.position.toLowerCase().includes(role));
+
     return (
         <DashboardLayout role="QCE Manager" userName={userName}>
             <div className={styles.reportContainer}>
@@ -126,82 +128,94 @@ export function AnnexAPage() {
                     )}
                 </div>
 
-                {/* Criteria Tables */}
-                {Object.entries(NEW_CRITERIA).map(([category, criteria]) => (
-                    <div key={category} id={`category-${category.charAt(0)}`} className={styles.categorySection}>
-                        <h3 className={styles.categoryTitle}>{category}</h3>
-                        <p className={styles.categoryDescription}>({CRITERIA_DESCRIPTIONS[category]})</p>
+                {isSupervisorOnly ? (
+                    <div style={{ padding: '4rem 2rem', textAlign: 'center', background: '#f9fafb', borderRadius: '8px', border: '2px dashed #e5e7eb', marginTop: '2rem' }}>
+                        <h2 style={{ color: '#374151', fontSize: '1.5rem', marginBottom: '1rem', fontWeight: '600' }}>Not Applicable</h2>
+                        <p style={{ color: '#6b7280' }}>
+                            Annex A (Student Evaluation) is not applicable for {facultyInfo.position}.
+                            Please refer to Annex B (Supervisor Evaluation).
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Criteria Tables */}
+                        {Object.entries(NEW_CRITERIA).map(([category, criteria]) => (
+                            <div key={category} id={`category-${category.charAt(0)}`} className={styles.categorySection}>
+                                <h3 className={styles.categoryTitle}>{category}</h3>
+                                <p className={styles.categoryDescription}>({CRITERIA_DESCRIPTIONS[category]})</p>
 
-                        <table className={styles.criteriaTable}>
-                            <thead>
-                                <tr>
-                                    <th className={styles.numberCol}>#</th>
-                                    <th className={styles.indicatorCol}>Indicators</th>
-                                    <th className={styles.ratingCol}>Average Rating</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {criteria.map((criterion, index) => {
-                                    const shortCode = category.charAt(0);
-                                    const ratingKey = `${shortCode}-${index}`;
-                                    const rating = data.ratings[ratingKey] || 0;
-
-                                    return (
-                                        <tr key={index}>
-                                            <td className={styles.numberCol}>
-                                                {categoryOffsets[category] + index + 1}
-                                            </td>
-                                            <td className={styles.indicatorCol}>{criterion}</td>
-                                            <td className={styles.ratingCol}>
-                                                {rating > 0 ? rating.toFixed(2) : '-'}
-                                            </td>
+                                <table className={styles.criteriaTable}>
+                                    <thead>
+                                        <tr>
+                                            <th className={styles.numberCol}>#</th>
+                                            <th className={styles.indicatorCol}>Indicators</th>
+                                            <th className={styles.ratingCol}>Average Rating</th>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                    </thead>
+                                    <tbody>
+                                        {criteria.map((criterion, index) => {
+                                            const shortCode = category.charAt(0);
+                                            const ratingKey = `${shortCode}-${index}`;
+                                            const rating = data.ratings[ratingKey] || 0;
 
-                        <div className={styles.averageRow}>
-                            <strong>Average ({category.split('.')[0]}):</strong>
-                            {(() => {
-                                const shortCode = category.charAt(0);
-                                const catRatings = criteria.map((_, i) => data.ratings[`${shortCode}-${i}`] || 0).filter(r => r > 0);
-                                const sum = catRatings.reduce((a, b) => a + b, 0);
-                                const avg = catRatings.length ? sum / catRatings.length : 0;
-                                return avg.toFixed(2);
-                            })()}
-                        </div>
-                    </div>
-                ))}
+                                            return (
+                                                <tr key={index}>
+                                                    <td className={styles.numberCol}>
+                                                        {categoryOffsets[category] + index + 1}
+                                                    </td>
+                                                    <td className={styles.indicatorCol}>{criterion}</td>
+                                                    <td className={styles.ratingCol}>
+                                                        {rating > 0 ? rating.toFixed(2) : '-'}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
 
-                {/* NBC 461 Scoring */}
-                {overallStats && (
-                    <div className={styles.scoringSection}>
-                        <h3>NBC 461 Scoring Computation</h3>
-                        <div className={styles.scoringGrid}>
-                            <div className={styles.scoringCard}>
-                                <h4>Student Evaluation</h4>
-                                <p>Average: {(overallStats.studentAverage / 20).toFixed(2)} / 5.00</p>
-                                <p>Percentage: {overallStats.studentAverage.toFixed(2)}%</p>
-                                <p className={styles.scoreResult}>= {((overallStats.studentAverage / 100) * 36).toFixed(2)} points</p>
+                                <div className={styles.averageRow}>
+                                    <strong>Average ({category.split('.')[0]}):</strong>
+                                    {(() => {
+                                        const shortCode = category.charAt(0);
+                                        const catRatings = criteria.map((_, i) => data.ratings[`${shortCode}-${i}`] || 0).filter(r => r > 0);
+                                        const sum = catRatings.reduce((a, b) => a + b, 0);
+                                        const avg = catRatings.length ? sum / catRatings.length : 0;
+                                        return avg.toFixed(2);
+                                    })()}
+                                </div>
                             </div>
-                            <div className={styles.scoringCard}>
-                                <h4>Supervisor Evaluation</h4>
-                                <p>Average: {(overallStats.supervisorAverage / 20).toFixed(2)} / 5.00</p>
-                                <p>Percentage: {overallStats.supervisorAverage.toFixed(2)}%</p>
-                                <p className={styles.scoreResult}>= {((overallStats.supervisorAverage / 100) * 24).toFixed(2)} points</p>
+                        ))}
+
+                        {/* NBC 461 Scoring */}
+                        {overallStats && (
+                            <div className={styles.scoringSection}>
+                                <h3>NBC 461 Scoring Computation</h3>
+                                <div className={styles.scoringGrid}>
+                                    <div className={styles.scoringCard}>
+                                        <h4>Student Evaluation</h4>
+                                        <p>Average: {(overallStats.studentAverage / 20).toFixed(2)} / 5.00</p>
+                                        <p>Percentage: {overallStats.studentAverage.toFixed(2)}%</p>
+                                        <p className={styles.scoreResult}>= {((overallStats.studentAverage / 100) * 36).toFixed(2)} points</p>
+                                    </div>
+                                    <div className={styles.scoringCard}>
+                                        <h4>Supervisor Evaluation</h4>
+                                        <p>Average: {(overallStats.supervisorAverage / 20).toFixed(2)} / 5.00</p>
+                                        <p>Percentage: {overallStats.supervisorAverage.toFixed(2)}%</p>
+                                        <p className={styles.scoreResult}>= {((overallStats.supervisorAverage / 100) * 24).toFixed(2)} points</p>
+                                    </div>
+                                </div>
+                                <div className={styles.totalScore}>
+                                    <div>Total Criterion Score</div>
+                                    <div className={styles.totalScoreValue}>
+                                        {(((overallStats.studentAverage / 100) * 36) + ((overallStats.supervisorAverage / 100) * 24)).toFixed(2)} points
+                                    </div>
+                                    <div>(Maximum: 60 points)</div>
+                                </div>
                             </div>
-                        </div>
-                        <div className={styles.totalScore}>
-                            <div>Total Criterion Score</div>
-                            <div className={styles.totalScoreValue}>
-                                {(((overallStats.studentAverage / 100) * 36) + ((overallStats.supervisorAverage / 100) * 24)).toFixed(2)} points
-                            </div>
-                            <div>(Maximum: 60 points)</div>
-                        </div>
-                    </div>
+                        )}
+                    </>
                 )}
             </div>
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }

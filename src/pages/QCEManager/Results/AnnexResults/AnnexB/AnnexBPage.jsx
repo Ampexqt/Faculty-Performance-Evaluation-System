@@ -85,8 +85,10 @@ export function AnnexBPage() {
     const userName = sessionStorage.getItem('fullName') || 'Administrator';
     const years = data ? getProjectedYears(data.activeYear) : ['-', '-', '-'];
 
-    // Calculation Helper
-    const calculateSection = (stats, multiplier) => {
+    const isSupervisorOnly = facultyInfo && ['dean', 'president', 'vpaa', 'department chair', 'department chairman'].some(role => facultyInfo.position && facultyInfo.position.toLowerCase().includes(role));
+
+    // Calculation Helper - Dynamic Divisor for Deans
+    const calculateSection = (stats, multiplier, useDynamicDivisor = false) => {
         let total = 0;
         let count = 0;
         const values = [];
@@ -94,7 +96,7 @@ export function AnnexBPage() {
         years.forEach(year => {
             [0, 1].forEach(semIndex => {
                 const val = getScore(stats, year, semIndex);
-                values.push(val); // push raw value or null
+                values.push(val);
                 if (val !== null) {
                     total += val;
                     count++;
@@ -102,26 +104,28 @@ export function AnnexBPage() {
             });
         });
 
-        // The divisor is typically fixed (6) in the template or based on COUNT?
-        // Sample image shows "97.00 / 6 = 16.17", implying divisor is ALWAYS 6 (3 years * 2 sems).
-        // If data is missing (N/A), count is effectively treating them as 0 for the dividend? 
-        // Wait, "N/A" usually means 0 in summation? 
-        // In the sample: One value is 97.00, others N/A. Average is 16.17 (97/6).
-        // So yes, divisor is fixed at 6.
-        const average = total / 6;
-        const points = average * multiplier;
+        // For Deans (isSupervisorOnly), we use the actual count to get the true average of available evaluations
+        // For Regular Faculty, we traditionally divide by 6 (NBC 461 standard for 3-year term)
+        const divisor = useDynamicDivisor ? Math.max(count, 1) : 6;
+
+        const average = total / divisor; // 5-point scale average
+        const percentage = (average / 5) * 100; // Convert to 100-point scale
+        const points = percentage * multiplier;
 
         return {
-            values, // Array of 6 values [y1s1, y1s2, y2s1, y2s2, y3s1, y3s2]
+            values,
             average,
-            points
+            percentage,
+            points,
+            divisor
         };
     };
 
-    const studentCalc = calculateSection(data?.studentStats, 0.36);
-    const supervisorCalc = calculateSection(data?.supervisorStats, 0.24);
+    const studentCalc = calculateSection(data?.studentStats, 0.36, false);
+    // Use dynamic divisor for Deans to match "Raw Score" expectation if only specific evals exist
+    const supervisorCalc = calculateSection(data?.supervisorStats, 0.24, isSupervisorOnly);
 
-    const totalPoints = studentCalc.points + supervisorCalc.points;
+    const totalPoints = (isSupervisorOnly ? 0 : studentCalc.points) + supervisorCalc.points;
 
     return (
         <DashboardLayout role="QCE Manager" userName={userName}>
@@ -163,52 +167,60 @@ export function AnnexBPage() {
                 <div className={styles.computationSection}>
                     <h2 className={styles.computationTitle}>Sample Computation</h2>
 
-                    {/* 1. Points for Student Evaluation */}
-                    <div className={styles.tableSection}>
-                        <h3 className={styles.sectionTitle}>1. Points for Student Evaluation</h3>
-                        <table className={styles.computationTable}>
-                            <thead>
-                                <tr>
-                                    <th rowSpan="2">Semester</th>
-                                    {years.map(year => (
-                                        <th key={year} colSpan="2">{year}</th>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th>1st Sem</th>
-                                    <th>2nd Sem</th>
-                                    <th>1st Sem</th>
-                                    <th>2nd Sem</th>
-                                    <th>1st Sem</th>
-                                    <th>2nd Sem</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Ave. Student Eval. Ratings</td>
-                                    {studentCalc.values.map((val, idx) => (
-                                        <td key={idx}>{val !== null ? val.toFixed(2) : 'N/A'}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <td>Average</td>
-                                    <td colSpan="6" className={styles.centerText}>
-                                        ({studentCalc.values.reduce((a, b) => a + (b || 0), 0).toFixed(2)}) / 6 = {studentCalc.average.toFixed(2)}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Points (x 0.36)</td>
-                                    <td colSpan="6" className={styles.centerText}>
-                                        <strong>{studentCalc.points.toFixed(2)}</strong>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    {/* 1. Points for Student Evaluation - HIDE for Deans */}
+                    {!isSupervisorOnly && (
+                        <div className={styles.tableSection}>
+                            <h3 className={styles.sectionTitle}>1. Points for Student Evaluation</h3>
+                            <table className={styles.computationTable}>
+                                <thead>
+                                    <tr>
+                                        <th rowSpan="2">Semester</th>
+                                        {years.map(year => (
+                                            <th key={year} colSpan="2">{year}</th>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th>1st Sem</th>
+                                        <th>2nd Sem</th>
+                                        <th>1st Sem</th>
+                                        <th>2nd Sem</th>
+                                        <th>1st Sem</th>
+                                        <th>2nd Sem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Ave. Student Eval. Ratings</td>
+                                        {studentCalc.values.map((val, idx) => (
+                                            <td key={idx}>{val !== null ? val.toFixed(2) : 'N/A'}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <td>Average</td>
+                                        <td colSpan="6" className={styles.centerText}>
+                                            ({studentCalc.values.reduce((a, b) => a + (b || 0), 0).toFixed(2)}) / {studentCalc.divisor} = {studentCalc.average.toFixed(2)}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Percentage Rating</td>
+                                        <td colSpan="6" className={styles.centerText}>
+                                            {studentCalc.average.toFixed(2)} / 5.00 = <strong>{studentCalc.percentage.toFixed(2)}%</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Points (Percentage x 0.36)</td>
+                                        <td colSpan="6" className={styles.centerText}>
+                                            <strong>{studentCalc.points.toFixed(2)}</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
 
                     {/* 2. Points for Supervisor's Evaluation */}
                     <div className={styles.tableSection}>
-                        <h3 className={styles.sectionTitle}>2. Points for Supervisor's Evaluation</h3>
+                        <h3 className={styles.sectionTitle}>{isSupervisorOnly ? '1.' : '2.'} Points for Supervisor's Evaluation</h3>
                         <table className={styles.computationTable}>
                             <thead>
                                 <tr>
@@ -236,11 +248,17 @@ export function AnnexBPage() {
                                 <tr>
                                     <td>Average</td>
                                     <td colSpan="6" className={styles.centerText}>
-                                        ({supervisorCalc.values.reduce((a, b) => a + (b || 0), 0).toFixed(2)}) / 6 = {supervisorCalc.average.toFixed(2)}
+                                        ({supervisorCalc.values.reduce((a, b) => a + (b || 0), 0).toFixed(2)}) / {supervisorCalc.divisor} = {supervisorCalc.average.toFixed(2)}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Points (x 0.24)</td>
+                                    <td>Percentage Rating</td>
+                                    <td colSpan="6" className={styles.centerText}>
+                                        {supervisorCalc.average.toFixed(2)} / 5.00 = <strong>{supervisorCalc.percentage.toFixed(2)}%</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Points (Percentage x 0.24)</td>
                                     <td colSpan="6" className={styles.centerText}>
                                         <strong>{supervisorCalc.points.toFixed(2)}</strong>
                                     </td>
@@ -251,7 +269,7 @@ export function AnnexBPage() {
 
                     {/* 3. Faculty Performance Evaluation */}
                     <div className={styles.tableSection}>
-                        <h3 className={styles.sectionTitle}>3. Faculty Performance Evaluation</h3>
+                        <h3 className={styles.sectionTitle}>{isSupervisorOnly ? '2.' : '3.'} Faculty Performance Evaluation</h3>
                         <table className={styles.summaryTable}>
                             <thead>
                                 <tr>
@@ -260,17 +278,22 @@ export function AnnexBPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Student Evaluation</td>
-                                    <td>{studentCalc.points.toFixed(2)}</td>
-                                </tr>
+                                {!isSupervisorOnly && (
+                                    <tr>
+                                        <td>Student Evaluation</td>
+                                        <td>{studentCalc.points.toFixed(2)}</td>
+                                    </tr>
+                                )}
                                 <tr>
                                     <td>Supervisor's Evaluation</td>
                                     <td>{supervisorCalc.points.toFixed(2)}</td>
                                 </tr>
                                 <tr className={styles.totalRow}>
                                     <td><strong>Total Points</strong></td>
-                                    <td><strong>{totalPoints.toFixed(2)}</strong></td>
+                                    <td>
+                                        <strong>{totalPoints.toFixed(2)}</strong>
+                                        {isSupervisorOnly && <span style={{ fontSize: '0.8em', fontWeight: 'normal', color: '#666', marginLeft: '5px' }}>(Max 24)</span>}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

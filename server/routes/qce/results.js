@@ -398,7 +398,6 @@ router.get('/evaluation-results/faculty/:facultyId/annex/:annexType', async (req
                 WHERE se.evaluatee_id = ? 
                 AND ay.id = ?
                 AND se.status = 'completed'
-                AND se.evaluator_position = 'Supervisor'
             `, [facultyId, activeYear.id]);
 
             const safScore = parseFloat(safRows[0]?.saf_score) || 0;

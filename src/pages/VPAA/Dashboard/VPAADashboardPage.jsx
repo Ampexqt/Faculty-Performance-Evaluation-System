@@ -5,7 +5,10 @@ import { Card } from '@/components/Card/Card';
 import { Button } from '@/components/Button/Button';
 import { Input } from '@/components/Input/Input';
 import { Table } from '@/components/Table/Table';
-import { ClipboardList, Clock, CheckCircle } from 'lucide-react';
+import { Badge } from '@/components/Badge/Badge';
+import { ToastContainer } from '@/components/Toast/Toast';
+import { useToast } from '@/hooks/useToast';
+import { ClipboardList, Clock, CheckCircle, FileText } from 'lucide-react';
 import styles from './VPAADashboardPage.module.css';
 
 export function VPAADashboardPage() {
@@ -13,6 +16,7 @@ export function VPAADashboardPage() {
     const [evaluations, setEvaluations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [evaluationCode, setEvaluationCode] = useState('');
+    const toast = useToast();
 
     // Get user data from sessionStorage
     const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -57,15 +61,15 @@ export function VPAADashboardPage() {
             const data = await response.json();
 
             if (data.success) {
-                alert('Successfully joined evaluation!');
+                toast.success('Successfully joined evaluation!');
                 setEvaluationCode('');
                 fetchData();
             } else {
-                alert(data.message || 'Error joining evaluation');
+                toast.error(data.message || 'Error joining evaluation');
             }
         } catch (error) {
             console.error('Error joining evaluation:', error);
-            alert('Server error');
+            toast.error('Server error');
         }
     };
 
@@ -86,39 +90,51 @@ export function VPAADashboardPage() {
         {
             header: 'Dean Name',
             accessor: 'dean_name',
-            width: '30%',
+            width: '25%',
         },
         {
             header: 'College',
             accessor: 'college_name',
-            width: '25%',
+            width: '30%',
+        },
+        {
+            header: 'Academic Period',
+            accessor: 'semester',
+            width: '20%',
+            render: (value) => (
+                <div className={styles.semesterInfo}>
+                    <span className={styles.semesterText}>{value}</span>
+                </div>
+            ),
         },
         {
             header: 'Status',
             accessor: 'status',
             width: '15%',
-        },
-        {
-            header: 'Semester',
-            accessor: 'semester',
-            width: '15%',
+            align: 'center',
+            render: (value) => (
+                <Badge variant={value === 'pending' ? 'warning' : 'success'}>
+                    {value === 'pending' ? 'Pending' : 'Completed'}
+                </Badge>
+            ),
         },
         {
             header: 'Actions',
             accessor: 'actions',
-            width: '15%',
+            width: '10%',
             align: 'center',
             render: (_, row) => (
                 row.status === 'pending' ? (
-                    <Button
-                        variant="primary"
-                        size="sm"
+                    <button
+                        className={styles.evaluateButton}
                         onClick={() => handleEvaluate(row)}
+                        title="Start Evaluation"
                     >
-                        Evaluate
-                    </Button>
+                        <FileText size={16} />
+                        <span>Evaluate</span>
+                    </button>
                 ) : (
-                    <span className={styles.completed}>Completed</span>
+                    <Badge variant="success">✓ Done</Badge>
                 )
             ),
         },
@@ -200,6 +216,7 @@ export function VPAADashboardPage() {
                     <Table columns={evaluationColumns} data={evaluations} />
                 </div>
             </div>
+            <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
         </DashboardLayout>
     );
 }

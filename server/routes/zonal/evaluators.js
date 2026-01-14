@@ -14,10 +14,10 @@ router.get('/', async (req, res) => {
                 id,
                 email,
                 full_name,
+                honorific,
+                suffix,
                 position,
-                full_name,
                 sex,
-                position,
                 status,
                 created_at
             FROM evaluator_accounts
@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { firstName, middleInitial, lastName, sex, email, position, temporaryPassword } = req.body;
+        const { honorific, firstName, middleInitial, lastName, suffix, sex, email, position, temporaryPassword } = req.body;
 
         if (!email || !temporaryPassword || !firstName || !lastName || !position || !sex) {
             return res.status(400).json({
@@ -68,9 +68,9 @@ router.post('/', async (req, res) => {
 
         // Insert user
         const [result] = await promisePool.query(`
-            INSERT INTO evaluator_accounts (email, password, full_name, sex, position, status)
-            VALUES (?, ?, ?, ?, ?, 'active')
-        `, [email, hashedPassword, fullName, sex, position]);
+            INSERT INTO evaluator_accounts (email, password, full_name, honorific, suffix, sex, position, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
+        `, [email, hashedPassword, fullName, honorific || null, suffix || null, sex, position]);
 
         res.status(201).json({
             success: true,
@@ -100,7 +100,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, middleInitial, lastName, sex, email, position } = req.body;
+        const { honorific, firstName, middleInitial, lastName, suffix, sex, email, position } = req.body;
 
         if (!email || !firstName || !lastName || !position || !sex) {
             return res.status(400).json({
@@ -126,9 +126,9 @@ router.put('/:id', async (req, res) => {
         // Update account
         await promisePool.query(`
             UPDATE evaluator_accounts 
-            SET email = ?, full_name = ?, sex = ?, position = ?
+            SET email = ?, full_name = ?, honorific = ?, suffix = ?, sex = ?, position = ?
             WHERE id = ?
-        `, [email, fullName, sex, position, id]);
+        `, [email, fullName, honorific || null, suffix || null, sex, position, id]);
 
         res.json({
             success: true,

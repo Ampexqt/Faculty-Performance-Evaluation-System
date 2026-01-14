@@ -173,3 +173,50 @@
     gap: var(--spacing-sm);
     margin-top: var(--spacing-md);
 }
+
+.semesterInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.semesterText {
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+    font-weight: var(--font-medium);
+}
+
+.evaluateButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: white;
+    background: linear-gradient(135deg, #800000 0%, #a00000 100%);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(128, 0, 0, 0.1);
+}
+
+.evaluateButton:hover {
+    background: linear-gradient(135deg, #a00000 0%, #c00000 100%);
+    box-shadow: 0 4px 8px rgba(128, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.evaluateButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(128, 0, 0, 0.1);
+}
+
+.evaluateButton svg {
+    flex-shrink: 0;
+}
+
+.evaluateButton span {
+    white-space: nowrap;
+}

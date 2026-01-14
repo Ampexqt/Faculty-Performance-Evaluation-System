@@ -19,9 +19,11 @@ export function EvaluatorAccountsPage() {
 
     // Form data
     const [formData, setFormData] = useState({
+        honorific: '',
         firstName: '',
         middleInitial: '',
         lastName: '',
+        suffix: '',
         sex: '',
         email: '',
         position: '',
@@ -30,15 +32,19 @@ export function EvaluatorAccountsPage() {
 
     // Edit form data
     const [editFormData, setEditFormData] = useState({
+        honorific: '',
         firstName: '',
         middleInitial: '',
         lastName: '',
+        suffix: '',
         sex: '',
         email: '',
         position: '',
     });
 
     const positions = ['VPAA', 'President'];
+    const honorifics = ['Dr.', 'Prof.', 'Asst. Prof.', 'Assoc. Prof.'];
+    const suffixes = ['Ph.D.', 'Ed.D.', 'DBA', 'DPA', 'MD'];
 
     // Fetch accounts
     const fetchData = async () => {
@@ -90,7 +96,7 @@ export function EvaluatorAccountsPage() {
             if (data.success) {
                 await fetchData(); // Refresh list
                 setIsModalOpen(false);
-                setFormData({ firstName: '', middleInitial: '', lastName: '', sex: '', email: '', position: '', temporaryPassword: '' });
+                setFormData({ honorific: '', firstName: '', middleInitial: '', lastName: '', suffix: '', sex: '', email: '', position: '', temporaryPassword: '' });
             } else {
                 alert(data.message || 'Error creating account');
             }
@@ -104,27 +110,17 @@ export function EvaluatorAccountsPage() {
 
     const handleCancel = () => {
         setIsModalOpen(false);
-        setFormData({ firstName: '', middleInitial: '', lastName: '', sex: '', email: '', position: '', temporaryPassword: '' });
+        setFormData({ honorific: '', firstName: '', middleInitial: '', lastName: '', suffix: '', sex: '', email: '', position: '', temporaryPassword: '' });
     };
 
     const handleEdit = (account) => {
-        const parts = account.full_name.split(' ');
-        let firstName = parts[0];
-        let middleInitial = '';
-        let lastName = '';
-
-        if (parts.length > 2 && parts[1].endsWith('.')) {
-            middleInitial = parts[1].replace('.', '');
-            lastName = parts.slice(2).join(' ');
-        } else {
-            lastName = parts.slice(1).join(' ');
-        }
-
         setSelectedAccount(account);
         setEditFormData({
-            firstName: firstName || '',
-            middleInitial: middleInitial || '',
-            lastName: lastName || '',
+            honorific: account.honorific || '',
+            firstName: account.full_name?.split(' ')[0] || '',
+            middleInitial: '',
+            lastName: account.full_name?.split(' ').slice(1).join(' ') || '',
+            suffix: account.suffix || '',
             sex: account.sex || '',
             email: account.email,
             position: account.position,
@@ -302,6 +298,25 @@ export function EvaluatorAccountsPage() {
                     title="Create Evaluator Account"
                 >
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Honorific / Prefix
+                            </label>
+                            <select
+                                name="honorific"
+                                value={formData.honorific}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                            >
+                                <option value="">None</option>
+                                {honorifics.map(hon => (
+                                    <option key={hon} value={hon}>
+                                        {hon}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-12 sm:col-span-5">
                                 <Input
@@ -336,6 +351,25 @@ export function EvaluatorAccountsPage() {
                                     required
                                 />
                             </div>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Post-nominal Degree / Suffix
+                            </label>
+                            <select
+                                name="suffix"
+                                value={formData.suffix}
+                                onChange={handleInputChange}
+                                className={styles.select}
+                            >
+                                <option value="">None</option>
+                                {suffixes.map(suf => (
+                                    <option key={suf} value={suf}>
+                                        {suf}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className={styles.formGroup}>
@@ -422,6 +456,25 @@ export function EvaluatorAccountsPage() {
                     title="Edit Evaluator Account"
                 >
                     <form onSubmit={handleEditSubmit} className={styles.modalForm}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Honorific / Prefix
+                            </label>
+                            <select
+                                name="honorific"
+                                value={editFormData.honorific}
+                                onChange={handleEditInputChange}
+                                className={styles.select}
+                            >
+                                <option value="">None</option>
+                                {honorifics.map(hon => (
+                                    <option key={hon} value={hon}>
+                                        {hon}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-12 sm:col-span-5">
                                 <Input
@@ -456,6 +509,25 @@ export function EvaluatorAccountsPage() {
                                     required
                                 />
                             </div>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Post-nominal Degree / Suffix
+                            </label>
+                            <select
+                                name="suffix"
+                                value={editFormData.suffix}
+                                onChange={handleEditInputChange}
+                                className={styles.select}
+                            >
+                                <option value="">None</option>
+                                {suffixes.map(suf => (
+                                    <option key={suf} value={suf}>
+                                        {suf}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className={styles.formGroup}>

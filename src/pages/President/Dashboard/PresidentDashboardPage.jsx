@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Card } from '@/components/Card/Card';
-import { Button } from '@/components/Button/Button';
 import { Table } from '@/components/Table/Table';
 import { ClipboardList, UserCheck, CheckCircle } from 'lucide-react';
 import styles from './PresidentDashboardPage.module.css';
@@ -50,36 +49,56 @@ export function PresidentDashboardPage() {
         {
             header: 'Name',
             accessor: 'full_name',
-            width: '30%',
+            width: '35%',
+            render: (value, row) => {
+                // Format name with honorific and suffix
+                const nameParts = [];
+                if (row.honorific) nameParts.push(row.honorific);
+                nameParts.push(value);
+                if (row.suffix) nameParts.push(row.suffix);
+                const formattedName = nameParts.join(' ');
+
+                return (
+                    <div className={styles.nameCell}>
+                        <div className={styles.vpaaName}>{formattedName}</div>
+                        <div className={styles.vpaaPosition}>{row.position || 'VPAA'}</div>
+                    </div>
+                );
+            }
         },
         {
-            header: 'Email',
-            accessor: 'email',
-            width: '30%',
-        },
-        {
-            header: 'Sex',
-            accessor: 'sex',
-            width: '15%',
+            header: 'Position',
+            accessor: 'position',
+            width: '35%',
+            render: (value) => (
+                <div className={styles.positionCell}>
+                    <span className={styles.positionText}>Vice President for Academic Affairs</span>
+                </div>
+            )
         },
         {
             header: 'Status',
             accessor: 'status',
             width: '15%',
+            align: 'center',
+            render: (value) => (
+                <span className={`${styles.badge} ${value === 'active' ? styles.statusActive : styles.statusInactive}`}>
+                    {value === 'active' ? 'Active' : 'Inactive'}
+                </span>
+            )
         },
         {
             header: 'Actions',
             accessor: 'actions',
-            width: '10%',
+            width: '15%',
             align: 'center',
             render: (_, row) => (
-                <Button
-                    variant="primary"
-                    size="sm"
+                <button
+                    className={styles.evaluateButton}
                     onClick={() => handleEvaluate(row)}
                 >
                     Evaluate
-                </Button>
+                </button>
             ),
         },
     ];

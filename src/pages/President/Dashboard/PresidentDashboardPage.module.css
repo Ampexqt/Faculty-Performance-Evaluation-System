@@ -128,3 +128,104 @@
     gap: var(--spacing-sm);
     margin-top: var(--spacing-md);
 }
+
+/* Table Cell Styles */
+.nameCell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.vpaaName {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.9375rem;
+}
+
+.vpaaPosition {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.emailCell {
+    display: flex;
+    align-items: center;
+}
+
+.emailText {
+    color: #4b5563;
+    font-size: 0.875rem;
+}
+
+.positionCell {
+    display: flex;
+    align-items: center;
+}
+
+.positionText {
+    color: #4b5563;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.sexBadge {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.statusActive {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.statusInactive {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Evaluate Button */
+.evaluateButton {
+    padding: 0.5rem 1.25rem;
+    background: #7f1d1d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.evaluateButton:hover {
+    background: #991b1b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(127, 29, 29, 0.2);
+}
+
+.evaluateButton:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.evaluateButton:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.2);
+}

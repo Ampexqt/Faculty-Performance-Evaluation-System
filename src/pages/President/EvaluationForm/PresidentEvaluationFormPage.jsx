@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Button } from '@/components/Button/Button';
 import { useToast } from '@/hooks/useToast';
@@ -197,6 +198,12 @@ export function PresidentEvaluationFormPage() {
         <DashboardLayout role="President" userName={fullName} notificationCount={0}>
             <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className={styles.page}>
+                {/* Back Button - Outside the form */}
+                <button className={styles.backButton} onClick={handleCancel}>
+                    <ArrowLeft size={20} />
+                    <span>Back to Dashboard</span>
+                </button>
+
                 <div className={styles.formContainer}>
                     {/* Form Header */}
                     <div className={styles.formHeader}>

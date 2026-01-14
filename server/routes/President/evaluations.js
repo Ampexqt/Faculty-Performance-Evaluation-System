@@ -11,7 +11,9 @@ router.get('/vpaa-list', async (req, res) => {
         const [vpaaList] = await promisePool.query(`
             SELECT 
                 id,
+                honorific,
                 full_name,
+                suffix,
                 email,
                 sex,
                 position,

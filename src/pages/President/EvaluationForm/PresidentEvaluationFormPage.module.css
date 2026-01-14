@@ -11,6 +11,45 @@
     overflow: hidden;
 }
 
+/* Back Button */
+.backButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1.5rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #374151;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.backButton:hover {
+    background: #f9fafb;
+    border-color: #800000;
+    color: #800000;
+    transform: translateX(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.backButton:active {
+    transform: translateX(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.backButton svg {
+    transition: transform 0.2s ease;
+}
+
+.backButton:hover svg {
+    transform: translateX(-2px);
+}
+
 /* Form Header Styles */
 .formHeader {
     padding: 2rem;

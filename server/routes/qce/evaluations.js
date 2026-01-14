@@ -152,6 +152,20 @@ router.get('/:facultyId', async (req, res) => {
         const evaluatedStudents = evaluations.reduce((sum, e) => sum + parseInt(e.evaluated_count), 0);
         const pendingStudents = totalStudents - evaluatedStudents;
 
+        // Fetch Supervisor Statuses
+        const [codeStatuses] = await promisePool.query(`
+            SELECT evaluator_type, status 
+            FROM supervisor_evaluation_codes 
+            WHERE evaluatee_id = ?
+        `, [facultyId]);
+
+        const getStatusForType = (type) => {
+            const relevantCodes = codeStatuses.filter(c => c.evaluator_type === type);
+            if (relevantCodes.some(c => c.status === 'used')) return 'Completed';
+            if (relevantCodes.some(c => c.status === 'active')) return 'Pending';
+            return 'Not Started';
+        };
+
         res.json({
             success: true,
             faculty: {
@@ -161,7 +175,10 @@ router.get('/:facultyId', async (req, res) => {
                 total_students: totalStudents,
                 evaluated_count: evaluatedStudents,
                 pending_count: pendingStudents,
-                overall_progress: totalStudents > 0 ? Math.round((evaluatedStudents / totalStudents) * 100) : 0
+                overall_progress: totalStudents > 0 ? Math.round((evaluatedStudents / totalStudents) * 100) : 0,
+                dean_eval_status: getStatusForType('Dean'),
+                chair_eval_status: getStatusForType('Chair'),
+                vpaa_eval_status: getStatusForType('VPAA')
             },
             evaluations: evaluations
         });

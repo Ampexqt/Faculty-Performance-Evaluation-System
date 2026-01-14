@@ -123,20 +123,26 @@ export function FacultyEvaluationDetail() {
     const handleOpenSelection = (assignment) => {
         setSelectedAssignment(assignment);
 
-        // Check if there is already an existing criteria preference established for this faculty
-        // by looking at other evaluations in the list. ONLY consider evaluations that are actually created.
-        const existingEval = evaluationDetails.find(e =>
+        // Check for ANY existing criteria preference (Student, Dean, Chair, or VPAA)
+        const studentEval = evaluationDetails.find(e =>
             (e.criteria_type === 'old' || e.criteria_type === 'new') &&
             e.status !== 'Not Created'
         );
 
-        if (existingEval) {
-            // If a preference exists, use it automatically and skip the selection modal
-            setSelectedCriteria(existingEval.criteria_type);
+        // Find existing criteria from any source
+        const existingCriteria =
+            (studentEval ? studentEval.criteria_type : null) ||
+            deanCriteria ||
+            chairCriteria ||
+            vpaaCriteria;
+
+        if (existingCriteria) {
+            // Auto-select and skip modal
+            setSelectedCriteria(existingCriteria);
             setTempCode(generateCode());
-            setIsModalOpen(true); // Jump directly to the save/confirm modal
+            setIsModalOpen(true);
         } else {
-            // Otherwise, show the selection modal for the first time
+            // Allow user to select
             setIsSelectionModalOpen(true);
         }
     };
@@ -181,7 +187,8 @@ export function FacultyEvaluationDetail() {
                 payload = {
                     evaluateeId: facultyId,
                     creatorId: 1, // TODO: Use real creator ID from context
-                    type: type
+                    type: type,
+                    criteriaType: selectedCriteria
                 };
             }
 
@@ -419,8 +426,8 @@ export function FacultyEvaluationDetail() {
                                         Generate a code for the <strong>VPAA</strong> to evaluate this Dean.
                                     </p>
                                 </div>
-                                <Badge variant={activeVPAACode ? 'success' : 'warning'}>
-                                    {activeVPAACode ? 'Active Code Available' : 'No Active Code'}
+                                <Badge variant={facultyData.vpaa_eval_status === 'Completed' ? 'success' : activeVPAACode ? 'warning' : 'default'}>
+                                    {facultyData.vpaa_eval_status === 'Completed' ? 'Evaluation Completed' : activeVPAACode ? 'Active Code Available' : 'Not Started'}
                                 </Badge>
                             </div>
 
@@ -474,8 +481,8 @@ export function FacultyEvaluationDetail() {
                                         Generate a code for the <strong>Dean</strong> to evaluate this {isChair ? 'Chair' : 'Faculty Member'}.
                                     </p>
                                 </div>
-                                <Badge variant={activeDeanCode ? 'success' : 'warning'}>
-                                    {activeDeanCode ? 'Active Code Available' : 'No Active Code'}
+                                <Badge variant={facultyData.dean_eval_status === 'Completed' ? 'success' : activeDeanCode ? 'warning' : 'default'}>
+                                    {facultyData.dean_eval_status === 'Completed' ? 'Evaluation Completed' : activeDeanCode ? 'Active Code Available' : 'Not Started'}
                                 </Badge>
                             </div>
 
@@ -528,8 +535,8 @@ export function FacultyEvaluationDetail() {
                                         Generate a code for the <strong>Department Chair</strong> to evaluate this faculty member.
                                     </p>
                                 </div>
-                                <Badge variant={activeChairCode ? 'success' : 'warning'}>
-                                    {activeChairCode ? 'Active Code Available' : 'No Active Code'}
+                                <Badge variant={facultyData.chair_eval_status === 'Completed' ? 'success' : activeChairCode ? 'warning' : 'default'}>
+                                    {facultyData.chair_eval_status === 'Completed' ? 'Evaluation Completed' : activeChairCode ? 'Active Code Available' : 'Not Started'}
                                 </Badge>
                             </div>
 
@@ -647,10 +654,19 @@ export function FacultyEvaluationDetail() {
                             />
                         </div>
 
-                        {tempCode && (
+                        {!String(selectedAssignment?.assignment_id || '').startsWith('supervisor_eval') && tempCode && (
                             <div className={styles.codeDisplay}>
                                 <div className={styles.codeLabel}>GENERATED CODE</div>
                                 <div className={styles.codeValue}>{tempCode}</div>
+                            </div>
+                        )}
+
+                        {String(selectedAssignment?.assignment_id || '').startsWith('supervisor_eval') && (
+                            <div className={styles.codeDisplay}>
+                                <div className={styles.codeLabel}>GENERATED CODE</div>
+                                <div className={styles.codeValue} style={{ fontSize: '1rem', color: '#6b7280' }}>
+                                    System will generate a secure code upon saving
+                                </div>
                             </div>
                         )}
 

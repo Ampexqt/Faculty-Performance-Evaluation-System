@@ -19,6 +19,13 @@
     margin-bottom: 1rem;
 }
 
+.mainTitle {
+    font-size: 0.875rem;
+    font-weight: bold;
+    margin: 0;
+    text-align: right;
+}
+
 .subtitle {
     font-size: 1rem;
     color: #6b7280;

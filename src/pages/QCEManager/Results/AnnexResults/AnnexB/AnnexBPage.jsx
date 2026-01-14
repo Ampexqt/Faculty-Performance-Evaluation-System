@@ -140,7 +140,7 @@ export function AnnexBPage() {
 
                 {/* Report Content */}
                 <div className={styles.header}>
-                    <h1 className={styles.title}>ANNEX B</h1>
+                    <h1 className={styles.mainTitle}>ANNEX B - Supervisor's Evaluation of Teachers (SEF)</h1>
                 </div>
 
                 <div className={styles.facultyInfo}>

@@ -426,8 +426,8 @@ export function FacultyEvaluationDetail() {
                                         Generate a code for the <strong>VPAA</strong> to evaluate this Dean.
                                     </p>
                                 </div>
-                                <Badge variant={facultyData.vpaa_eval_status === 'Completed' ? 'success' : activeVPAACode ? 'warning' : 'default'}>
-                                    {facultyData.vpaa_eval_status === 'Completed' ? 'Evaluation Completed' : activeVPAACode ? 'Active Code Available' : 'Not Started'}
+                                <Badge variant={facultyData?.vpaa_eval_status === 'Completed' ? 'success' : facultyData?.vpaa_eval_status === 'Pending' ? 'warning' : 'default'}>
+                                    {facultyData?.vpaa_eval_status === 'Completed' ? 'Evaluation Completed' : facultyData?.vpaa_eval_status === 'Pending' ? 'Pending Evaluation' : 'Not Started'}
                                 </Badge>
                             </div>
 
@@ -481,8 +481,8 @@ export function FacultyEvaluationDetail() {
                                         Generate a code for the <strong>Dean</strong> to evaluate this {isChair ? 'Chair' : 'Faculty Member'}.
                                     </p>
                                 </div>
-                                <Badge variant={facultyData.dean_eval_status === 'Completed' ? 'success' : activeDeanCode ? 'warning' : 'default'}>
-                                    {facultyData.dean_eval_status === 'Completed' ? 'Evaluation Completed' : activeDeanCode ? 'Active Code Available' : 'Not Started'}
+                                <Badge variant={facultyData?.dean_eval_status === 'Completed' ? 'success' : facultyData?.dean_eval_status === 'Pending' ? 'warning' : 'default'}>
+                                    {facultyData?.dean_eval_status === 'Completed' ? 'Evaluation Completed' : facultyData?.dean_eval_status === 'Pending' ? 'Pending Evaluation' : 'Not Started'}
                                 </Badge>
                             </div>
 
@@ -535,8 +535,8 @@ export function FacultyEvaluationDetail() {
                                         Generate a code for the <strong>Department Chair</strong> to evaluate this faculty member.
                                     </p>
                                 </div>
-                                <Badge variant={facultyData.chair_eval_status === 'Completed' ? 'success' : activeChairCode ? 'warning' : 'default'}>
-                                    {facultyData.chair_eval_status === 'Completed' ? 'Evaluation Completed' : activeChairCode ? 'Active Code Available' : 'Not Started'}
+                                <Badge variant={facultyData?.chair_eval_status === 'Completed' ? 'success' : facultyData?.chair_eval_status === 'Pending' ? 'warning' : 'default'}>
+                                    {facultyData?.chair_eval_status === 'Completed' ? 'Evaluation Completed' : facultyData?.chair_eval_status === 'Pending' ? 'Pending Evaluation' : 'Not Started'}
                                 </Badge>
                             </div>
 

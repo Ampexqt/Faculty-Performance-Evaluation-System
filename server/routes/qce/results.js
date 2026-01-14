@@ -25,10 +25,15 @@ router.get('/evaluation-results/:collegeId', async (req, res) => {
                  JOIN faculty_assignments fa ON se.faculty_assignment_id = fa.id
                  WHERE fa.faculty_id = f.id AND se.status = 'completed') as studentEvaluations,
                 
-                -- Supervisor Evaluations Count
+                -- Supervisor Evaluations Count (Total)
                 (SELECT COUNT(*) 
                  FROM supervisor_evaluations sup
                  WHERE sup.evaluatee_id = f.id AND sup.status = 'completed') as supervisorEvaluations,
+
+                -- Breakdown of Supervisor Evaluations
+                (SELECT COUNT(*) FROM supervisor_evaluations se WHERE se.evaluatee_id = f.id AND se.evaluator_position = 'Supervisor' AND se.status = 'completed') as dean_completed,
+                (SELECT COUNT(*) FROM supervisor_evaluations se WHERE se.evaluatee_id = f.id AND se.evaluator_position = 'Department Chair' AND se.status = 'completed') as chair_completed,
+                (SELECT COUNT(*) FROM supervisor_evaluations se WHERE se.evaluatee_id = f.id AND se.evaluator_position = 'VPAA' AND se.status = 'completed') as vpaa_completed,
                 
                 -- Student Average Score
                 (SELECT AVG(se.total_score)
@@ -73,7 +78,10 @@ router.get('/evaluation-results/:collegeId', async (req, res) => {
                 supervisorEvaluations: parseInt(faculty.supervisorEvaluations) || 0,
                 studentAverage: studentAvg,
                 supervisorAverage: supervisorAvg,
-                overallScore: overallScore
+                overallScore: overallScore,
+                dean_completed: parseInt(faculty.dean_completed) || 0,
+                chair_completed: parseInt(faculty.chair_completed) || 0,
+                vpaa_completed: parseInt(faculty.vpaa_completed) || 0
             };
         });
 

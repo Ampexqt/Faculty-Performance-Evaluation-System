@@ -110,6 +110,52 @@ export function EvaluationResultsPage() {
             )
         },
         {
+            header: 'Supervisor',
+            accessor: 'supervisorStatus',
+            width: '15%',
+            align: 'center',
+            render: (value, row) => {
+                const position = row.position ? row.position.toLowerCase() : '';
+                const isDean = position.includes('dean');
+                const isChair = position.includes('chair');
+
+                let required = 2;
+                let completed = 0;
+
+                if (isDean) {
+                    required = 1;
+                    completed = row.vpaa_completed || 0;
+                } else if (isChair) {
+                    required = 1;
+                    completed = row.dean_completed || 0;
+                } else {
+                    // Regular Faculty
+                    required = 2;
+                    completed = (row.dean_completed || 0) + (row.chair_completed || 0);
+                }
+
+                if (completed >= required) {
+                    return (
+                        <div className={styles.performanceRatingCell}>
+                            <span className={styles.ratingOutstanding}>Completed</span>
+                        </div>
+                    );
+                } else if (completed > 0) {
+                    return (
+                        <div className={styles.performanceRatingCell}>
+                            <span className={styles.ratingSatisfactory}>{completed}/{required} Done</span>
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div className={styles.performanceRatingCell}>
+                            <span style={{ color: '#9ca3af', fontWeight: 500 }}>Pending</span>
+                        </div>
+                    );
+                }
+            }
+        },
+        {
             header: 'Performance Rating',
             accessor: 'overallScore',
             width: '25%',

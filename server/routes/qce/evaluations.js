@@ -30,6 +30,9 @@ router.get('/', async (req, res) => {
                 COUNT(DISTINCT fa.section) as sections_count,
                 COUNT(DISTINCT CASE WHEN fa.eval_code IS NOT NULL AND fa.eval_code != '' THEN fa.id END) as started_count,
                 COUNT(DISTINCT fa.id) as total_evaluations,
+                (SELECT COUNT(*) FROM supervisor_evaluations se WHERE se.evaluatee_id = f.id AND se.evaluator_position = 'Supervisor' AND se.status = 'completed') as dean_completed,
+                (SELECT COUNT(*) FROM supervisor_evaluations se WHERE se.evaluatee_id = f.id AND se.evaluator_position = 'Department Chair' AND se.status = 'completed') as chair_completed,
+                (SELECT COUNT(*) FROM supervisor_evaluations se WHERE se.evaluatee_id = f.id AND se.evaluator_position = 'VPAA' AND se.status = 'completed') as vpaa_completed,
                 0 as evaluation_progress -- Still keeping this for now but UI will use status
             FROM faculty f
             LEFT JOIN departments d ON f.department_id = d.id
@@ -152,17 +155,36 @@ router.get('/:facultyId', async (req, res) => {
         const evaluatedStudents = evaluations.reduce((sum, e) => sum + parseInt(e.evaluated_count), 0);
         const pendingStudents = totalStudents - evaluatedStudents;
 
-        // Fetch Supervisor Statuses
+        // Fetch Supervisor Statuses (Codes)
         const [codeStatuses] = await promisePool.query(`
             SELECT evaluator_type, status 
             FROM supervisor_evaluation_codes 
             WHERE evaluatee_id = ?
         `, [facultyId]);
 
+        // Fetch Completed Evaluations (Actual Records)
+        const [completedEvaluations] = await promisePool.query(`
+            SELECT evaluator_position, status
+            FROM supervisor_evaluations 
+            WHERE evaluatee_id = ? AND status = 'completed'
+        `, [facultyId]);
+
         const getStatusForType = (type) => {
+            // Map the input type (Code Type) to the Database Position Name
+            let dbPosition = type;
+            if (type === 'Dean') dbPosition = 'Supervisor'; // Dean is stored as 'Supervisor'
+            if (type === 'Chair') dbPosition = 'Department Chair';
+            if (type === 'VPAA') dbPosition = 'VPAA';
+
+            // 1. Check if an evaluation actually exists and is completed
+            const isCompleted = completedEvaluations.some(e => e.evaluator_position === dbPosition);
+            if (isCompleted) return 'Completed';
+
+            // 2. If not completed, check for active codes
             const relevantCodes = codeStatuses.filter(c => c.evaluator_type === type);
-            if (relevantCodes.some(c => c.status === 'used')) return 'Completed';
+            if (relevantCodes.some(c => c.status === 'used')) return 'Completed'; // Fallback if code used but eval record missing (rare)
             if (relevantCodes.some(c => c.status === 'active')) return 'Pending';
+
             return 'Not Started';
         };
 

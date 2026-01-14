@@ -15,11 +15,11 @@ export function VPAAResultsPage() {
         };
     });
 
-    const [deanResults, setDeanResults] = useState([]);
+    const [vpaaResults, setVpaaResults] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedDean, setSelectedDean] = useState(null);
-    const [deanDetails, setDeanDetails] = useState(null);
+    const [selectedVpaa, setSelectedVpaa] = useState(null);
+    const [vpaaDetails, setVpaaDetails] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
@@ -34,7 +34,7 @@ export function VPAAResultsPage() {
             const data = await response.json();
 
             if (data.success) {
-                setDeanResults(data.data);
+                setVpaaResults(data.data);
             }
         } catch (error) {
             console.error('Error fetching VPAA results:', error);
@@ -43,25 +43,24 @@ export function VPAAResultsPage() {
         }
     };
 
-    const filteredResults = deanResults.filter(dean =>
-        dean.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        dean.college.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredResults = vpaaResults.filter(vpaa =>
+        vpaa.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleViewDetails = async (dean) => {
-        setSelectedDean(dean);
+    const handleViewDetails = async (vpaa) => {
+        setSelectedVpaa(vpaa);
         setIsModalOpen(true);
         setIsLoadingDetails(true);
 
         try {
-            const response = await fetch(`http://localhost:5000/api/qce/evaluation-results/faculty/${dean.id}`);
+            const response = await fetch(`http://localhost:5000/api/qce/evaluation-results/faculty/${vpaa.id}`);
             const data = await response.json();
 
             if (data.success) {
-                setDeanDetails(data.data);
+                setVpaaDetails(data.data);
             }
         } catch (error) {
-            console.error('Error fetching dean details:', error);
+            console.error('Error fetching VPAA details:', error);
         } finally {
             setIsLoadingDetails(false);
         }
@@ -69,29 +68,29 @@ export function VPAAResultsPage() {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setSelectedDean(null);
-        setDeanDetails(null);
+        setSelectedVpaa(null);
+        setVpaaDetails(null);
     };
 
     const columns = [
         {
-            header: 'Dean Name',
+            header: 'VPAA Name',
             accessor: 'name',
             width: '30%',
             render: (value, row) => (
                 <div className={styles.deanCell}>
                     <div className={styles.deanName}>{value}</div>
-                    <div className={styles.deanCollege}>{row.college}</div>
+                    <div className={styles.deanCollege}>{row.position}</div>
                 </div>
             )
         },
         {
-            header: 'VPAA Evaluation',
-            accessor: 'vpaaStatus',
+            header: 'President Evaluation',
+            accessor: 'presidentStatus',
             width: '20%',
             align: 'center',
             render: (value, row) => {
-                const completed = row.vpaa_completed || 0;
+                const completed = row.president_completed || 0;
 
                 if (completed >= 1) {
                     return (
@@ -182,7 +181,7 @@ export function VPAAResultsPage() {
                 <div className={styles.header}>
                     <div>
                         <h1 className={styles.title}>VPAA Result</h1>
-                        <p className={styles.subtitle}>VPAA evaluation results for all Deans</p>
+                        <p className={styles.subtitle}>President evaluation results for VPAA</p>
                     </div>
                 </div>
 
@@ -192,7 +191,7 @@ export function VPAAResultsPage() {
                         <Search size={20} className={styles.searchIcon} />
                         <Input
                             type="text"
-                            placeholder="Search dean by name or college..."
+                            placeholder="Search VPAA by name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className={styles.searchInput}
@@ -227,13 +226,13 @@ export function VPAAResultsPage() {
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
                                 <p>Loading details...</p>
                             </div>
-                        ) : deanDetails ? (
+                        ) : vpaaDetails ? (
                             <>
-                                {/* Dean Header */}
+                                {/* VPAA Header */}
                                 <div className={styles.deanHeader}>
-                                    <h2 className={styles.deanNameModal}>{deanDetails.faculty.name}</h2>
+                                    <h2 className={styles.deanNameModal}>{vpaaDetails.faculty.name}</h2>
                                     <p className={styles.deanDetailsModal}>
-                                        {deanDetails.faculty.position} • {deanDetails.faculty.email}
+                                        {vpaaDetails.faculty.position} • {vpaaDetails.faculty.email}
                                     </p>
                                 </div>
 
@@ -241,13 +240,13 @@ export function VPAAResultsPage() {
                                 <div className={styles.metricsContainer}>
                                     <div className={styles.metricsRow}>
                                         <div className={styles.metricBox}>
-                                            <span className={styles.metricLabel}>VPAA EVALUATIONS</span>
-                                            <span className={styles.metricValue}>{deanDetails.statistics.supervisorCount}</span>
+                                            <span className={styles.metricLabel}>PRESIDENT EVALUATIONS</span>
+                                            <span className={styles.metricValue}>{vpaaDetails.statistics.supervisorCount}</span>
                                         </div>
                                         <div className={styles.metricBox}>
-                                            <span className={styles.metricLabel}>VPAA AVERAGE</span>
+                                            <span className={styles.metricLabel}>PRESIDENT AVERAGE</span>
                                             <span className={styles.metricValue}>
-                                                {deanDetails.statistics.supervisorAverage ? deanDetails.statistics.supervisorAverage.toFixed(2) : '---'}
+                                                {vpaaDetails.statistics.supervisorAverage ? vpaaDetails.statistics.supervisorAverage.toFixed(2) : '---'}
                                             </span>
                                         </div>
                                     </div>
@@ -256,7 +255,7 @@ export function VPAAResultsPage() {
                                             <span className={styles.scoreBoxLabel}>NBC 461 POINTS</span>
                                             <span className={styles.scoreBoxValue}>
                                                 {(() => {
-                                                    const pAvg = deanDetails.statistics.supervisorAverage || 0;
+                                                    const pAvg = vpaaDetails.statistics.supervisorAverage || 0;
                                                     if (!pAvg) return '---';
 
                                                     const normalizeToPercentage = (val) => {
@@ -281,7 +280,7 @@ export function VPAAResultsPage() {
                                 </div>
 
                                 {/* Annex Section */}
-                                {deanDetails.supervisorEvaluations.length > 0 && (
+                                {vpaaDetails.supervisorEvaluations.length > 0 && (
                                     <div className={styles.annexSection}>
                                         <h3 className={styles.annexTitle}>Detailed Evaluation Reports</h3>
                                         <div className={styles.annexGrid}>
@@ -296,7 +295,7 @@ export function VPAAResultsPage() {
                                                     <button
                                                         key={annex}
                                                         className={styles.annexCard}
-                                                        onClick={() => navigate(`/qce/results/${deanDetails.faculty.id}/annex-${annex.toLowerCase()}`)}
+                                                        onClick={() => navigate(`/qce/results/${vpaaDetails.faculty.id}/annex-${annex.toLowerCase()}`)}
                                                     >
                                                         <div className={styles.annexIcon}>
                                                             <FileText size={24} color="#b91c1c" />

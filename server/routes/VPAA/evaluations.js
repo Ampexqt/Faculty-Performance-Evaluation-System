@@ -154,7 +154,7 @@ router.get('/my-evaluations/:vpaaId', async (req, res) => {
  */
 router.post('/submit-evaluation', async (req, res) => {
     try {
-        const { evaluation_id, scores, comments } = req.body;
+        const { evaluation_id, scores, comments, ratings } = req.body;
         // scores might be an object { commitment, knowledge, teaching, management, total }
 
         if (!evaluation_id) {
@@ -164,7 +164,54 @@ router.post('/submit-evaluation', async (req, res) => {
             });
         }
 
-        const { commitment, knowledge, teaching, management, total } = scores || {};
+        const { commitment, knowledge, teaching, management } = scores || {};
+
+        // Extract ratings from the request (it might be in 'ratings' or inside 'comments' string if legacy)
+        let ratingsObj = ratings || {};
+        let additionalComments = comments;
+
+        // Backward compatibility if ratings are inside comments string
+        if (!ratings && typeof comments === 'string' && comments.startsWith('{')) {
+            try {
+                const parsed = JSON.parse(comments);
+                if (parsed.ratings) {
+                    ratingsObj = parsed.ratings;
+                    additionalComments = parsed.comments || '';
+                }
+            } catch (e) {
+                // Not JSON, ignore
+            }
+        }
+
+        // Calculate accurate average from ratings if available
+        let finalTotalScore = scores?.total;
+
+        if (Object.keys(ratingsObj).length > 0) {
+            const allRatings = Object.values(ratingsObj).flat();
+            if (allRatings.length > 0) {
+                const sum = allRatings.reduce((a, b) => a + Number(b), 0);
+                finalTotalScore = (sum / allRatings.length).toFixed(2);
+            }
+
+            // Save ratings to database
+            // First delete existing ratings for this evaluation (to allow re-submission/updates)
+            await promisePool.query('DELETE FROM supervisor_evaluation_ratings WHERE evaluation_id = ?', [evaluation_id]);
+
+            // Insert new ratings
+            const insertValues = [];
+            Object.entries(ratingsObj).forEach(([category, catRatings]) => {
+                catRatings.forEach((rating, index) => {
+                    insertValues.push([evaluation_id, category, index, rating]);
+                });
+            });
+
+            if (insertValues.length > 0) {
+                await promisePool.query(
+                    'INSERT INTO supervisor_evaluation_ratings (evaluation_id, category, criterion_index, rating) VALUES ?',
+                    [insertValues]
+                );
+            }
+        }
 
         await promisePool.query(
             `UPDATE supervisor_evaluations 
@@ -177,7 +224,7 @@ router.post('/submit-evaluation', async (req, res) => {
                  status = 'completed', 
                  submitted_at = NOW()
              WHERE id = ?`,
-            [commitment, knowledge, teaching, management, total, comments, evaluation_id]
+            [commitment, knowledge, teaching, management, finalTotalScore, additionalComments, evaluation_id]
         );
 
         res.json({

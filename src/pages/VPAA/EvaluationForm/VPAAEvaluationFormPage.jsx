@@ -158,7 +158,9 @@ export function VPAAEvaluationFormPage() {
                         knowledge: knowledgeScore.toFixed(2),
                         total: averageRating.toFixed(2)
                     },
-                    comments: JSON.stringify({ ratings, comments, evaluatorInfo: userData })
+                    ratings: ratings,
+                    comments: comments,
+                    evaluatorInfo: userData
                 }),
             });
 

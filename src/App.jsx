@@ -9,6 +9,10 @@ import { QCEManagementPage } from './pages/ZonalAdmin/QCEManagement/QCEManagemen
 import { EvaluatorAccountsPage } from './pages/ZonalAdmin/Evaluators/EvaluatorAccountsPage';
 import { AcademicYearsPage } from './pages/ZonalAdmin/AcademicYears/AcademicYearsPage';
 import { VPAAResultsPage } from './pages/ZonalAdmin/VPAAResults/VPAAResultsPage';
+import VPAAAnnexAPage from './pages/ZonalAdmin/VPAAResults/AnnexResult/AnnexA/VPAAAnnexAPage';
+import VPAAAnnexBPage from './pages/ZonalAdmin/VPAAResults/AnnexResult/AnnexB/VPAAAnnexBPage';
+import VPAAAnnexCPage from './pages/ZonalAdmin/VPAAResults/AnnexResult/AnnexC/VPAAAnnexCPage';
+import VPAAAnnexDPage from './pages/ZonalAdmin/VPAAResults/AnnexResult/AnnexD/VPAAAnnexDPage';
 
 import { QCEDashboardPage } from './pages/QCEManager/Dashboard/QCEDashboardPage';
 import { FacultyPage } from './pages/QCEManager/Faculty/FacultyPage';
@@ -66,6 +70,10 @@ export function App() {
             <Route path="/zonal/academic-years" element={<AcademicYearsPage />} />
             <Route path="/zonal/evaluator-accounts" element={<EvaluatorAccountsPage />} />
             <Route path="/zonal/vpaa-results" element={<VPAAResultsPage />} />
+            <Route path="/zonal/vpaa-results/:vpaaId/annex-a" element={<VPAAAnnexAPage />} />
+            <Route path="/zonal/vpaa-results/:vpaaId/annex-b" element={<VPAAAnnexBPage />} />
+            <Route path="/zonal/vpaa-results/:vpaaId/annex-c" element={<VPAAAnnexCPage />} />
+            <Route path="/zonal/vpaa-results/:vpaaId/annex-d" element={<VPAAAnnexDPage />} />
           </Route>
 
           {/* QCE Manager Routes */}

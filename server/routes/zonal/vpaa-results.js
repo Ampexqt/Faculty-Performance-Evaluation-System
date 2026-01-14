@@ -44,6 +44,20 @@ router.get('/vpaa-results', async (req, res) => {
             // For VPAA, only President evaluation matters
             const overallScore = supervisorAvg;
 
+            // Calculate NBC Score
+            const percentageRating = (overallScore / 5) * 100;
+            const nbcScore = (percentageRating / 100) * 24;
+
+            // Determine Performance Category
+            let category = 'NEEDS IMPROVEMENT';
+            if (percentageRating >= 90) category = 'OUTSTANDING';
+            else if (percentageRating >= 80) category = 'VERY SATISFACTORY';
+            else if (percentageRating >= 70) category = 'SATISFACTORY';
+            else if (percentageRating >= 60) category = 'FAIR';
+
+            // Determine Status
+            const status = parseInt(vpaa.president_completed) > 0 ? 'Completed' : 'Pending';
+
             return {
                 id: vpaa.id,
                 name: vpaa.name,
@@ -51,7 +65,10 @@ router.get('/vpaa-results', async (req, res) => {
                 college: vpaa.college,
                 president_completed: parseInt(vpaa.president_completed) || 0,
                 supervisorAverage: supervisorAvg,
-                overallScore: overallScore
+                overall_score: overallScore, // snake_case for frontend
+                president_evaluation_status: status,
+                nbc_score: nbcScore,
+                performance_category: category
             };
         });
 
@@ -113,10 +130,11 @@ router.get('/vpaa-results/:vpaaId', async (req, res) => {
 
         // 3. Fetch Evaluations List
         const [evaluations] = await promisePool.query(`
-            SELECT *
-            FROM president_evaluations
-            WHERE vpaa_id = ? AND status = 'completed'
-            ORDER BY created_at DESC
+            SELECT pe.*, ay.year_label as academic_year_label
+            FROM president_evaluations pe
+            JOIN academic_years ay ON pe.academic_year_id = ay.id
+            WHERE pe.vpaa_id = ? AND pe.status = 'completed'
+            ORDER BY pe.created_at DESC
         `, [vpaaId]);
 
         const result = {

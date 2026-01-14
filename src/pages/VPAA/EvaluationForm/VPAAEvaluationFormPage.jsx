@@ -50,6 +50,7 @@ export function VPAAEvaluationFormPage() {
     const { evaluation, vpaaId } = location.state || {};
 
     const [ratings, setRatings] = useState({});
+    const [comments, setComments] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [academicYear, setAcademicYear] = useState(null);
 
@@ -188,6 +189,15 @@ export function VPAAEvaluationFormPage() {
         <DashboardLayout role="VPAA" userName={userData.full_name}>
             <div className={styles.page}>
                 <div className={styles.formContainer}>
+                    <button
+                        className={styles.backButton}
+                        onClick={() => navigate('/vpaa/dashboard')}
+                        type="button"
+                    >
+                        <ArrowLeft size={20} />
+                        <span>Back to Dashboard</span>
+                    </button>
+
                     <div className={styles.formHeader}>
                         <h1 className={styles.formTitle}>Dean Performance Evaluation</h1>
                         <div className={styles.headerInfo}>

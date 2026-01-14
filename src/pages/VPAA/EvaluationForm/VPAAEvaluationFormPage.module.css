@@ -11,6 +11,39 @@
     overflow: hidden;
 }
 
+.backButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    margin: 1.5rem 2rem 0 2rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.backButton:hover {
+    background: #f9fafb;
+    border-color: #800000;
+    color: #800000;
+    transform: translateX(-2px);
+}
+
+.backButton svg {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.backButton:hover svg {
+    transform: translateX(-3px);
+}
+
+
 /* Form Header Styles */
 .formHeader {
     padding: 2rem;

@@ -104,14 +104,36 @@
 }
 
 @media print {
+    @page {
+        margin: 0;
+        size: auto;
+    }
+
+    :global(body) {
+        visibility: hidden;
+        overflow: visible !important;
+    }
 
     .header,
     .backButton,
     .printButton {
-        display: none;
+        display: none !important;
     }
 
     .container {
-        padding: 0;
+        visibility: visible;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 2cm;
+        background: white;
+        color: black;
+        z-index: 2147483647;
+    }
+
+    .container * {
+        visibility: visible;
     }
 }

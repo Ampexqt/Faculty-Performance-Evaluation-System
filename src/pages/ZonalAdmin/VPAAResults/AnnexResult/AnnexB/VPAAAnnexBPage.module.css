@@ -173,27 +173,54 @@
 }
 
 @media print {
+    @page {
+        margin: 0;
+        size: auto;
+    }
+
+    :global(body) {
+        visibility: hidden;
+        overflow: visible !important;
+    }
 
     .header,
     .backButton,
     .printButton {
-        display: none;
+        display: none !important;
     }
 
     .container {
-        padding: 0;
-        max-width: 100%;
+        visibility: visible;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 2cm;
+        background: white;
+        color: black;
+        z-index: 2147483647;
+        /* Max z-index */
     }
 
-    .tableContainer,
-    .summaryTable {
-        border-color: #000;
+    /* Ensure all children are visible */
+    .container * {
+        visibility: visible;
+    }
+
+    .tableContainer {
+        border: 2px solid #000;
+        overflow: visible;
     }
 
     .table th,
     .table td,
     .summaryTable th,
     .summaryTable td {
+        border-color: #000;
+    }
+
+    .summaryTable {
         border-color: #000;
     }
 }

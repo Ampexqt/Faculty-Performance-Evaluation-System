@@ -53,7 +53,7 @@ export function VPAAResultsPage() {
         setIsLoadingDetails(true);
 
         try {
-            const response = await fetch(`http://localhost:5000/api/qce/evaluation-results/faculty/${vpaa.id}`);
+            const response = await fetch(`http://localhost:5000/api/zonal/vpaa-results/${vpaa.id}`);
             const data = await response.json();
 
             if (data.success) {

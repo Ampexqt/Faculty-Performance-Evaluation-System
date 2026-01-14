@@ -70,4 +70,82 @@ router.get('/vpaa-results', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/zonal/vpaa-results/:vpaaId
+ * Get detailed results for a specific VPAA
+ */
+router.get('/vpaa-results/:vpaaId', async (req, res) => {
+    try {
+        const { vpaaId } = req.params;
+
+        // 1. Fetch VPAA details
+        const [vpaaList] = await promisePool.query(`
+            SELECT 
+                ea.id,
+                TRIM(CONCAT(
+                    COALESCE(ea.honorific, ''), ' ', 
+                    ea.full_name, ' ', 
+                    COALESCE(ea.suffix, '')
+                )) as name,
+                ea.position,
+                ea.email
+            FROM evaluator_accounts ea
+            WHERE ea.id = ? AND ea.position = 'VPAA'
+        `, [vpaaId]);
+
+        if (vpaaList.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'VPAA not found'
+            });
+        }
+
+        const vpaa = vpaaList[0];
+
+        // 2. Fetch President Evaluation Stats
+        const [stats] = await promisePool.query(`
+            SELECT 
+                COUNT(*) as supervisorCount,
+                AVG(rating) as supervisorAverage
+            FROM president_evaluations
+            WHERE vpaa_id = ? AND status = 'completed'
+        `, [vpaaId]);
+
+        // 3. Fetch Evaluations List
+        const [evaluations] = await promisePool.query(`
+            SELECT *
+            FROM president_evaluations
+            WHERE vpaa_id = ? AND status = 'completed'
+            ORDER BY created_at DESC
+        `, [vpaaId]);
+
+        const result = {
+            faculty: {
+                id: vpaa.id,
+                name: vpaa.name,
+                position: vpaa.position,
+                email: vpaa.email
+            },
+            statistics: {
+                supervisorCount: stats[0].supervisorCount || 0,
+                supervisorAverage: parseFloat(stats[0].supervisorAverage) || 0
+            },
+            supervisorEvaluations: evaluations
+        };
+
+        res.json({
+            success: true,
+            data: result
+        });
+
+    } catch (error) {
+        console.error('Error fetching VPAA details:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching VPAA details',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

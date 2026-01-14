@@ -141,32 +141,50 @@ const VPAAAnnexDPage = () => {
                 </table>
 
                 <div className={styles.acknowledgementText}>
-                    I acknowledge that I have received and reviewed the faculty evaluation conducted for the period mentioned above. I understand that my signature below does not necessarily indicate agreement with the evaluation but confirms that I have seen the report.
+                    I acknowledge that I have received and reviewed the faculty evaluation conducted for the period mentioned above. I understand that my signature below does not necessarily indicate agreement with the evaluation but confirms that I have been given the opportunity to discuss it with my supervisor.
                 </div>
 
-                <div className={styles.signatureSection}>
-                    <div className={styles.signatureBlock}>
-                        <div className={styles.signatureLine}></div>
-                        <div className={styles.signatureName}>{faculty.name}</div>
-                        <div className={styles.signatureRole}>VPAA</div>
-                    </div>
+                <div className={styles.sectionHeader}>SUPERVISOR</div>
+                <table className={styles.infoTable}>
+                    <tbody>
+                        <tr>
+                            <td className={styles.labelCell}>Signature</td>
+                            <td className={styles.separator}>:</td>
+                            <td className={styles.valueCell}></td>
+                        </tr>
+                        <tr>
+                            <td className={styles.labelCell}>Name</td>
+                            <td className={styles.separator}>:</td>
+                            <td className={styles.valueCell}></td>
+                        </tr>
+                        <tr>
+                            <td className={styles.labelCell}>Date Signed</td>
+                            <td className={styles.separator}>:</td>
+                            <td className={styles.valueCell}></td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                    <div className={styles.signatureBlock}>
-                        <div className={styles.signatureLine}></div>
-                        <div className={styles.signatureName}>Dr. Christina G. Wee</div>
-                        {/* Note: In real app, fetch President Name dynamically if possible, or leave blank/placeholder. 
-                            The screenshot shows specific name. I'll hardcode or placeholders.
-                            Actually the user's screenshots show "Dr. Christina G. Wee" as the VPAA?
-                            Wait, Image 2: "Dr. Christina G. Wee (VPAA)".
-                            Image 1: "Dr. Christina G. Wee (VPAA)".
-                            So the VPAA is Christina.
-                            Who is the President? The evaluator.
-                            In `fetchVPAADetails`, does it return Evaluator info? I didn't verify.
-                            For now I'll put 'University President' placeholder or blank.
-                        */}
-                        <div className={styles.signatureRole}>University President</div>
-                    </div>
-                </div>
+                <div className={styles.sectionHeader}>FACULTY</div>
+                <table className={styles.infoTable}>
+                    <tbody>
+                        <tr>
+                            <td className={styles.labelCell}>Signature</td>
+                            <td className={styles.separator}>:</td>
+                            <td className={styles.valueCell}></td>
+                        </tr>
+                        <tr>
+                            <td className={styles.labelCell}>Name</td>
+                            <td className={styles.separator}>:</td>
+                            <td className={styles.valueCell}></td>
+                        </tr>
+                        <tr>
+                            <td className={styles.labelCell}>Date Signed</td>
+                            <td className={styles.separator}>:</td>
+                            <td className={styles.valueCell}></td>
+                        </tr>
+                    </tbody>
+                </table>
 
             </div>
         </DashboardLayout>

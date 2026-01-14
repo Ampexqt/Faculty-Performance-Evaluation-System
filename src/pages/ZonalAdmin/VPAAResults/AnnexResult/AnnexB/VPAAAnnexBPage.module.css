@@ -101,7 +101,7 @@
 
 .tableContainer {
     overflow-x: auto;
-    border: 1px solid #e5e7eb;
+    border: 2px solid #374151;
     border-radius: 8px;
     margin-bottom: 2rem;
 }
@@ -114,15 +114,28 @@
 
 .table th,
 .table td {
-    border: 1px solid #e5e7eb;
+    border: 1px solid #374151;
     padding: 0.75rem 1rem;
     text-align: center;
 }
 
 .table th {
-    background: #f9fafb;
+    background: #f3f4f6;
     font-weight: 600;
-    color: #374151;
+    color: #1f2937;
+    border: 1px solid #374151;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #ffffff;
+}
+
+.table tbody tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+.table tbody td {
+    color: #1f2937;
 }
 
 .summaryTable {
@@ -131,23 +144,25 @@
     border-collapse: collapse;
     font-size: 0.875rem;
     margin-top: 2rem;
+    border: 2px solid #374151;
 }
 
 .summaryTable th,
 .summaryTable td {
-    border: 1px solid #e5e7eb;
+    border: 1px solid #374151;
     padding: 0.75rem 1rem;
 }
 
 .summaryTable th {
-    background: #f9fafb;
+    background: #f3f4f6;
     text-align: left;
     font-weight: 600;
-    color: #374151;
+    color: #1f2937;
 }
 
 .summaryTable td {
     text-align: right;
+    color: #1f2937;
 }
 
 .totalRow th,

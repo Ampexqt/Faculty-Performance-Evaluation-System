@@ -46,16 +46,27 @@ const VPAAAnnexBPage = () => {
 
     const { faculty, supervisorEvaluations } = data;
 
-    // Get unique academic years from evaluations, sorted
-    const academicYears = Array.from(new Set(supervisorEvaluations.map(e => e.academic_year_label))).sort();
+    // Calculate display years (Always show 3 years)
+    let startYear = 2025; // Default start year
 
-    // Ensure we display at least 3 columns for layout consistency (optional, but looks better)
-    // Actually, let's just use the ones we have, or default to current year if empty.
-    const displayYears = academicYears.length > 0 ? academicYears : ['2025-2026', '2026-2027', '2027-2028'];
-    // If not enough data, maybe fill up to 3? Let's just use displayYears.
-    // The image shows 3 fixed columns. I'll stick to a dynamic approach but ensure at least 3 years if data is sparse to match the look?
-    // Let's simplified: use fixed 3 years range starting from the first available or current.
-    // For simplicity, I'll map over `displayYears`.
+    if (supervisorEvaluations.length > 0) {
+        // Find the earliest year from evaluations to use as base
+        // Assuming label format is "YYYY-YYYY"
+        const years = supervisorEvaluations
+            .map(e => parseInt(e.academic_year_label.split('-')[0]))
+            .filter(y => !isNaN(y));
+
+        if (years.length > 0) {
+            startYear = Math.min(...years);
+        }
+    }
+
+    // Generate 3 consecutive years starting from startYear
+    const displayYears = [
+        `${startYear}-${startYear + 1}`,
+        `${startYear + 1}-${startYear + 2}`,
+        `${startYear + 2}-${startYear + 3}`
+    ];
 
     const getRating = (year, sem) => {
         const found = supervisorEvaluations.find(e => e.academic_year_label === year && e.semester.includes(sem));

@@ -1,27 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, FileText, ChevronRight } from 'lucide-react';
-import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
-import { Table } from '@/components/Table/Table';
-import { Input } from '@/components/Input/Input';
-import { Modal } from '@/components/Modal/Modal';
+import { Search, FileText, ChevronRight } from 'lucide-react';
+import { DashboardLayout } from '../../../components/DashboardLayout/DashboardLayout';
+import { Table } from '../../../components/Table/Table';
+import { Input } from '../../../components/Input/Input';
+import { Modal } from '../../../components/Modal/Modal';
 import styles from './VPAAResultsPage.module.css';
 
-export function VPAAResultsPage() {
+export const VPAAResultsPage = () => {
     const navigate = useNavigate();
-    const [userInfo] = useState(() => {
-        return {
-            fullName: sessionStorage.getItem('fullName') || 'Zonal Admin'
-        };
-    });
-
     const [vpaaResults, setVpaaResults] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVpaa, setSelectedVpaa] = useState(null);
     const [vpaaDetails, setVpaaDetails] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
+    const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
 
     useEffect(() => {
         fetchVPAAResults();
@@ -76,7 +72,7 @@ export function VPAAResultsPage() {
         {
             header: 'VPAA Name',
             accessor: 'name',
-            width: '30%',
+            width: '25%',
             render: (value, row) => (
                 <div className={styles.deanCell}>
                     <div className={styles.deanName}>{value}</div>
@@ -86,72 +82,75 @@ export function VPAAResultsPage() {
         },
         {
             header: 'President Evaluation',
-            accessor: 'presidentStatus',
-            width: '20%',
+            accessor: 'president_evaluation_status',
+            width: '15%',
             align: 'center',
-            render: (value, row) => {
-                const completed = row.president_completed || 0;
-
-                if (completed >= 1) {
-                    return (
-                        <div className={styles.statusCell}>
-                            <span className={styles.statusCompleted}>Completed</span>
-                        </div>
-                    );
-                } else {
-                    return (
-                        <div className={styles.statusCell}>
-                            <span className={styles.statusPending}>Pending</span>
-                        </div>
-                    );
-                }
-            }
+            render: (value) => (
+                <div className={styles.statusCell}>
+                    <span className={value === 'Completed' ? styles.statusCompleted : styles.statusPending}>
+                        {value}
+                    </span>
+                </div>
+            )
         },
         {
-            header: 'Overall Score',
-            accessor: 'overallScore',
-            width: '20%',
+            header: 'Average Rating (5.0)',
+            accessor: 'overall_score',
+            width: '10%',
             align: 'center',
             render: (value) => {
-                const score = parseFloat(value) || 0;
+                if (!value || value === 'N/A') {
+                    return <span className={styles.scoreNA}>---</span>;
+                }
                 return (
                     <div className={styles.scoreCell}>
-                        {score > 0 ? (
-                            <span className={styles.scoreValue}>{score.toFixed(2)}</span>
-                        ) : (
-                            <span className={styles.scoreNA}>---</span>
-                        )}
+                        <span className={styles.scoreValue}>{parseFloat(value).toFixed(2)}</span>
                     </div>
                 );
             }
         },
         {
             header: 'NBC 461 - POINTS',
-            accessor: 'nbcScore',
-            width: '20%',
+            accessor: 'nbc_score',
+            width: '15%',
             align: 'center',
-            render: (value, row) => {
-                const supervisorAvg = row.supervisorAverage || 0;
-
-                if (!supervisorAvg) {
+            render: (value) => {
+                if (!value || value === 'N/A') {
                     return <span className={styles.scoreNA}>---</span>;
                 }
-
-                const normalizeToPercentage = (val) => {
-                    if (!val) return 0;
-                    const num = parseFloat(val);
-                    if (num > 5) return num;
-                    return (num / 5) * 100;
-                };
-
-                const supervisorPercentage = normalizeToPercentage(supervisorAvg);
-                const nbcScore = (supervisorPercentage / 100) * 24;
-
+                const nbcScore = parseFloat(value);
                 return (
                     <div className={styles.nbcScore}>
                         <span className={styles.nbcScoreValue}>{nbcScore.toFixed(2)}</span>
                         <span className={styles.nbcScoreTotal}> / 24</span>
                     </div>
+                );
+            }
+        },
+        {
+            header: 'PERFORMANCE CATEGORY',
+            accessor: 'performance_category',
+            width: '25%',
+            align: 'center',
+            render: (value) => {
+                if (!value) return <span className={styles.scoreNA}>---</span>;
+
+                let color = '#6b7280'; // Default gray
+                if (value === 'OUTSTANDING') color = '#eab308'; // Yellow
+                else if (value === 'VERY SATISFACTORY') color = '#a855f7'; // Purple
+                else if (value === 'SATISFACTORY') color = '#22c55e'; // Green
+                else if (value === 'FAIR') color = '#3b82f6'; // Blue
+                else if (value === 'NEEDS IMPROVEMENT') color = '#ef4444'; // Red
+
+                return (
+                    <span style={{
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
+                        color: color,
+                        textTransform: 'uppercase'
+                    }}>
+                        {value}
+                    </span>
                 );
             }
         },
@@ -236,47 +235,93 @@ export function VPAAResultsPage() {
                                     </p>
                                 </div>
 
-                                {/* Metrics Container */}
-                                <div className={styles.metricsContainer}>
-                                    <div className={styles.metricsRow}>
-                                        <div className={styles.metricBox}>
-                                            <span className={styles.metricLabel}>PRESIDENT EVALUATIONS</span>
-                                            <span className={styles.metricValue}>{vpaaDetails.statistics.supervisorCount}</span>
-                                        </div>
-                                        <div className={styles.metricBox}>
-                                            <span className={styles.metricLabel}>PRESIDENT AVERAGE</span>
-                                            <span className={styles.metricValue}>
-                                                {vpaaDetails.statistics.supervisorAverage ? vpaaDetails.statistics.supervisorAverage.toFixed(2) : '---'}
-                                            </span>
-                                        </div>
+                                {/* Stats Row: Count and Average */}
+                                <div className={styles.statsGrid}>
+                                    <div className={styles.statBox}>
+                                        <span className={styles.statLabel}>PRESIDENT EVALUATIONS</span>
+                                        <span className={styles.statValue}>{vpaaDetails.statistics.supervisorCount}</span>
                                     </div>
-                                    <div className={styles.scoresRow}>
-                                        <div className={styles.scoreBoxPrimary}>
-                                            <span className={styles.scoreBoxLabel}>NBC 461 POINTS</span>
-                                            <span className={styles.scoreBoxValue}>
-                                                {(() => {
-                                                    const pAvg = vpaaDetails.statistics.supervisorAverage || 0;
-                                                    if (!pAvg) return '---';
-
-                                                    const normalizeToPercentage = (val) => {
-                                                        if (!val) return 0;
-                                                        const num = parseFloat(val);
-                                                        if (num > 5) return num;
-                                                        return (num / 5) * 100;
-                                                    };
-
-                                                    const pScore100 = normalizeToPercentage(pAvg);
-                                                    const nbcScore = (pScore100 / 100) * 24;
-
-                                                    return (
-                                                        <>
-                                                            {nbcScore.toFixed(2)} <span className={styles.scoreBoxTotal}>/ 24</span>
-                                                        </>
-                                                    );
-                                                })()}
-                                            </span>
-                                        </div>
+                                    <div className={styles.statBox}>
+                                        <span className={styles.statLabel}>PRESIDENT AVERAGE</span>
+                                        <span className={styles.statValue}>
+                                            {vpaaDetails.statistics.supervisorAverage ? vpaaDetails.statistics.supervisorAverage.toFixed(2) : '---'}
+                                        </span>
                                     </div>
+                                </div>
+
+                                {/* Scoring Row: NBC and Percentage */}
+                                <div className={styles.scoringGrid}>
+                                    <div className={styles.nbcBox}>
+                                        <span className={styles.nbcLabel}>NBC 461 POINTS</span>
+                                        <span className={styles.nbcValue}>
+                                            {(() => {
+                                                const pAvg = vpaaDetails.statistics.supervisorAverage || 0;
+                                                if (!pAvg) return '---';
+
+                                                const normalizeToPercentage = (val) => {
+                                                    if (!val) return 0;
+                                                    const num = parseFloat(val);
+                                                    if (num > 5) return num;
+                                                    return (num / 5) * 100;
+                                                };
+
+                                                const pScore100 = normalizeToPercentage(pAvg);
+                                                const nbcScore = (pScore100 / 100) * 24;
+
+                                                return (
+                                                    <>
+                                                        {nbcScore.toFixed(2)} <span className={styles.nbcTotal}>/ 24</span>
+                                                    </>
+                                                );
+                                            })()}
+                                        </span>
+                                    </div>
+                                    <div className={styles.percentBox}>
+                                        <span className={styles.percentLabel}>PERCENTAGE RATING</span>
+                                        <span className={styles.percentValue}>
+                                            {(() => {
+                                                const pAvg = vpaaDetails.statistics.supervisorAverage || 0;
+                                                if (!pAvg) return '---';
+
+                                                const normalizeToPercentage = (val) => {
+                                                    if (!val) return 0;
+                                                    const num = parseFloat(val);
+                                                    if (num > 5) return num;
+                                                    return (num / 5) * 100;
+                                                };
+
+                                                const percentage = normalizeToPercentage(pAvg);
+                                                return `${percentage.toFixed(2)}%`;
+                                            })()}
+                                        </span>
+                                        <span className={styles.percentSub}>(Informational Only)</span>
+                                    </div>
+                                </div>
+
+                                {/* Performance Category */}
+                                <div className={styles.categoryBox}>
+                                    <span className={styles.categoryLabel}>PERFORMANCE CATEGORY</span>
+                                    <span className={styles.categoryValue}>
+                                        {(() => {
+                                            const pAvg = vpaaDetails.statistics.supervisorAverage || 0;
+                                            if (!pAvg) return 'N/A';
+
+                                            const normalizeToPercentage = (val) => {
+                                                if (!val) return 0;
+                                                const num = parseFloat(val);
+                                                if (num > 5) return num;
+                                                return (num / 5) * 100;
+                                            };
+
+                                            const percentage = normalizeToPercentage(pAvg);
+
+                                            if (percentage >= 90) return 'OUTSTANDING';
+                                            if (percentage >= 80) return 'VERY SATISFACTORY';
+                                            if (percentage >= 70) return 'SATISFACTORY';
+                                            if (percentage >= 60) return 'FAIR';
+                                            return 'NEEDS IMPROVEMENT';
+                                        })()}
+                                    </span>
                                 </div>
 
                                 {/* Annex Section */}
@@ -295,7 +340,7 @@ export function VPAAResultsPage() {
                                                     <button
                                                         key={annex}
                                                         className={styles.annexCard}
-                                                        onClick={() => navigate(`/qce/results/${vpaaDetails.faculty.id}/annex-${annex.toLowerCase()}`)}
+                                                        onClick={() => navigate(`/zonal/vpaa-results/${vpaaDetails.faculty.id}/annex-${annex.toLowerCase()}`)}
                                                     >
                                                         <div className={styles.annexIcon}>
                                                             <FileText size={24} color="#b91c1c" />
@@ -322,4 +367,6 @@ export function VPAAResultsPage() {
             )}
         </DashboardLayout>
     );
-}
+};
+
+

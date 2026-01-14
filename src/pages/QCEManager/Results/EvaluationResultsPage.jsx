@@ -213,7 +213,7 @@ export function EvaluationResultsPage() {
             render: (value, row) => {
                 // Calculate NBC score from student and supervisor averages
                 const position = row.position ? row.position.toLowerCase() : '';
-                const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa');
+                const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa') || position.includes('department chair');
 
                 const studentAvg = row.studentAverage || 0;
                 const supervisorAvg = row.supervisorAverage || 0;
@@ -424,7 +424,7 @@ export function EvaluationResultsPage() {
                                                     const pAvg = facultyDetails.statistics.supervisorAverage || 0;
 
                                                     const position = facultyDetails.faculty.position ? facultyDetails.faculty.position.toLowerCase() : '';
-                                                    const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa');
+                                                    const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa') || position.includes('department chair');
 
                                                     if (!sAvg && !pAvg) return '---';
 

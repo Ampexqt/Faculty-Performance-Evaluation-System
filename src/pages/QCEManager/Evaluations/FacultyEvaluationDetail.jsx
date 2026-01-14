@@ -48,6 +48,9 @@ export function FacultyEvaluationDetail() {
     const [activeDeanCode, setActiveDeanCode] = useState('');
     const [activeChairCode, setActiveChairCode] = useState('');
     const [activeVPAACode, setActiveVPAACode] = useState('');
+    const [deanCriteria, setDeanCriteria] = useState(null);
+    const [chairCriteria, setChairCriteria] = useState(null);
+    const [vpaaCriteria, setVpaaCriteria] = useState(null);
 
     const [copied, setCopied] = useState(false);
     const { toasts, removeToast, success, error: showError } = useToast();
@@ -73,6 +76,7 @@ export function FacultyEvaluationDetail() {
             const deanData = await deanRes.json();
             if (deanData.success) {
                 setActiveDeanCode(deanData.data.code);
+                setDeanCriteria(deanData.data.criteria_type);
             }
 
             // Fetch Chair Code
@@ -80,6 +84,7 @@ export function FacultyEvaluationDetail() {
             const chairData = await chairRes.json();
             if (chairData.success) {
                 setActiveChairCode(chairData.data.code);
+                setChairCriteria(chairData.data.criteria_type);
             }
 
             // Fetch VPAA Code
@@ -87,6 +92,7 @@ export function FacultyEvaluationDetail() {
             const vpaaData = await vpaaRes.json();
             if (vpaaData.success) {
                 setActiveVPAACode(vpaaData.data.code);
+                setVpaaCriteria(vpaaData.data.criteria_type);
             }
         } catch (error) {
             console.error('Error fetching active codes:', error);
@@ -116,7 +122,23 @@ export function FacultyEvaluationDetail() {
 
     const handleOpenSelection = (assignment) => {
         setSelectedAssignment(assignment);
-        setIsSelectionModalOpen(true);
+
+        // Check if there is already an existing criteria preference established for this faculty
+        // by looking at other evaluations in the list. ONLY consider evaluations that are actually created.
+        const existingEval = evaluationDetails.find(e =>
+            (e.criteria_type === 'old' || e.criteria_type === 'new') &&
+            e.status !== 'Not Created'
+        );
+
+        if (existingEval) {
+            // If a preference exists, use it automatically and skip the selection modal
+            setSelectedCriteria(existingEval.criteria_type);
+            setTempCode(generateCode());
+            setIsModalOpen(true); // Jump directly to the save/confirm modal
+        } else {
+            // Otherwise, show the selection modal for the first time
+            setIsSelectionModalOpen(true);
+        }
     };
 
     const handleSelectionConfirm = (criteria) => {

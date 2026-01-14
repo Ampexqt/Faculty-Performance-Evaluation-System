@@ -104,7 +104,7 @@ router.get('/supervisor/active/:evaluateeId', async (req, res) => {
         const { type = 'Dean' } = req.query;
 
         const [rows] = await promisePool.query(
-            `SELECT code, created_at FROM supervisor_evaluation_codes 
+            `SELECT code, created_at, criteria_type FROM supervisor_evaluation_codes 
              WHERE evaluatee_id = ? AND status = 'active' AND evaluator_type = ?
              ORDER BY created_at DESC LIMIT 1`,
             [evaluateeId, type]

@@ -114,13 +114,30 @@ export function EvaluationResultsPage() {
             accessor: 'overallScore',
             width: '25%',
             align: 'center',
-            render: (value) => {
-                if (!value) {
-                    return <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>;
-                }
+            render: (value, row) => {
+                // Helper to normalize scores (handling both 5-point and 100-point scales)
+                const normalizeToPercentage = (val) => {
+                    if (!val) return 0;
+                    const num = parseFloat(val);
+                    if (num > 5) return num; // Already 0-100 scale
+                    return (num / 5) * 100;  // Convert 0-5 to 0-100
+                };
 
-                // Convert 5-point scale to Percentage for rating check
-                const percentage = value ? (value / 5) * 100 : 0;
+                // Calculate weighted overall score locally to ensure mixed scales are handled
+                const studentAvg = row.studentAverage || 0;
+                const supervisorAvg = row.supervisorAverage || 0;
+
+                const sPerc = normalizeToPercentage(studentAvg);
+                const pPerc = normalizeToPercentage(supervisorAvg);
+
+                let percentage = 0;
+                if (sPerc > 0 && pPerc > 0) {
+                    percentage = (sPerc * 0.6) + (pPerc * 0.4);
+                } else if (sPerc > 0) {
+                    percentage = sPerc;
+                } else if (pPerc > 0) {
+                    percentage = pPerc;
+                }
 
                 let rating = '';
                 let ratingClass = '';
@@ -137,9 +154,11 @@ export function EvaluationResultsPage() {
                 } else if (percentage >= 70) {
                     rating = 'Fair';
                     ratingClass = styles.ratingFair;
-                } else {
+                } else if (percentage > 0) {
                     rating = 'Poor';
                     ratingClass = styles.ratingPoor;
+                } else {
+                    return <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>;
                 }
 
                 return (
@@ -154,15 +173,37 @@ export function EvaluationResultsPage() {
             accessor: 'overallScore',
             width: '15%',
             align: 'center',
-            render: (value) => (
-                <div className={styles.overallScore}>
-                    {value ? (
-                        <span className={styles.scoreHighlight}>{value.toFixed(2)}</span>
-                    ) : (
-                        <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>
-                    )}
-                </div>
-            )
+            render: (value, row) => {
+                // Helper to normalize scores
+                const normalizeToPercentage = (val) => {
+                    if (!val) return 0;
+                    const num = parseFloat(val);
+                    if (num > 5) return num;
+                    return (num / 5) * 100;
+                };
+
+                const sPerc = normalizeToPercentage(row.studentAverage);
+                const pPerc = normalizeToPercentage(row.supervisorAverage);
+
+                let percentage = 0;
+                if (sPerc > 0 && pPerc > 0) {
+                    percentage = (sPerc * 0.6) + (pPerc * 0.4);
+                } else if (sPerc > 0) {
+                    percentage = sPerc;
+                } else if (pPerc > 0) {
+                    percentage = pPerc;
+                }
+
+                return (
+                    <div className={styles.overallScore}>
+                        {percentage > 0 ? (
+                            <span className={styles.scoreHighlight}>{percentage.toFixed(2)}</span>
+                        ) : (
+                            <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             header: 'NBC 461 - POINTS',
@@ -184,9 +225,16 @@ export function EvaluationResultsPage() {
                 let nbcScore = 0;
                 let maxScore = 60;
 
-                // Convert 5-point avg to 100-point percentage
-                const studentPercentage = studentAvg ? (studentAvg / 5) * 100 : 0;
-                const supervisorPercentage = supervisorAvg ? (supervisorAvg / 5) * 100 : 0;
+                // Convert scores to 100-point percentage using smart normalization
+                const normalizeToPercentage = (val) => {
+                    if (!val) return 0;
+                    const num = parseFloat(val);
+                    if (num > 5) return num;
+                    return (num / 5) * 100;
+                };
+
+                const studentPercentage = normalizeToPercentage(studentAvg);
+                const supervisorPercentage = normalizeToPercentage(supervisorAvg);
 
                 if (isSupervisorOnly) {
                     // Formula: (Supervisor Percentage ÷ 100) × 24
@@ -357,13 +405,13 @@ export function EvaluationResultsPage() {
                                         <div className={styles.metricBox}>
                                             <span className={styles.metricLabel}>STUDENT AVERAGE</span>
                                             <span className={styles.metricValue}>
-                                                {facultyDetails.statistics.studentAverage ? facultyDetails.statistics.studentAverage.toFixed(2) : 'N/A'}
+                                                {facultyDetails.statistics.studentAverage ? facultyDetails.statistics.studentAverage.toFixed(2) : '---'}
                                             </span>
                                         </div>
                                         <div className={styles.metricBox}>
                                             <span className={styles.metricLabel}>SUPERVISOR AVERAGE</span>
                                             <span className={styles.metricValue}>
-                                                {facultyDetails.statistics.supervisorAverage ? facultyDetails.statistics.supervisorAverage.toFixed(2) : 'N/A'}
+                                                {facultyDetails.statistics.supervisorAverage ? facultyDetails.statistics.supervisorAverage.toFixed(2) : '---'}
                                             </span>
                                         </div>
                                     </div>
@@ -380,9 +428,16 @@ export function EvaluationResultsPage() {
 
                                                     if (!sAvg && !pAvg) return '---';
 
-                                                    // Convert 5-point scale to percentages
-                                                    const sScore100 = sAvg ? (sAvg / 5) * 100 : 0;
-                                                    const pScore100 = pAvg ? (pAvg / 5) * 100 : 0;
+                                                    // Smart normalization
+                                                    const normalizeToPercentage = (val) => {
+                                                        if (!val) return 0;
+                                                        const num = parseFloat(val);
+                                                        if (num > 5) return num;
+                                                        return (num / 5) * 100;
+                                                    };
+
+                                                    const sScore100 = normalizeToPercentage(sAvg);
+                                                    const pScore100 = normalizeToPercentage(pAvg);
 
                                                     let nbcScore = 0;
                                                     let maxScore = 60;
@@ -409,8 +464,29 @@ export function EvaluationResultsPage() {
                                             <span className={styles.scoreBoxLabelSecondary}>PERCENTAGE RATING</span>
                                             <span className={styles.scoreBoxValueSecondary}>
                                                 {(() => {
-                                                    const score = facultyDetails.statistics.overallScore || 0;
-                                                    const percentage = score ? (score / 5) * 100 : 0;
+                                                    // Re-calculate overall score locally
+                                                    const sAvg = facultyDetails.statistics.studentAverage || 0;
+                                                    const pAvg = facultyDetails.statistics.supervisorAverage || 0;
+
+                                                    const normalizeToPercentage = (val) => {
+                                                        if (!val) return 0;
+                                                        const num = parseFloat(val);
+                                                        if (num > 5) return num;
+                                                        return (num / 5) * 100;
+                                                    };
+
+                                                    const sPerc = normalizeToPercentage(sAvg);
+                                                    const pPerc = normalizeToPercentage(pAvg);
+
+                                                    let percentage = 0;
+                                                    if (sPerc > 0 && pPerc > 0) {
+                                                        percentage = (sPerc * 0.6) + (pPerc * 0.4);
+                                                    } else if (sPerc > 0) {
+                                                        percentage = sPerc;
+                                                    } else if (pPerc > 0) {
+                                                        percentage = pPerc;
+                                                    }
+
                                                     return percentage > 0 ? percentage.toFixed(2) + '%' : '---';
                                                 })()}
                                             </span>
@@ -421,8 +497,28 @@ export function EvaluationResultsPage() {
                                         <span className={styles.performanceLabel}>PERFORMANCE CATEGORY</span>
                                         <span className={styles.performanceRating}>
                                             {(() => {
-                                                const score = facultyDetails.statistics.overallScore || 0;
-                                                const percentage = score ? (score / 5) * 100 : 0;
+                                                // Re-calculate rating locally
+                                                const sAvg = facultyDetails.statistics.studentAverage || 0;
+                                                const pAvg = facultyDetails.statistics.supervisorAverage || 0;
+
+                                                const normalizeToPercentage = (val) => {
+                                                    if (!val) return 0;
+                                                    const num = parseFloat(val);
+                                                    if (num > 5) return num;
+                                                    return (num / 5) * 100;
+                                                };
+
+                                                const sPerc = normalizeToPercentage(sAvg);
+                                                const pPerc = normalizeToPercentage(pAvg);
+
+                                                let percentage = 0;
+                                                if (sPerc > 0 && pPerc > 0) {
+                                                    percentage = (sPerc * 0.6) + (pPerc * 0.4);
+                                                } else if (sPerc > 0) {
+                                                    percentage = sPerc;
+                                                } else if (pPerc > 0) {
+                                                    percentage = pPerc;
+                                                }
 
                                                 if (percentage >= 90) return 'Outstanding';
                                                 if (percentage >= 85) return 'Very Satisfactory';

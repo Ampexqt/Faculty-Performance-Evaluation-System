@@ -115,11 +115,36 @@ export function EvaluatorAccountsPage() {
 
     const handleEdit = (account) => {
         setSelectedAccount(account);
+
+        // Parse full name to extract middle initial if present
+        // Format assumed from backend: `{firstName} {middleInitial}. {lastName}` or `{firstName} {lastName}`
+        const fullName = account.full_name || '';
+        let firstName = '';
+        let middleInitial = '';
+        let lastName = '';
+
+        // Regex to match "Name X. Name" pattern
+        // Captures: (First Name) (Middle Initial Char) (Last Name)
+        const miMatch = fullName.match(/^(.*?)\s+([A-Za-z])\.\s+(.*)$/);
+
+        if (miMatch) {
+            firstName = miMatch[1];
+            middleInitial = miMatch[2];
+            lastName = miMatch[3];
+        } else {
+            // Fallback for names without middle initial or different format
+            const parts = fullName.split(' ');
+            if (parts.length > 0) {
+                firstName = parts[0];
+                lastName = parts.slice(1).join(' ');
+            }
+        }
+
         setEditFormData({
             honorific: account.honorific || '',
-            firstName: account.full_name?.split(' ')[0] || '',
-            middleInitial: '',
-            lastName: account.full_name?.split(' ').slice(1).join(' ') || '',
+            firstName: firstName,
+            middleInitial: middleInitial,
+            lastName: lastName,
             suffix: account.suffix || '',
             sex: account.sex || '',
             email: account.email,

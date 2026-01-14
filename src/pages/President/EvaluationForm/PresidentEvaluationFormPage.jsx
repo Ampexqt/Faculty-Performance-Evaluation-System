@@ -53,8 +53,18 @@ export function PresidentEvaluationFormPage() {
 
     // Get user data from sessionStorage
     const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
-    const fullName = userData.full_name || 'President';
     const presidentId = userData.id;
+
+    // Format evaluator name with honorific and suffix
+    const formatEvaluatorName = () => {
+        const nameParts = [];
+        if (userData.honorific) nameParts.push(userData.honorific);
+        if (userData.full_name) nameParts.push(userData.full_name);
+        if (userData.suffix) nameParts.push(userData.suffix);
+        return nameParts.length > 0 ? nameParts.join(' ') : 'President';
+    };
+
+    const fullName = formatEvaluatorName();
 
     // Get VPAA data from location state
     const { vpaa } = location.state || {};
@@ -220,12 +230,20 @@ export function PresidentEvaluationFormPage() {
 
                         <div className={styles.facultyInfo}>
                             <div className={styles.infoRow}>
-                                <label className={styles.infoLabel}>Name of VPAA:</label>
-                                <div className={styles.infoValue}>{vpaa.full_name}</div>
+                                <label className={styles.infoLabel}>Name:</label>
+                                <div className={styles.infoValue}>
+                                    {(() => {
+                                        const nameParts = [];
+                                        if (vpaa.honorific) nameParts.push(vpaa.honorific);
+                                        nameParts.push(vpaa.full_name);
+                                        if (vpaa.suffix) nameParts.push(vpaa.suffix);
+                                        return nameParts.join(' ');
+                                    })()}
+                                </div>
                             </div>
                             <div className={styles.infoRow}>
-                                <label className={styles.infoLabel}>Email:</label>
-                                <div className={styles.infoValue}>{vpaa.email}</div>
+                                <label className={styles.infoLabel}>Position:</label>
+                                <div className={styles.infoValue}>Vice President for Academic Affairs (VPAA)</div>
                             </div>
                         </div>
 
@@ -246,7 +264,7 @@ export function PresidentEvaluationFormPage() {
                                 </label>
                                 <label className={styles.checkbox}>
                                     <input type="checkbox" checked={true} readOnly />
-                                    <span>Supervisor</span>
+                                    <span>Supervisor (President)</span>
                                 </label>
                             </div>
                         </div>

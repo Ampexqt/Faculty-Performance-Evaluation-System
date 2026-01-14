@@ -119,19 +119,22 @@ export function EvaluationResultsPage() {
                     return <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>;
                 }
 
+                // Convert 5-point scale to Percentage for rating check
+                const percentage = value ? (value / 5) * 100 : 0;
+
                 let rating = '';
                 let ratingClass = '';
 
-                if (value >= 90) {
+                if (percentage >= 90) {
                     rating = 'Outstanding';
                     ratingClass = styles.ratingOutstanding;
-                } else if (value >= 85) {
+                } else if (percentage >= 85) {
                     rating = 'Very Satisfactory';
                     ratingClass = styles.ratingVerySatisfactory;
-                } else if (value >= 80) {
+                } else if (percentage >= 80) {
                     rating = 'Satisfactory';
                     ratingClass = styles.ratingSatisfactory;
-                } else if (value >= 70) {
+                } else if (percentage >= 70) {
                     rating = 'Fair';
                     ratingClass = styles.ratingFair;
                 } else {
@@ -168,6 +171,9 @@ export function EvaluationResultsPage() {
             align: 'center',
             render: (value, row) => {
                 // Calculate NBC score from student and supervisor averages
+                const position = row.position ? row.position.toLowerCase() : '';
+                const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa');
+
                 const studentAvg = row.studentAverage || 0;
                 const supervisorAvg = row.supervisorAverage || 0;
 
@@ -175,12 +181,27 @@ export function EvaluationResultsPage() {
                     return <span style={{ color: '#9ca3af', fontWeight: 500 }}>---</span>;
                 }
 
-                const nbcScore = ((studentAvg / 100) * 36) + ((supervisorAvg / 100) * 24);
+                let nbcScore = 0;
+                let maxScore = 60;
+
+                // Convert 5-point avg to 100-point percentage
+                const studentPercentage = studentAvg ? (studentAvg / 5) * 100 : 0;
+                const supervisorPercentage = supervisorAvg ? (supervisorAvg / 5) * 100 : 0;
+
+                if (isSupervisorOnly) {
+                    // Formula: (Supervisor Percentage ÷ 100) × 24
+                    nbcScore = (supervisorPercentage / 100) * 24;
+                    maxScore = 24;
+                } else {
+                    // Standard Formula: (Student % ÷ 100 × 36) + (Supervisor % ÷ 100 × 24)
+                    nbcScore = ((studentPercentage / 100) * 36) + ((supervisorPercentage / 100) * 24);
+                    maxScore = 60;
+                }
 
                 return (
                     <div className={styles.nbcScore}>
                         <span className={styles.nbcScoreValue}>{nbcScore.toFixed(2)}</span>
-                        <span className={styles.nbcScoreTotal}>/ 60</span>
+                        <span className={styles.nbcScoreTotal}>/ {maxScore}</span>
                     </div>
                 );
             }
@@ -353,12 +374,32 @@ export function EvaluationResultsPage() {
                                                 {(() => {
                                                     const sAvg = facultyDetails.statistics.studentAverage || 0;
                                                     const pAvg = facultyDetails.statistics.supervisorAverage || 0;
+
+                                                    const position = facultyDetails.faculty.position ? facultyDetails.faculty.position.toLowerCase() : '';
+                                                    const isSupervisorOnly = position.includes('dean') || position.includes('president') || position.includes('vpaa');
+
                                                     if (!sAvg && !pAvg) return '---';
 
-                                                    const nbcScore = ((sAvg / 100) * 36) + ((pAvg / 100) * 24);
+                                                    // Convert 5-point scale to percentages
+                                                    const sScore100 = sAvg ? (sAvg / 5) * 100 : 0;
+                                                    const pScore100 = pAvg ? (pAvg / 5) * 100 : 0;
+
+                                                    let nbcScore = 0;
+                                                    let maxScore = 60;
+
+                                                    if (isSupervisorOnly) {
+                                                        // Formula for Dean/VPAA/President
+                                                        nbcScore = (pScore100 / 100) * 24;
+                                                        maxScore = 24;
+                                                    } else {
+                                                        // Standard Formula
+                                                        nbcScore = ((sScore100 / 100) * 36) + ((pScore100 / 100) * 24);
+                                                        maxScore = 60;
+                                                    }
+
                                                     return (
                                                         <>
-                                                            {nbcScore.toFixed(2)} <span className={styles.scoreBoxTotal}>/ 60</span>
+                                                            {nbcScore.toFixed(2)} <span className={styles.scoreBoxTotal}>/ {maxScore}</span>
                                                         </>
                                                     );
                                                 })()}
@@ -367,7 +408,11 @@ export function EvaluationResultsPage() {
                                         <div className={styles.scoreBoxSecondary}>
                                             <span className={styles.scoreBoxLabelSecondary}>PERCENTAGE RATING</span>
                                             <span className={styles.scoreBoxValueSecondary}>
-                                                {facultyDetails.statistics.overallScore ? facultyDetails.statistics.overallScore.toFixed(2) + '%' : '---'}
+                                                {(() => {
+                                                    const score = facultyDetails.statistics.overallScore || 0;
+                                                    const percentage = score ? (score / 5) * 100 : 0;
+                                                    return percentage > 0 ? percentage.toFixed(2) + '%' : '---';
+                                                })()}
                                             </span>
                                             <span style={{ fontSize: '0.6rem', color: '#9ca3af', marginTop: '2px' }}>(Informational Only)</span>
                                         </div>
@@ -377,11 +422,13 @@ export function EvaluationResultsPage() {
                                         <span className={styles.performanceRating}>
                                             {(() => {
                                                 const score = facultyDetails.statistics.overallScore || 0;
-                                                if (score >= 90) return 'Outstanding';
-                                                if (score >= 85) return 'Very Satisfactory';
-                                                if (score >= 80) return 'Satisfactory';
-                                                if (score >= 70) return 'Fair';
-                                                if (score > 0) return 'Poor';
+                                                const percentage = score ? (score / 5) * 100 : 0;
+
+                                                if (percentage >= 90) return 'Outstanding';
+                                                if (percentage >= 85) return 'Very Satisfactory';
+                                                if (percentage >= 80) return 'Satisfactory';
+                                                if (percentage >= 70) return 'Fair';
+                                                if (percentage > 0) return 'Poor';
                                                 return '---';
                                             })()}
                                         </span>

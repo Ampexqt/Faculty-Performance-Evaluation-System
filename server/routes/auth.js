@@ -163,6 +163,8 @@ router.post('/login', async (req, res) => {
                     id: evaluator.id,
                     email: evaluator.email,
                     full_name: evaluator.full_name,
+                    honorific: evaluator.honorific,
+                    suffix: evaluator.suffix,
                     position: evaluator.position,
                     sex: evaluator.sex,
                     role: evaluator.position, // 'President' or 'VPAA'

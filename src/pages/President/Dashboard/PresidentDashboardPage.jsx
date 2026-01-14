@@ -84,9 +84,19 @@ export function PresidentDashboardPage() {
         },
     ];
 
+    // Helper function to format evaluator name with honorific and suffix
+    const formatEvaluatorName = (user) => {
+        if (!user || !user.full_name) return '';
+        const parts = [];
+        if (user.honorific) parts.push(user.honorific);
+        parts.push(user.full_name);
+        if (user.suffix) parts.push(user.suffix);
+        return parts.join(' ');
+    };
+
     if (isLoading) {
         return (
-            <DashboardLayout role="President" userName={userData.full_name}>
+            <DashboardLayout role="President" userName={formatEvaluatorName(userData)}>
                 <div className="flex items-center justify-center h-full">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
                 </div>
@@ -95,7 +105,7 @@ export function PresidentDashboardPage() {
     }
 
     return (
-        <DashboardLayout role="President" userName={userData.full_name}>
+        <DashboardLayout role="President" userName={formatEvaluatorName(userData)}>
             <div className={styles.page}>
                 <div className={styles.header}>
                     <div>

@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Button } from '@/components/Button/Button';
 import { ArrowLeft } from 'lucide-react';
+import { ToastContainer } from '@/components/Toast/Toast';
+import { useToast } from '@/hooks/useToast';
 import styles from './VPAAEvaluationFormPage.module.css';
 
 const RATING_SCALE = [
@@ -48,6 +50,7 @@ export function VPAAEvaluationFormPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { evaluation, vpaaId } = location.state || {};
+    const toast = useToast();
 
     const [ratings, setRatings] = useState({});
     const [comments, setComments] = useState('');
@@ -118,7 +121,7 @@ export function VPAAEvaluationFormPage() {
         );
 
         if (!allRated) {
-            alert('Please rate all criteria before submitting.');
+            toast.warning('Kindly ensure that all evaluation criteria have been rated before proceeding. Your complete feedback is important to us.');
             return;
         }
 
@@ -155,21 +158,23 @@ export function VPAAEvaluationFormPage() {
                         knowledge: knowledgeScore.toFixed(2),
                         total: averageRating.toFixed(2)
                     },
-                    comments: JSON.stringify(ratings)
+                    comments: JSON.stringify({ ratings, comments, evaluatorInfo: userData })
                 }),
             });
 
             const data = await response.json();
 
             if (data.success) {
-                alert('Evaluation submitted successfully!');
-                navigate('/vpaa/dashboard');
+                toast.success('Evaluation submitted successfully! Thank you for your time.');
+                setTimeout(() => {
+                    navigate('/vpaa/dashboard');
+                }, 1500);
             } else {
-                alert(data.message || 'Error submitting evaluation');
+                toast.error(data.message || 'We encountered an issue submitting your evaluation. Please try again.');
             }
         } catch (error) {
             console.error('Error submitting evaluation:', error);
-            alert('Server error');
+            toast.error('A server error occurred. Please check your connection and try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -185,8 +190,18 @@ export function VPAAEvaluationFormPage() {
         return null;
     }
 
+    // Helper function to format evaluator name with honorific and suffix
+    const formatEvaluatorName = (user) => {
+        if (!user || !user.full_name) return '';
+        const parts = [];
+        if (user.honorific) parts.push(user.honorific);
+        parts.push(user.full_name);
+        if (user.suffix) parts.push(user.suffix);
+        return parts.join(' ');
+    };
+
     return (
-        <DashboardLayout role="VPAA" userName={userData.full_name}>
+        <DashboardLayout role="VPAA" userName={formatEvaluatorName(userData)}>
             <div className={styles.page}>
                 <div className={styles.formContainer}>
                     <button
@@ -304,7 +319,6 @@ export function VPAAEvaluationFormPage() {
                                                                 checked={ratings[category]?.[index] === value}
                                                                 onChange={() => handleRatingChange(category, index, value)}
                                                                 className={styles.radioInput}
-                                                                required
                                                             />
                                                             <span className={styles.radioCustom}></span>
                                                         </label>
@@ -321,16 +335,44 @@ export function VPAAEvaluationFormPage() {
                             </div>
                         ))}
 
-                        <div className={styles.summary}>
-                            <h3>Evaluation Summary</h3>
-                            <div className={styles.summaryContent} style={{ padding: '1rem', background: '#f9fafb', borderRadius: '8px', marginBottom: '2rem' }}>
-                                <div style={{ marginBottom: '0.5rem' }}>
-                                    <strong>Total Score: </strong>
-                                    {calculateOverallTotal()} / {calculateMaxScore()}
+                        {/* Additional Comments Section */}
+                        <div className={styles.commentsSection}>
+                            <h3 className={styles.commentsTitle}>Additional Comments/Feedback (Optional)</h3>
+                            <p className={styles.commentsSubtitle}>
+                                Please provide any additional comments, suggestions, or feedback regarding the Dean's performance.
+                            </p>
+                            <textarea
+                                className={styles.commentsTextarea}
+                                value={comments}
+                                onChange={(e) => setComments(e.target.value)}
+                                placeholder="Enter your comments here..."
+                                rows={6}
+                                maxLength={1000}
+                            />
+                            <div className={styles.characterCount}>
+                                {comments.length} / 1000 characters
+                            </div>
+                        </div>
+
+                        {/* Evaluator Information Section */}
+                        <div className={styles.evaluatorSection}>
+                            <h3 className={styles.evaluatorSectionTitle}>Evaluator Information</h3>
+                            <div className={styles.evaluatorFields}>
+                                <div className={styles.evaluatorField}>
+                                    <span className={styles.evaluatorLabel}>Name of Evaluator:</span>
+                                    <div className={styles.evaluatorValue}>{formatEvaluatorName(userData) || 'N/A'}</div>
                                 </div>
-                                <div>
-                                    <strong>Average Rating: </strong>
-                                    {((calculateOverallTotal() / calculateMaxScore()) * 5).toFixed(2)} / 5.00
+                                <div className={styles.evaluatorField}>
+                                    <span className={styles.evaluatorLabel}>Position:</span>
+                                    <div className={styles.evaluatorValue}>Vice President for Academic Affairs (VPAA)</div>
+                                </div>
+                                <div className={styles.evaluatorField}>
+                                    <span className={styles.evaluatorLabel}>Signature:</span>
+                                    <div className={styles.signatureLine}></div>
+                                </div>
+                                <div className={styles.evaluatorField}>
+                                    <span className={styles.evaluatorLabel}>Date:</span>
+                                    <div className={styles.evaluatorValue}>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
                                 </div>
                             </div>
                         </div>
@@ -355,6 +397,7 @@ export function VPAAEvaluationFormPage() {
                     </form>
                 </div>
             </div>
+            <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
         </DashboardLayout>
     );
 }

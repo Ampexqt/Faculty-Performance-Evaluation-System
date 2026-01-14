@@ -394,22 +394,30 @@ export function EvaluationResultsPage() {
                                         <div className={styles.annexSection}>
                                             <h3 className={styles.annexTitle}>Detailed Evaluation Reports</h3>
                                             <div className={styles.annexGrid}>
-                                                {['A', 'B', 'C', 'D'].map((annex) => (
-                                                    <button
-                                                        key={annex}
-                                                        className={styles.annexCard}
-                                                        onClick={() => navigate(`/qce/results/${facultyDetails.faculty.id}/annex-${annex.toLowerCase()}`)}
-                                                    >
-                                                        <div className={styles.annexIcon}>
-                                                            <FileText size={24} color="#b91c1c" />
-                                                        </div>
-                                                        <div className={styles.annexInfo}>
-                                                            <span className={styles.annexLabel}>Annex {annex}</span>
-                                                            <span className={styles.annexAction}>View Report</span>
-                                                        </div>
-                                                        <ChevronRight size={20} className={styles.annexArrow} color="#9ca3af" />
-                                                    </button>
-                                                ))}
+                                                {['A', 'B', 'C', 'D'].map((annex) => {
+                                                    let actionText = 'View Report';
+                                                    if (annex === 'A') actionText = 'Student Evaluation of Teachers (SET)';
+                                                    if (annex === 'B') actionText = 'Supervisor’s Evaluation of Teachers (SEF)';
+                                                    if (annex === 'C') actionText = 'Individual Faculty Evaluation Report';
+                                                    if (annex === 'D') actionText = 'Faculty Evaluation Acknowledgement Form';
+
+                                                    return (
+                                                        <button
+                                                            key={annex}
+                                                            className={styles.annexCard}
+                                                            onClick={() => navigate(`/qce/results/${facultyDetails.faculty.id}/annex-${annex.toLowerCase()}`)}
+                                                        >
+                                                            <div className={styles.annexIcon}>
+                                                                <FileText size={24} color="#b91c1c" />
+                                                            </div>
+                                                            <div className={styles.annexInfo}>
+                                                                <span className={styles.annexLabel}>Annex {annex}</span>
+                                                                <span className={styles.annexAction}>{actionText}</span>
+                                                            </div>
+                                                            <ChevronRight size={20} className={styles.annexArrow} color="#9ca3af" />
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     );

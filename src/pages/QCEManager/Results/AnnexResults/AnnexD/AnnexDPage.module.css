@@ -233,8 +233,7 @@
     }
 
     .reportContainer {
-        position: fixed;
-        /* Fixed works better to escape parent layout contexts */
+        position: absolute;
         top: 0;
         left: 0;
         right: 0;

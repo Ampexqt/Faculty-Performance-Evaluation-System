@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/DashboardLayout/DashboardLayout';
 import { Card } from '@/components/Card/Card';
 import { Table } from '@/components/Table/Table';
+import { Modal } from '@/components/Modal/Modal';
 import { ClipboardList, UserCheck, CheckCircle } from 'lucide-react';
 import styles from './PresidentDashboardPage.module.css';
 
@@ -10,6 +11,11 @@ export function PresidentDashboardPage() {
     const navigate = useNavigate();
     const [vpaaList, setVpaaList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Modal State
+    const [isCriteriaModalOpen, setIsCriteriaModalOpen] = useState(false);
+    const [selectedVpaa, setSelectedVpaa] = useState(null);
+    const [selectedCriteria, setSelectedCriteria] = useState(null);
 
     // Get user data from sessionStorage
     const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -36,13 +42,30 @@ export function PresidentDashboardPage() {
     };
 
     const handleEvaluate = (vpaa) => {
-        // Navigate to evaluation form with VPAA data
+        setSelectedVpaa(vpaa);
+        setIsCriteriaModalOpen(true);
+        setSelectedCriteria(null); // Reset selection
+    };
+
+    const handleProceedEvaluation = () => {
+        if (!selectedVpaa || !selectedCriteria) return;
+
+        // Navigate to evaluation form with VPAA data and criteria type
         navigate('/president/evaluate', {
             state: {
-                vpaa: vpaa,
-                presidentId: presidentId
+                vpaa: selectedVpaa,
+                presidentId: presidentId,
+                criteriaType: selectedCriteria
             }
         });
+
+        setIsCriteriaModalOpen(false);
+        setSelectedVpaa(null);
+    };
+
+    const handleCloseModal = () => {
+        setIsCriteriaModalOpen(false);
+        setSelectedVpaa(null);
     };
 
     const columns = [
@@ -133,30 +156,31 @@ export function PresidentDashboardPage() {
                     </div>
                 </div>
 
+                {/* Stats Cards */}
                 <div className={styles.statsGrid}>
                     <Card className={styles.statCard}>
                         <div className={styles.statIcon}>
-                            <ClipboardList size={24} />
+                            <ClipboardList />
                         </div>
                         <div className={styles.statContent}>
                             <p className={styles.statLabel}>Total VPAA</p>
                             <p className={styles.statValue}>{vpaaList.length}</p>
                         </div>
                     </Card>
-
                     <Card className={styles.statCard}>
                         <div className={styles.statIcon}>
-                            <UserCheck size={24} />
+                            <UserCheck />
                         </div>
                         <div className={styles.statContent}>
                             <p className={styles.statLabel}>Active VPAA</p>
-                            <p className={styles.statValue}>{vpaaList.filter(v => v.status === 'active').length}</p>
+                            <p className={styles.statValue}>
+                                {vpaaList.filter((v) => v.status === 'active').length}
+                            </p>
                         </div>
                     </Card>
-
                     <Card className={styles.statCard}>
                         <div className={styles.statIcon}>
-                            <CheckCircle size={24} />
+                            <CheckCircle />
                         </div>
                         <div className={styles.statContent}>
                             <p className={styles.statLabel}>Evaluations</p>
@@ -165,11 +189,69 @@ export function PresidentDashboardPage() {
                     </Card>
                 </div>
 
+                {/* VPAA List */}
                 <div className={styles.tableContainer}>
                     <h2 className={styles.sectionTitle}>VPAA List</h2>
                     <Table columns={columns} data={vpaaList} />
                 </div>
             </div>
+
+            {/* Criteria Selection Modal */}
+            <Modal
+                isOpen={isCriteriaModalOpen}
+                onClose={handleCloseModal}
+                title="Select Evaluation Criteria"
+            >
+                <div className={styles.modalContent}>
+                    <p className={styles.criteriaDescription}>
+                        Please select which evaluation criteria version to use for this evaluation.
+                    </p>
+
+                    <div className={styles.criteriaOptions}>
+                        <div
+                            className={`${styles.criteriaCard} ${selectedCriteria === 'old' ? styles.selected : ''}`}
+                            onClick={() => setSelectedCriteria('old')}
+                        >
+                            <div className={styles.cardContent}>
+                                <div className={styles.cardTitle}>Old Criteria (Existing)</div>
+                                <div className={styles.cardDescription}>
+                                    Use the existing standard evaluation questionnaire.
+                                </div>
+                            </div>
+                            <CheckCircle className={styles.checkIcon} size={24} />
+                        </div>
+
+                        <div
+                            className={`${styles.criteriaCard} ${selectedCriteria === 'new' ? styles.selected : ''}`}
+                            onClick={() => setSelectedCriteria('new')}
+                        >
+                            <div className={styles.cardContent}>
+                                <div className={styles.cardTitle}>New Criteria (Updated)</div>
+                                <div className={styles.cardDescription}>
+                                    Use the new updated evaluation questionnaire.
+                                </div>
+                            </div>
+                            <CheckCircle className={styles.checkIcon} size={24} />
+                        </div>
+                    </div>
+
+                    <div className={styles.modalFooter}>
+                        <button
+                            className={styles.cancelButton}
+                            onClick={handleCloseModal}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className={styles.proceedButton}
+                            onClick={handleProceedEvaluation}
+                            disabled={!selectedCriteria}
+                        >
+                            Proceed to Evaluation
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </DashboardLayout>
     );
 }

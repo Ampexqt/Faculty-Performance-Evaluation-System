@@ -15,7 +15,16 @@ const RATING_SCALE = [
     { value: 1, label: 'Poor', description: 'The faculty fails to meet job requirements.' }
 ];
 
-const EVALUATION_CRITERIA = {
+
+const NEW_RATING_SCALE = [
+    { value: 5, label: 'Always manifested', description: 'Evident in nearly all relevant situations (81–100%)' },
+    { value: 4, label: 'Often manifested', description: 'Evident most of the time, with occasional lapses (61–80%)' },
+    { value: 3, label: 'Sometimes manifested', description: 'Evident about half the time (41–60%)' },
+    { value: 2, label: 'Seldom manifested', description: 'Infrequently demonstrated; partly evident in limited situations (21–40%)' },
+    { value: 1, label: 'Not manifested', description: 'Seldom demonstrated; almost never evident, with only isolated cases (0–20%)' }
+];
+
+const OLD_EVALUATION_CRITERIA = {
     'A. Commitment': [
         'Demonstrates sensitivity to students\' ability to attend and absorb content information.',
         'Integrates sensitively his/her learning objectives with those of the students in a collaborative process.',
@@ -46,6 +55,36 @@ const EVALUATION_CRITERIA = {
     ]
 };
 
+const NEW_EVALUATION_CRITERIA = {
+    'A. Management of Teaching and Learning': [
+        'Comes to class on time.',
+        'Explains learning outcomes, expectations, grading system, and various requirements of the subject/course.',
+        'Maximizes the allocated teaching hours effectively.',
+        'Facilitates students to think critically and creatively by providing appropriate learning activities.',
+        'Guides students to learn on their own, reflect on their learning and monitor their own progress.',
+        'Provides timely and constructive feedback on student performance to improve learning.'
+    ],
+    'B. Content Knowledge, Pedagogy, and Technology': [
+        'Demonstrates extensive and broad knowledge of the subject/course.',
+        'Simplifies complex ideas in the lesson for ease of understanding.',
+        'Relates the subject matter to contemporary issues and developments in the discipline and daily life activities.',
+        'Promotes active learning and student engagement by using appropriate teaching and learning resources, including ICT tools and platforms.',
+        'Uses appropriate assessments (projects, exams, quizzes, assignments, etc.) aligned with the learning outcomes.'
+    ],
+    'C. Commitment and Transparency': [
+        'Recognizes and values the unique diversity and individual differences among students.',
+        'Assists students with their learning challenges during consultation hours.',
+        'Provides immediate feedback on student outputs and performance.',
+        'Provides transparent and clear criteria in rating student performance.'
+    ],
+};
+
+const NEW_CRITERIA_DESCRIPTIONS = {
+    'A. Management of Teaching and Learning': 'Management of Teaching and Learning refers to the standard and organized planning of instructional activities, clear communication of academic expectations, efficient use of time, and the successful use of student-centered activities that promote critical thinking, collaborative learning, individual decision making, and continuous academic improvement through constructive feedback.',
+    'B. Content Knowledge, Pedagogy, and Technology': 'Content knowledge, pedagogy, and technology refer to teachers’ ability to demonstrate a strong grasp of subject matter, present concepts in a clear and accessible way, relate content to relevant and current developments, engage students through appropriate instructional strategies and digital tools, and apply assessment methods aligned with intended learning outcomes.',
+    'C. Commitment and Transparency': 'Commitment and transparency refer to the teacher’s consistent dedication to supporting student learning by demonstrating professionalism, providing timely academic support and feedback, and upholding fairness and accountability through the use of clear and openly communicated performance criteria.',
+};
+
 export function PresidentEvaluationFormPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -66,13 +105,16 @@ export function PresidentEvaluationFormPage() {
 
     const fullName = formatEvaluatorName();
 
-    // Get VPAA data from location state
-    const { vpaa } = location.state || {};
+    // Get VPAA data and criteria type from location state
+    const { vpaa, criteriaType } = location.state || {};
 
     const [ratings, setRatings] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [comments, setComments] = useState('');
     const [academicPeriod, setAcademicPeriod] = useState(null);
+
+    // Determine which criteria to use
+    const activeCriteria = criteriaType === 'new' ? NEW_EVALUATION_CRITERIA : OLD_EVALUATION_CRITERIA;
 
     useEffect(() => {
         if (!vpaa) {
@@ -81,7 +123,7 @@ export function PresidentEvaluationFormPage() {
         }
         fetchAcademicYear();
         initializeRatings();
-    }, [vpaa, navigate]);
+    }, [vpaa, navigate, criteriaType]);
 
     const fetchAcademicYear = async () => {
         try {
@@ -97,8 +139,8 @@ export function PresidentEvaluationFormPage() {
 
     const initializeRatings = () => {
         const initialRatings = {};
-        Object.keys(EVALUATION_CRITERIA).forEach(category => {
-            EVALUATION_CRITERIA[category].forEach((_, index) => {
+        Object.keys(activeCriteria).forEach(category => {
+            activeCriteria[category].forEach((_, index) => {
                 initialRatings[`${category}-${index}`] = 0;
             });
         });
@@ -131,7 +173,7 @@ export function PresidentEvaluationFormPage() {
 
     const calculateTotalScore = (category) => {
         let total = 0;
-        EVALUATION_CRITERIA[category].forEach((_, index) => {
+        activeCriteria[category].forEach((_, index) => {
             total += ratings[`${category}-${index}`] || 0;
         });
         return total;
@@ -141,8 +183,8 @@ export function PresidentEvaluationFormPage() {
         e.preventDefault();
 
         // Validate all criteria are rated
-        const allRated = Object.keys(EVALUATION_CRITERIA).every(category =>
-            EVALUATION_CRITERIA[category].every((_, index) => ratings[`${category}-${index}`] > 0)
+        const allRated = Object.keys(activeCriteria).every(category =>
+            activeCriteria[category].every((_, index) => ratings[`${category}-${index}`] > 0)
         );
 
         if (!allRated) {
@@ -154,7 +196,7 @@ export function PresidentEvaluationFormPage() {
 
         try {
             const totalScore = Object.values(ratings).reduce((sum, rating) => sum + rating, 0);
-            const totalItems = Object.values(EVALUATION_CRITERIA).flat().length;
+            const totalItems = Object.values(activeCriteria).flat().length;
             const maxScore = totalItems * 5;
             const averageRating = (totalScore / maxScore) * 5;
 
@@ -166,7 +208,8 @@ export function PresidentEvaluationFormPage() {
                 rating: averageRating.toFixed(2),
                 comments: JSON.stringify({
                     ratings,
-                    text_comments: comments
+                    text_comments: comments,
+                    criteria_version: criteriaType // store which version was used
                 })
             };
 
@@ -276,34 +319,67 @@ export function PresidentEvaluationFormPage() {
                     </div>
 
                     <div className={styles.instructions}>
-                        <h3>Instructions</h3>
-                        <p>Please evaluate the VPAA using the scale below. Encircle your rating.</p>
+                        {criteriaType === 'new' ? (
+                            <>
+                                <div className={styles.sectionHeader}>
+                                    <h3>Rating Scale / Rubric</h3>
+                                </div>
+                                <div className={styles.ratingScale}>
+                                    <table className={styles.scaleTable}>
+                                        <thead>
+                                            <tr>
+                                                <th>Scale</th>
+                                                <th>Qualitative Description</th>
+                                                <th style={{ width: '50%' }}>Operational Definition</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {NEW_RATING_SCALE.map(scale => (
+                                                <tr key={scale.value}>
+                                                    <td style={{ fontWeight: 'bold' }}>{scale.value}</td>
+                                                    <td>{scale.label}</td>
+                                                    <td>{scale.description}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p style={{ marginTop: '1rem', fontStyle: 'italic' }}>
+                                    Instructions: Please evaluate the VPAA based on the following indicators using the scale above.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h3>Instructions</h3>
+                                <p>Please evaluate the VPAA using the scale below. Encircle your rating.</p>
 
-                        <div className={styles.ratingScale}>
-                            <h4>Rating Scale</h4>
-                            <table className={styles.scaleTable}>
-                                <thead>
-                                    <tr>
-                                        <th>Scale</th>
-                                        <th>Descriptive Rating</th>
-                                        <th>Qualitative Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {RATING_SCALE.map(scale => (
-                                        <tr key={scale.value}>
-                                            <td>{scale.value}</td>
-                                            <td>{scale.label}</td>
-                                            <td>{scale.description}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                <div className={styles.ratingScale}>
+                                    <h4>Rating Scale</h4>
+                                    <table className={styles.scaleTable}>
+                                        <thead>
+                                            <tr>
+                                                <th>Scale</th>
+                                                <th>Descriptive Rating</th>
+                                                <th>Qualitative Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {RATING_SCALE.map(scale => (
+                                                <tr key={scale.value}>
+                                                    <td>{scale.value}</td>
+                                                    <td>{scale.label}</td>
+                                                    <td>{scale.description}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <form onSubmit={handleSubmit} className={styles.evaluationForm}>
-                        {Object.entries(EVALUATION_CRITERIA).map(([category, criteria]) => (
+                        {Object.entries(activeCriteria).map(([category, criteria]) => (
                             <div key={category} className={styles.categorySection}>
                                 <h3 className={styles.categoryTitle}>{category}</h3>
 

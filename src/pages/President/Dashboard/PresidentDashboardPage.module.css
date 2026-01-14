@@ -229,3 +229,116 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.2);
 }
+
+/* Criteria Selection Modal */
+.criteriaDescription {
+    color: #4b5563;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.criteriaOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.criteriaCard {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.25rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.criteriaCard:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+}
+
+.criteriaCard.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.cardContent {
+    flex: 1;
+}
+
+.cardTitle {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.cardDescription {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.checkIcon {
+    color: #16a34a;
+    margin-left: 1rem;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+}
+
+.criteriaCard.selected .checkIcon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.cancelButton {
+    padding: 0.625rem 1.25rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.proceedButton {
+    padding: 0.625rem 1.25rem;
+    background: #7f1d1d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.proceedButton:hover {
+    background: #991b1b;
+}
+
+.proceedButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #9ca3af;
+}

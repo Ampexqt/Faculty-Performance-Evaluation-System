@@ -8,31 +8,33 @@ const { promisePool } = require('../../config/db');
  */
 router.get('/vpaa-results', async (req, res) => {
     try {
-        // Fetch all VPAAs with their President evaluation data
+        // Fetch all VPAAs from evaluator_accounts and their President evaluation data
         const [vpaaData] = await promisePool.query(`
             SELECT 
-                f.id,
-                CONCAT(f.first_name, ' ', f.last_name) as name,
-                f.position,
+                ea.id,
+                TRIM(CONCAT(
+                    COALESCE(ea.honorific, ''), ' ', 
+                    ea.full_name, ' ', 
+                    COALESCE(ea.suffix, '')
+                )) as name,
+                ea.position,
                 'University-wide' as college,
                 
                 -- President Evaluations Count
                 (SELECT COUNT(*) 
-                 FROM supervisor_evaluations sup
-                 WHERE sup.evaluatee_id = f.id 
-                 AND sup.evaluator_position = 'President' 
-                 AND sup.status = 'completed') as president_completed,
+                 FROM president_evaluations pe
+                 WHERE pe.vpaa_id = ea.id 
+                 AND pe.status = 'completed') as president_completed,
                 
                 -- President Average Score
-                (SELECT AVG(sup.total_score)
-                 FROM supervisor_evaluations sup
-                 WHERE sup.evaluatee_id = f.id 
-                 AND sup.evaluator_position = 'President' 
-                 AND sup.status = 'completed') as supervisorAverage
+                (SELECT AVG(pe.rating)
+                 FROM president_evaluations pe
+                 WHERE pe.vpaa_id = ea.id 
+                 AND pe.status = 'completed') as supervisorAverage
                 
-            FROM faculty f
-            WHERE f.position LIKE '%VPAA%' AND f.status = 'active'
-            ORDER BY f.last_name, f.first_name
+            FROM evaluator_accounts ea
+            WHERE ea.position = 'VPAA' AND ea.status = 'active'
+            ORDER BY ea.full_name
         `);
 
         // Calculate overall scores for each VPAA

@@ -8,20 +8,50 @@ const { promisePool } = require('../../config/db');
  */
 router.get('/vpaa-list', async (req, res) => {
     try {
+        // Get active academic year first
+        const [activeYear] = await promisePool.query(
+            "SELECT id, semester FROM academic_years WHERE status = 'active' LIMIT 1"
+        );
+
+        if (activeYear.length === 0) {
+            return res.json({
+                success: true,
+                data: [] // No active year means no evaluations can be done/checked efficiently
+            });
+        }
+
+        const { id: activeAyId, semester: rawSemester } = activeYear[0];
+
+        // Normalize semester to match enum('1st', '2nd')
+        let activeSemester = rawSemester;
+        if (rawSemester && rawSemester.toString().toLowerCase().includes('1st')) {
+            activeSemester = '1st';
+        } else if (rawSemester && rawSemester.toString().toLowerCase().includes('2nd')) {
+            activeSemester = '2nd';
+        }
+
         const [vpaaList] = await promisePool.query(`
             SELECT 
-                id,
-                honorific,
-                full_name,
-                suffix,
-                email,
-                sex,
-                position,
-                status
-            FROM evaluator_accounts
-            WHERE position = 'VPAA' AND status = 'active'
-            ORDER BY full_name ASC
-        `);
+                ea.id,
+                ea.honorific,
+                ea.full_name,
+                ea.suffix,
+                ea.email,
+                ea.sex,
+                ea.position,
+                ea.status,
+                CASE 
+                    WHEN pe.id IS NOT NULL THEN 1 
+                    ELSE 0 
+                END as is_evaluated
+            FROM evaluator_accounts ea
+            LEFT JOIN president_evaluations pe ON 
+                pe.vpaa_id = ea.id AND 
+                pe.academic_year_id = ? AND 
+                pe.semester = ?
+            WHERE ea.position = 'VPAA' AND ea.status = 'active'
+            ORDER BY ea.full_name ASC
+        `, [activeAyId, activeSemester]);
 
         res.json({
             success: true,

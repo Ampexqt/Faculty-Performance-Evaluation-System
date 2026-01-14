@@ -116,12 +116,16 @@ export function PresidentDashboardPage() {
             width: '15%',
             align: 'center',
             render: (_, row) => (
-                <button
-                    className={styles.evaluateButton}
-                    onClick={() => handleEvaluate(row)}
-                >
-                    Evaluate
-                </button>
+                row.is_evaluated ? (
+                    <span className={styles.evaluatedBadge}>Completed</span>
+                ) : (
+                    <button
+                        className={styles.evaluateButton}
+                        onClick={() => handleEvaluate(row)}
+                    >
+                        Evaluate
+                    </button>
+                )
             ),
         },
     ];
@@ -184,7 +188,7 @@ export function PresidentDashboardPage() {
                         </div>
                         <div className={styles.statContent}>
                             <p className={styles.statLabel}>Evaluations</p>
-                            <p className={styles.statValue}>0</p>
+                            <p className={styles.statValue}>{vpaaList.filter(v => v.is_evaluated).length}</p>
                         </div>
                     </Card>
                 </div>

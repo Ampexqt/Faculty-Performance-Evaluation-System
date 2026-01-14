@@ -89,6 +89,24 @@ router.post('/evaluate-vpaa', async (req, res) => {
             });
         }
 
+        // Parse complex comments JSON to extract specific fields
+        let ratingsObj = {};
+        let textComments = "";
+        let criteriaVersion = "old";
+
+        try {
+            // The frontend sends everything packed in 'comments'
+            const parsed = typeof comments === 'string' ? JSON.parse(comments) : comments;
+            ratingsObj = parsed.ratings || {};
+            textComments = parsed.text_comments || "";
+            criteriaVersion = parsed.criteria_version || "old";
+        } catch (e) {
+            // fallback if it's just a simple string
+            textComments = comments;
+        }
+
+        let evaluationId;
+
         // Check if evaluation already exists
         const [existing] = await promisePool.query(
             `SELECT id FROM president_evaluations 
@@ -96,33 +114,69 @@ router.post('/evaluate-vpaa', async (req, res) => {
             [president_id, vpaa_id, academic_year_id, semester]
         );
 
+        // Store cleaned comments (without the massive ratings blob)
+        // We still keep criteria_version in there for now as it's metadata
+        const storageComments = JSON.stringify({
+            text_comments: textComments,
+            criteria_version: criteriaVersion
+        });
+
         if (existing.length > 0) {
+            evaluationId = existing[0].id;
             // Update existing evaluation
             await promisePool.query(
                 `UPDATE president_evaluations 
                  SET rating = ?, comments = ?, status = 'completed', evaluated_at = NOW()
                  WHERE id = ?`,
-                [rating, comments, existing[0].id]
+                [rating, storageComments, evaluationId]
             );
-
-            return res.json({
-                success: true,
-                message: 'Evaluation updated successfully'
-            });
         } else {
             // Create new evaluation
-            await promisePool.query(
+            const [result] = await promisePool.query(
                 `INSERT INTO president_evaluations 
                  (president_id, vpaa_id, academic_year_id, semester, rating, comments, status, evaluated_at)
                  VALUES (?, ?, ?, ?, ?, ?, 'completed', NOW())`,
-                [president_id, vpaa_id, academic_year_id, semester, rating, comments]
+                [president_id, vpaa_id, academic_year_id, semester, rating, storageComments]
             );
-
-            return res.json({
-                success: true,
-                message: 'Evaluation submitted successfully'
-            });
+            evaluationId = result.insertId;
         }
+
+        // --- Save Detailed Ratings to president_evaluation_ratings Table ---
+        // Requirement: Table 'president_evaluation_ratings' must exist
+
+        // 1. Delete existing ratings for this evaluation (clean slate)
+        await promisePool.query('DELETE FROM president_evaluation_ratings WHERE evaluation_id = ?', [evaluationId]);
+
+        // 2. Prepare new ratings for insertion
+        const insertValues = [];
+
+        // ratingsObj keys are formatted as 'CategoryName-Index', e.g., 'A. Commitment-0'
+        Object.entries(ratingsObj).forEach(([key, value]) => {
+            const lastDashIndex = key.lastIndexOf('-');
+            if (lastDashIndex !== -1) {
+                const category = key.substring(0, lastDashIndex);
+                const index = parseInt(key.substring(lastDashIndex + 1));
+
+                // Only push if we successfully parsed the key
+                if (category && !isNaN(index)) {
+                    insertValues.push([evaluationId, category, index, value]);
+                }
+            }
+        });
+
+        // 3. Bulk Insert
+        if (insertValues.length > 0) {
+            await promisePool.query(
+                'INSERT INTO president_evaluation_ratings (evaluation_id, category, criterion_index, rating) VALUES ?',
+                [insertValues]
+            );
+        }
+
+        return res.json({
+            success: true,
+            message: existing.length > 0 ? 'Evaluation updated successfully' : 'Evaluation submitted successfully'
+        });
+
     } catch (error) {
         console.error('Error submitting evaluation:', error);
         res.status(500).json({
